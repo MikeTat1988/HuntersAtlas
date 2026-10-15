@@ -157,7 +157,7 @@ def main():
         raise RuntimeError('Frozen package is missing the Tcl initialization scripts.')
     notice_names = {name.casefold() for name in frozen_dependencies}
     required_notices = {
-        'third-party-notices/python-3.14.8-psf-2.0.txt',
+        'third-party-notices/python-psf-2.0.txt',
         'third-party-notices/tcl-tk-license.terms',
     }
     if not required_notices.issubset(notice_names):
@@ -213,7 +213,7 @@ def main():
         'base_run_source_sha256': digest(ORIGINAL_RUN) if baseline_source_checked else None,
         'atlas_game_eboot_sha256': 'd65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9',
         'launcher_build': 'windows-v1.7.2-atlas1',
-        'runtime_build': 'hunters-atlas-runtime-1.4.0-beta2',
+        'runtime_build': 'hunters-atlas-runtime-1.0',
         'verified_frozen_modules': [main_name, *EXPECTED_HELPERS],
         'verified_tkinter_modules': list(EXPECTED_TK_MODULES),
         'bundled_runtime_notices': {name: frozen_dependency_hashes[name] for name in sorted(required_notices)},

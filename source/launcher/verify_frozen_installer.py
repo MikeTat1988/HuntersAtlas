@@ -40,7 +40,7 @@ def main() -> None:
         raise RuntimeError(f'Frozen installer --help failed without Python PATH: {help_result.stderr}')
     notice_root = EXE.parent / 'THIRD-PARTY-NOTICES'
     notice_paths = {
-        'Python-3.14.8-PSF-2.0.txt': notice_root / 'Python-3.14.8-PSF-2.0.txt',
+        'Python-PSF-2.0.txt': notice_root / 'Python-PSF-2.0.txt',
         'Tcl-Tk-license.terms': notice_root / 'Tcl-Tk-license.terms',
     }
     missing_notices = [name for name, path in notice_paths.items() if not path.is_file()]

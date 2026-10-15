@@ -6,7 +6,7 @@ This guide applies to the corresponding-source archive. It describes native, lau
 
 The archive root contains `native/`, `launcher/`, `generator/`, `licenses/`, and `art-originals/`. The `native/` subtree is the upstream bbport source with the Atlas renderer changes. Its required vendored source is expanded under `native/gpu/third_party/` and `native/third_party/`; no `.git` metadata is shipped. In particular, the host shader GLSL files, the FSR-Vulkan source and local patches, `LibAtrac9`, and the licensed DejaVu Sans fallback are build/runtime inputs. Do not remove these directories when pruning unused documentation or tests.
 
-The sibling runtime-dependency source archive is compliance source for selected system runtime packages and build tools; it is not a compiler SDK or a replacement for the system development packages listed below. `licenses/runtime-source-index.json` maps each covered runtime library to its source recipe and notices. GEOS 3.13.1 source and its SHA-256 receipt are included there for the generator's pinned Shapely 2.1.2 dependency. Exact PyInstaller 6.16.0 and 6.22.3 source distributions are included there with PyPI URL/hash receipts. The generator's included Soulstruct source is the reviewed Python/project-only extraction; the upstream sdist containing unrelated executable and DLL resources is intentionally omitted.
+The `runtime-dependencies/` directory inside the combined `legal/Source.zip` is compliance source for selected system runtime packages and build tools; it is not a compiler SDK or a replacement for the system development packages listed below. `licenses/runtime-source-index.json` maps each covered runtime library to its source recipe and notices. GEOS 3.13.1 source and its SHA-256 receipt are included there for the generator's pinned Shapely 2.1.2 dependency. Exact PyInstaller 6.16.0 and 6.22.3 source distributions are included there with PyPI URL/hash receipts. The generator's included Soulstruct source is the reviewed Python/project-only extraction; the upstream sdist containing unrelated executable and DLL resources is intentionally omitted.
 
 ## Native Windows build
 
@@ -53,7 +53,7 @@ The required shader source inputs remain in `native/gpu/shadps4/video_core/host_
 
 The matching Atlas-integrated launcher source is in `launcher/`; the older native `native/launcher/` code is part of bbport, not this Windows UI adapter. Launcher build-receipt paths are sanitized and relative to the launcher source tree.
 
-The frozen launcher was built with MSYS2 Python 3.14.8 and PyInstaller 6.22.3. The frozen-source verifier uses the included native preparation scripts. Optional upstream comparison audits accept `ATLAS_BASELINE_SOURCE` (original launcher/run.py folder), `ATLAS_STOCK_EXE` (fingerprinted stock launcher), and `ATLAS_PREPARATION_SCRIPTS`; without these inputs it still verifies frozen code/imports/Tk, and records that the optional baseline comparison was not performed. Use a Python interpreter supplied explicitly to the build script; for example:
+The 1.0 launcher and installer are frozen with CPython 3.12.14, PyInstaller 6.22.3, Pillow 12.3.0 and matching Tcl/Tk 8.6.12 data. These launcher builds are separate from the unchanged MSYS2 native runtime build. The frozen-source verifier uses the included native preparation scripts. Optional upstream comparison audits accept `ATLAS_BASELINE_SOURCE` (original launcher/run.py folder), `ATLAS_STOCK_EXE` (fingerprinted stock launcher), and `ATLAS_PREPARATION_SCRIPTS`; without these inputs it still verifies frozen code/imports/Tk, and records that the optional baseline comparison was not performed. Use a Python interpreter supplied explicitly to the build script; for example:
 
 ```powershell
 $Python = (Resolve-Path $env:ATLAS_PYTHON).Path
@@ -66,7 +66,7 @@ Get-Content generator/requirements-build.txt | Where-Object { $_ -notmatch '^\s*
 & .\launcher\build_frozen_launcher.ps1 -Python $Python
 ```
 
-Set `ATLAS_PYTHON` to the full path of the intended MSYS2 Python 3.14.8 executable and `ATLAS_RUNTIME_SOURCE` to the extracted runtime-source archive root. The PyInstaller source archive is used directly; the other launcher build requirements are pinned by the generator's `requirements-build.txt`. The build writes only under `launcher/build/`. The script collects Tcl/Tk and Python notices from the selected interpreter, then runs `launcher/verify_frozen_sources.py`. Re-run the source verifier after a successful freeze. `launcher/build/source-receipt.json` records the release executable hash and frozen-source checks; it is provenance, not a replacement for rebuilding and checking the executable.
+Set `ATLAS_PYTHON` to the full path of the intended CPython 3.12 interpreter and `ATLAS_RUNTIME_SOURCE` to the extracted `runtime-dependencies/` directory. Set `TCL_LIBRARY` and `TK_LIBRARY` to complete matching Tcl/Tk script folders; each must include its upstream `license.terms` for notice collection. The scripts used for 1.0 are recorded in `launcher/build-tool-inputs.json`. The PyInstaller source archive is used directly; the other launcher build requirements are pinned by the generator's `requirements-build.txt`. The build writes only under `launcher/build/`. The script collects Tcl/Tk and Python notices from the selected interpreter, then runs `launcher/verify_frozen_sources.py`. Re-run the source verifier after a successful freeze. `launcher/build/source-receipt.json` records the release executable hash and frozen-source checks; it is provenance, not a replacement for rebuilding and checking the executable.
 
 ## Map generator build and tests
 
@@ -97,3 +97,7 @@ Set `ATLAS_PYTHON312` to the full path of CPython 3.12.14 (or a compatible CPyth
 ## Dependency and version limits
 
 The package carries exact source for its expanded in-tree native vendors, the 33 indexed GPL/LGPL MSYS2 runtime package owners, three pinned upstream source trees, and GEOS 3.13.1. The MSYS2 Windows build still consumes system development packages; install the names in `native/packaging/windows/README.md` and consult `licenses/notices/installed/` for the recorded runtime package versions and notices. The exact compiler/system-package repository snapshot is not included, so system package resolution and resulting binaries can differ over time. Use the receipts and SHA manifests to compare source inputs and release outputs; successful compilation alone does not establish runtime or visual acceptance.
+
+## Release packaging
+
+Run `package_release.py --help` from a source checkout for the single-download packager. It combines unchanged verified native/generator payloads, current frozen launcher and installer builds, one user README, eight examples and the complete source bundle. The public artifact is `Hunters-Atlas-1.0.zip`; internal build reports and checksum lists are not separate user downloads.

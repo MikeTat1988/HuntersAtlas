@@ -1,8 +1,9 @@
 param(
-    [string]$Python = (Join-Path $PSScriptRoot '..\..\..\tools\map-build\msys64\clang64\bin\python.exe')
+    [string]$Python = $env:ATLAS_PYTHON
 )
 
 $ErrorActionPreference = 'Stop'
+if (-not $Python) { throw 'Pass -Python with the full path to your build Python interpreter.' }
 $sourceRoot = $PSScriptRoot
 $pythonBin = Split-Path -Parent (Resolve-Path $Python).Path
 $env:PATH = "$pythonBin;$env:PATH"
@@ -35,11 +36,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $installerNotices = Join-Path $buildRoot 'installer-dist/THIRD-PARTY-NOTICES'
-New-Item -ItemType Directory -Path $installerNotices -Force | Out-Null
-Copy-Item (Join-Path $pythonBin '../share/licenses/python3.14/LICENSE') `
-    (Join-Path $installerNotices 'Python-3.14.8-PSF-2.0.txt')
-Copy-Item (Join-Path $pythonBin '../lib/tk8.6/demos/license.terms') `
-    (Join-Path $installerNotices 'Tcl-Tk-license.terms')
+& $Python (Join-Path $sourceRoot 'collect_build_notices.py') --output $installerNotices
+if ($LASTEXITCODE -ne 0) { throw 'Could not collect the selected interpreter notices.' }
 
 & $Python (Join-Path $sourceRoot 'verify_frozen_installer.py')
 if ($LASTEXITCODE -ne 0) {

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 param([string]$LauncherRoot)
 $ErrorActionPreference = 'Stop'
-$releaseRoot = $PSScriptRoot
+$releaseRoot = Split-Path -Parent $PSScriptRoot
 $setup = Join-Path $releaseRoot 'installer\AtlasSetup.exe'
-if (-not (Test-Path -LiteralPath $setup -PathType Leaf)) { throw 'Run Uninstall.ps1 from the root of the extracted v1.4.0-beta2 release, beside installer\ and adapter\.' }
+if (-not (Test-Path -LiteralPath $setup -PathType Leaf)) { throw 'Double-click Uninstall.cmd in the extracted Hunter''s Atlas 1.0 package.' }
 if (-not $LauncherRoot) { $LauncherRoot = (Read-Host 'Launcher folder containing atlas-install-receipt.json').Trim().Trim('"') }
 $LauncherRoot = (Resolve-Path -LiteralPath $LauncherRoot).Path
 $receipt = Join-Path $LauncherRoot 'atlas-install-receipt.json'

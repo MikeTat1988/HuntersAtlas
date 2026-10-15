@@ -1,59 +1,66 @@
-# Hunter's Atlas
+# Hunter’s Atlas 1.0
 
-An optional, in-game map for Bloodborne's matching Windows PC launcher. Select the Atlas folder, enable it, and use the launcher's normal **Play** button. A fourth **Map** tile appears in the quick menu.
+An in-game map for Bloodborne on PC.
 
-![Hunter's Atlas — Great Bridge](examples/great-bridge.png)
+Find your way through Yharnam with a fullscreen map that shows your position, facing direction, and locations of lamps, ladders, gates and NPCs. Explore 16 supported areas across the main game and DLC, with zoom, pan and different floor levels.
 
-**[Download the beta](https://github.com/MikeTat1988/HuntersAtlas/releases/tag/v1.4.0-beta2)** · **[Easy installation](docs/INSTALL.md)** · **[Compatibility](docs/COMPATIBILITY.md)** · **[Testing and known limits](docs/QA.md)**
+First, make sure Bloodborne runs with the [supported PC launcher v1.7.2](https://github.com/Supermedo/bloodborne_pc/releases/tag/windows-v1.7.2).
 
-## What it does
+1. Download [**Hunters-Atlas-1.0.zip**](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.0/Hunters-Atlas-1.0.zip) and extract it into a folder you’ll keep. Use this release file; **Code → Download ZIP** contains developer source only.
+2. Close the game and launcher. Double-click **Install.cmd** in the extracted folder.
+3. When prompted, select your launcher folder — the one containing **Bloodborne.exe**.
+4. Open the launcher → **Mods & patches** → **Hunter’s Atlas**. For **Atlas folder**, choose the folder you extracted in step 1.
+5. Click **Prepare Atlas maps** if prompted. This takes several minutes and adds approximately 100 MB.
+6. Check **Enable Hunter’s Atlas** and click **Play**.
 
-- Follows your position and facing through 16 supported main-game/DLC maps.
-- Adds a clickable Map tile beside System, with controller navigation and the game's Cross/Circle Confirm mapping.
-- Wraps through Map in both directions and reads the game's cursor sounds locally for Atlas selection and confirmation.
-- Supports pan, zoom, elevation shading, recenter and Back.
-- Keeps other storeys faded for context. Dark, scratched interiors distinguish inferred enclosed spaces from pale floors.
-- Preserves the painted sides with a central frame and soft map-edge fades.
-- Shows static lamp, ladder, gate and NPC sites. These are locations, not live quest or door states.
-- Prepares maps and the native font locally from your own game files. No game download is included.
+In the game, open the quick menu and select **Map**.
 
-## Install in a few steps
+To turn Atlas off, uncheck **Enable Hunter’s Atlas**. To remove its launcher integration, close the game and launcher, then double-click **Uninstall.cmd** in the same extracted folder. Keep the package and original-launcher backup until uninstall completes.
 
-1. Download **Hunters-Atlas-1.4.0-beta2.zip** from [Releases](https://github.com/MikeTat1988/HuntersAtlas/releases), rather than GitHub's **Code → Download ZIP** source archive. Extract the full archive into a folder you can keep. The package files (`manifest.json`, `runtime`, `art`, `maps`, `settings`, `tools`) sit beside `Install.ps1` at the release root.
-2. Close the launcher and game. Run `Install.ps1` with PowerShell and enter your existing launcher folder. It installs the compatible adapter and retains the original executable for rollback. If your launcher does not match, it stops with an explanation.
-3. Open your usual `Bloodborne.exe`. The Atlas package path is the extracted release root. If it is not already selected in **Mods & patches → Hunter's Atlas**, browse to that root once. Select **Prepare Atlas maps** if prompted. Preparation takes several minutes and needs no separately installed Python.
-4. Enable Hunter's Atlas and click the ordinary **Play** button. In the game's quick menu, move right from System to Map and Confirm, or click Map.
+<details>
+<summary>Установка по-русски</summary>
 
-Disable Atlas in the same launcher panel to use its original runtime. See [installation and uninstall instructions](docs/INSTALL.md) for the command-line alternative and exact rollback procedure.
+1. Скачайте **Hunters-Atlas-1.0.zip** по ссылке выше. Кнопка **Code → Download ZIP** скачивает исходники для разработчиков.
+2. Полностью распакуйте архив в постоянную папку. Закройте игру и лаунчер.
+3. Дважды нажмите **Install.cmd**. Укажите папку своего лаунчера, где находится **Bloodborne.exe**.
+4. Откройте обычный лаунчер → **Mods & patches** → **Hunter’s Atlas**. В **Atlas folder** выберите ту же распакованную папку.
+5. Если предложено, нажмите **Prepare Atlas maps** и дождитесь завершения.
+6. Включите **Enable Hunter’s Atlas**, нажмите **Play** и выберите **Map** в быстром меню игры.
 
-## Compatibility and beta status
+Для удаления закройте игру и лаунчер и запустите **Uninstall.cmd**. Установка не требует изменения системной политики PowerShell.
 
-This is **1.4.0-beta2**, for the fingerprinted **Windows v1.7.2 Atlas adapter** and tested **CUSA00207 01.09** executable. It is not a universal plug-in for arbitrary bbport/shadPS4 builds. The installer and manifest check exact identities; see [the compatibility matrix](docs/COMPATIBILITY.md).
+</details>
 
-Normal packaged Play, enable/disable, native Confirm layouts, injected runtime input, named scene captures and exact launcher restoration were tested. Physical-device, focus-loss and disconnect acceptance remains incomplete. An idle title-screen attract movie can still cause a guest fault; its stock-versus-Atlas cause is unresolved. No complete playthrough, universal controller support or human visual approval is claimed. [Read the QA record](docs/QA.md) before installing.
+## Example screenshots
 
-Chalice Dungeons, live quest state and live gate state are outside this beta. Collision-derived geometry and inferred interiors can have omissions. The package does not replace learning the game; it gives you another optional way to navigate it.
-
-## Examples
-
-| Quick-menu entry | Enclosed interiors |
+| Quick menu | Central Yharnam, Great Bridge |
 | --- | --- |
-| ![Fourth Map tile](examples/quick-menu.png) | ![Scratched tower interiors](examples/tower-interiors.png) |
+| ![The Map tile in the quick menu](examples/quick-menu.png) | ![Map at the Great Bridge](examples/great-bridge.png) |
 
-| Clinic | Hunter's Dream | Hunter's Nightmare DLC |
-| --- | --- | --- |
-| ![Clinic](examples/clinic.png) | ![Dream](examples/dream.png) | ![DLC](examples/dlc.png) |
+| Scratched tower interiors | Cathedral Ward |
+| --- | --- |
+| ![Enclosed tower spaces marked with a scratched fill](examples/tower-interiors.png) | ![Map view in Cathedral Ward](examples/cathedral-ward-map.png) |
 
-These are actual captured runtime images. Some use earlier builds with the same final map layout; [capture provenance](examples/README.md) identifies them. Images are examples for review, not a certification of every route or height.
+| Iosefka’s Clinic | Hunter’s Dream |
+| --- | --- |
+| ![Map view in Iosefka’s Clinic](examples/clinic.png) | ![Map view in Hunter’s Dream](examples/dream.png) |
 
-## Source, attribution and licenses
+| Hunter’s Nightmare DLC | Menu navigation |
+| --- | --- |
+| ![Map view in the DLC](examples/dlc.png) | ![Map tile reached with left and right menu navigation](examples/menu-left-wrap.png) |
 
-The corresponding implementation is under [`source/`](source/), including the native host, matching launcher adapter, complete generator and required vendored source. Start with [SOURCE-BUILD.md](source/SOURCE-BUILD.md). Runtime/dependency source archives and checksums are attached to the release; large compiled packages are deliberately kept out of Git history.
+These runtime captures show selected areas, heights and interface states. Some were collected during development; they illustrate the final map layouts. They do not certify every route or supported floor. Human visual review remains separate from technical checks.
 
-Source inventory hashes describe the corresponding-source release ZIP. Git may apply upstream vendors' line-ending rules on checkout; use that ZIP when comparing exact archived bytes. Generator input hashes are preserved explicitly on Windows checkouts.
+## Compatibility and limits
 
-Hunter's Atlas builds on [Supermedo's bloodborne_pc](https://github.com/Supermedo/bloodborne_pc), its bbport runtime and incorporated projects. Recorded baselines are native `e699fdf76ff001df159dab049dfdac1a3446f13d` and launcher `e5d04e2ba4864ccf40de6c3cf6aa532855320b0d`. This is an independent community add-on, not an official FromSoftware/Sony project.
+Hunter’s Atlas supports the matching Windows PC launcher v1.7.2 and tested game executable. Installation verifies compatibility before replacing the launcher and retains its original executable for rollback. Game files, saves and personal settings are preserved.
 
-The native host and Atlas additions retain their GPL notices; see [LICENSE](LICENSE), individual source headers and [dependency notices](source/licenses/). Other components and art retain their respective licenses/provenance. Development and original illustrative assets used AI assistance. Game-derived maps and fonts are generated on the user's computer and are not distributed here.
+The map supports controller navigation and mouse clicks, pan, zoom, elevation levels, recenter and Back. Other floors remain faintly visible for context, and enclosed spaces use a dark scratched treatment. Marker locations are static: they do not track live quest or gate states. Chalice Dungeons are not supported. Collision-derived floors and inferred interiors can contain omissions.
 
-Bug reports are welcome: include the exact launcher/runtime version, area, steps and relevant error lines. Remove account identifiers and private paths; do not upload saves or game files.
+Map data and the required game font are prepared locally from the user’s own game files; they are not included in the download. Physical controller disconnect and focus-loss behavior still need broader testing. An idle title-screen attract movie can cause a guest fault; its cause remains unresolved.
+
+## Source and licenses
+
+Hunter’s Atlas builds on [Supermedo’s bloodborne_pc](https://github.com/Supermedo/bloodborne_pc). It is an independent community project and is not affiliated with FromSoftware or Sony. Development and original illustrative assets used AI assistance.
+
+The [source repository](https://github.com/MikeTat1988/HuntersAtlas/tree/main/source) contains the implementation and build instructions. The download also includes corresponding source and dependency source in **legal/Source.zip**. The native host and Atlas additions retain their GPL notices; see **LICENSE**, source headers and dependency notices. Other components and art retain their respective licenses and provenance.

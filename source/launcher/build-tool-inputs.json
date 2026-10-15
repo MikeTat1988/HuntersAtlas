@@ -1,0 +1,15 @@
+{
+  "python": "3.12.14",
+  "pyinstaller": "6.22.3",
+  "tk_version": "8.6.12",
+  "sources": {
+    "tcl": {
+      "url": "https://codeload.github.com/tcltk/tcl/zip/refs/tags/core-8-6-12",
+      "sha256": "05ad33bb3945eef7d05cf4e01d156c1dc8fa42fee49815b3f6161b86be838e61"
+    },
+    "tk": {
+      "url": "https://codeload.github.com/tcltk/tk/zip/refs/tags/core-8-6-12",
+      "sha256": "c2b4782e76bbc4d63278271e084ea12810ea023381fea6820006110dac2dd84d"
+    }
+  }
+}

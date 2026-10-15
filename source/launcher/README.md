@@ -4,8 +4,9 @@ This workspace owns the frozen-matching Windows v1.7.2 launcher copy, the add-on
 its focused tests, and the rebuilt launcher output. It does not modify the installed launcher,
 the user's AppData settings, saves, or `working/map-source`.
 
-The launcher build identifier is `windows-v1.7.2-atlas1`. The accepted runtime identifier is
-`hunters-atlas-runtime-1.4.0-beta2`. The currently fingerprinted game executable is
+The launcher build identifier is `windows-v1.7.2-atlas1`. The accepted runtime identifier is an
+internal compatibility token tied to the shipped binary; preserve it when working with this build.
+The currently fingerprinted game executable is
 `Image0/eboot.bin` with SHA-256
 `d65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9`.
 
@@ -14,10 +15,10 @@ An extracted add-on folder must contain root `manifest.json` with this contract:
 ```json
 {
   "id": "hunters-atlas",
-  "version": "1.4.0-beta2",
+  "version": "1.0",
   "launcher_builds": ["windows-v1.7.2-atlas1"],
   "game_executables": ["<SHA-256 of supported Image0/eboot.bin>"],
-  "runtime_build": "hunters-atlas-runtime-1.4.0-beta2",
+  "runtime_build": "hunters-atlas-runtime-1.0",
   "mutable_files": ["settings/settings.ini"],
   "generated": {
     "manifest": "maps/generated-assets.json",

@@ -41,7 +41,7 @@ class AtlasInstallTests(unittest.TestCase):
                 'python312.dll': digest(self.adapter / '_atlas_internal' / 'python312.dll'),
             },
             'launcher_build': 'windows-v1.7.2-atlas1',
-            'runtime_build': 'hunters-atlas-runtime-1.4.0-beta2',
+            'runtime_build': 'hunters-atlas-runtime-1.0',
         }), encoding='utf-8')
 
         self.atlas = self.base / 'Atlas Package 名 with spaces'
@@ -72,7 +72,7 @@ class AtlasInstallTests(unittest.TestCase):
             'id': 'hunters-atlas',
             'version': 'test',
             'launcher_builds': ['windows-v1.7.2-atlas1'],
-            'runtime_build': 'hunters-atlas-runtime-1.4.0-beta2',
+            'runtime_build': 'hunters-atlas-runtime-1.0',
             'paths': {
                 'probe': 'runtime/bb-probe.exe', 'maps': 'maps',
                 'config': 'settings/settings.ini', 'art': 'art',

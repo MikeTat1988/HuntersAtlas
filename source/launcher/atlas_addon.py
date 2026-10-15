@@ -12,7 +12,7 @@ import re
 MANIFEST_NAME = 'manifest.json'
 MANIFEST_ID = 'hunters-atlas'
 LAUNCHER_BUILD = 'windows-v1.7.2-atlas1'
-RUNTIME_BUILD = 'hunters-atlas-runtime-1.4.0-beta2'
+RUNTIME_BUILD = 'hunters-atlas-runtime-1.0'
 REQUIRED_PATHS = ('probe', 'maps', 'config', 'art', 'catalog', 'font')
 ENV_KEYS = ('BB_PROBE', 'BB_ATLAS_ENABLED', 'BB_ATLAS_QA', 'BB_ENTER_BUTTON')
 SHA256_RE = re.compile(r'^[0-9a-fA-F]{64}$')
@@ -152,7 +152,7 @@ def inspect_package(folder: str | os.PathLike[str], *, launcher_build: str = LAU
                     allow_unprepared: bool = False) -> AtlasPackage:
     """Validate package hashes and generated local assets against the selected game."""
     if not str(folder).strip():
-        raise AtlasManifestError('Choose the folder where you extracted Hunter\'s Atlas (the same folder as Install.ps1).')
+        raise AtlasManifestError('Choose the folder where you extracted Hunter\'s Atlas (the same folder as Install.cmd).')
     root = Path(folder).expanduser()
     if not root.is_dir():
         raise AtlasManifestError('Select the extracted Hunter\'s Atlas folder.')

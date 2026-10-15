@@ -1,15 +1,15 @@
 {
   "executable": "repo\\source\\launcher\\build\\installer-dist\\AtlasSetup.exe",
-  "executable_sha256": "a319a8e45504009293814284f0ca26862dbaff2c8e49fcdb3eb774d444864020",
+  "executable_sha256": "fecdf819645b4e2df1e0e37c5e5ab0eab6ed5f3066f7995c74f61fa5c13da790",
   "source": "repo\\source\\launcher\\atlas_install.py",
-  "source_sha256": "e1cf6a1bb4184a582529c38e926b9a56f973ee173fcdb8148321c982fb344e24",
-  "python_version": "3.14.8 (main, Oct  2 2026, 15:15:15)  [MINGW Clang UCRT 22.1.8 64 bit (AMD64) (GCC)]",
+  "source_sha256": "9df50034971a3acc0b65187db792526b0c5855bac57761f362ea0d9b9185a7f6",
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
   "pyinstaller_version": "6.22.3",
   "verified_module": "atlas_install",
   "help_without_python_path_exit_code": 0,
   "bundled_runtime_notice_sha256": {
-    "Python-3.14.8-PSF-2.0.txt": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
-    "Tcl-Tk-license.terms": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+    "Python-PSF-2.0.txt": "886a0ead2d89030ee62dbff52b04e47ab91998341295bb9c56fb952b4e081c7a",
+    "Tcl-Tk-license.terms": "eb63f0dc0cfb805ff6b6c10f49e94cc6e52b96b043a8d20ba468eb8ae68ebce0"
   },
   "cli_commands": [
     "install",

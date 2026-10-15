@@ -39,7 +39,7 @@ class AtlasAddonTests(unittest.TestCase):
             path.write_bytes(data)
         self.manifest = {
             'id': 'hunters-atlas',
-            'version': '1.4.0-beta2',
+            'version': '1.0',
             'launcher_builds': [atlas_addon.LAUNCHER_BUILD],
             'game_executables': [GAME_HASH],
             'runtime_build': atlas_addon.RUNTIME_BUILD,
@@ -82,7 +82,7 @@ class AtlasAddonTests(unittest.TestCase):
 
     def test_valid_package_resolves_unicode_paths_and_checks_hashes(self):
         package = self.inspect()
-        self.assertEqual(package.display_version, '1.4.0-beta2')
+        self.assertEqual(package.display_version, '1.0')
         self.assertEqual(package.paths['probe'], (self.root / 'runtime/bb-probe.exe').resolve())
         self.assertEqual(package.paths['maps'], (self.root / 'maps').resolve())
         self.assertEqual(package.paths['generator'], (self.root / 'tools/generate_atlas.exe').resolve())

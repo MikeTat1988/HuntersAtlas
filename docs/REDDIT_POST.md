@@ -1,12 +1,10 @@
 # Suggested community
 
-Post first in **r/BloodbornePC**, using the current mod/showcase flair if one is available. The main r/bloodborne community directs emulation discussion to PC-specific communities. Check the live sidebar before posting; no post or moderator contact has been made.
-
-Reference: https://www.reddit.com/r/bloodborne/comments/1x2juj6/removed/
+Post first in **r/BloodbornePC**, using the current mod or showcase flair if one is available. Check the live rules and flair options before posting. This is only a draft; no post or moderator contact has been made.
 
 # Title
 
-Hunter's Atlas: I gave Yharnam a map. Please forgive this outrageous act of cartography. [PC mod / beta]
+Hunter's Atlas 1.0: I gave Yharnam a map. Please forgive this outrageous act of cartography. [PC mod]
 
 # Body
 
@@ -19,14 +17,14 @@ It's 2026. My hunter can fight an eldritch nightmare, but apparently carrying a 
 What it adds:
 
 - A fourth **Map** tile in the quick menu, with controller navigation and mouse support.
-- Player position/facing, pan, zoom and height shading.
+- Player position and facing, pan, zoom and height shading.
 - Faded other floors, so a bridge doesn't look like it floats in a completely unrelated universe.
 - Dark scratched interiors to distinguish enclosed spaces from walkable floors.
-- Sixteen supported main-game/DLC maps, prepared locally from your own game files.
+- Sixteen supported main-game and DLC maps, prepared locally from your own game files.
 
-You select its folder in the launcher, enable it and use the normal Play button. Disable it whenever you like.
+Choose its folder in the launcher, enable it and use the normal Play button. Disable it whenever you like.
 
-**This is a beta for specific tested launcher/game builds, not a universal shadPS4 mod.** Physical-device edge cases are still being checked, and there's an unresolved idle-title movie crash. No Chalice maps or live quest/door tracking. The README has the compatibility list, known limits, install guide and rollback instructions. No game files or saves are included.
+This is **version 1.0 for specifically supported launcher and game builds**, not a universal shadPS4 mod. Physical-device edge cases remain, and there's an unresolved idle-title movie crash. No Chalice maps or live quest/door tracking. The README has the compatibility list, known limits, install guide and rollback instructions. No game files or saves are included.
 
 **Download, source and examples:** https://github.com/MikeTat1988/HuntersAtlas
 

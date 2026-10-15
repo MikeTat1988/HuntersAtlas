@@ -1,8 +1,9 @@
 param(
-    [string]$Python = (Join-Path $PSScriptRoot '..\..\..\tools\map-build\msys64\clang64\bin\python.exe')
+    [string]$Python = $env:ATLAS_PYTHON
 )
 
 $ErrorActionPreference = 'Stop'
+if (-not $Python) { throw 'Pass -Python with the full path to your build Python interpreter.' }
 $sourceRoot = $PSScriptRoot
 $pythonBin = Split-Path -Parent (Resolve-Path $Python).Path
 $env:PATH = "$pythonBin;$env:PATH"
@@ -50,11 +51,8 @@ if ($LASTEXITCODE -ne 0) {
 $package = Join-Path $buildRoot 'dist/Bloodborne'
 Copy-Item (Join-Path $sourceRoot 'run.py') $package
 $noticeDir = Join-Path $package '_atlas_internal/THIRD-PARTY-NOTICES'
-New-Item -ItemType Directory -Path $noticeDir -Force | Out-Null
-Copy-Item (Join-Path $pythonBin '../share/licenses/python3.14/LICENSE') `
-    (Join-Path $noticeDir 'Python-3.14.8-PSF-2.0.txt')
-Copy-Item (Join-Path $pythonBin '../lib/tk8.6/demos/license.terms') `
-    (Join-Path $noticeDir 'Tcl-Tk-license.terms')
+& $Python (Join-Path $sourceRoot 'collect_build_notices.py') --output $noticeDir
+if ($LASTEXITCODE -ne 0) { throw 'Could not collect the selected interpreter notices.' }
 & $Python (Join-Path $sourceRoot 'verify_frozen_sources.py')
 if ($LASTEXITCODE -ne 0) {
     throw "Frozen-source verification failed with exit code $LASTEXITCODE"
