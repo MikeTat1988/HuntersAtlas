@@ -1235,6 +1235,7 @@ class Launcher:
         self.atlas_status_revision = 0
         self.atlas_generating = False
         self.atlas_generator_log = []
+        self.atlas_log_path = None
         self.schedule_atlas_status(delay=0)
 
     def schedule_atlas_status(self, delay=650):
@@ -1294,6 +1295,7 @@ class Launcher:
         self.atlas_progress.grid()
         self.atlas_progress.start(12)
         self.atlas_generator_log = []
+        self.atlas_log_path = CONFIG_DIR / 'logs' / f'atlas-maps-{time.strftime("%Y%m%d-%H%M%S")}-{os.getpid()}.log'
         self.atlas_generation_log.configure(text=_('Checking the selected game and Atlas generator…'))
         self.atlas_status.configure(text=_('Preparing local Atlas maps…'), style='Muted.TLabel')
         self.atlas_status_revision += 1  # discard an earlier async status result
@@ -1313,18 +1315,23 @@ class Launcher:
                     environment.pop(key, None)
                 environment.pop('BB_GAME_DIR', None)
                 environment['PYTHONUNBUFFERED'] = '1'
-                with tempfile.TemporaryDirectory(prefix='hunter-atlas-stage-') as staging:
+                self.atlas_log_path.parent.mkdir(parents=True, exist_ok=True)
+                with tempfile.TemporaryDirectory(prefix='hunter-atlas-stage-') as staging, \
+                        self.atlas_log_path.open('w', encoding='utf-8', buffering=1) as log:
                     command = [str(generator), '--game-dir', str(game_folder),
                                '--output-dir', str(package.root), '--staging-dir', staging,
                                '--replace']
+                    log.write(f'Atlas map preparation: {package.root}\nGame folder: {game_folder}\n')
                     process = subprocess.Popen(command, cwd=str(package.root), env=environment,
                                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                                stderr=subprocess.STDOUT, creationflags=NO_WINDOW)
                     for raw in iter(process.stdout.readline, b''):
                         line = raw.decode('utf-8', errors='replace').strip()
                         if line:
+                            log.write(line + '\n')
                             self.ui_calls.put(lambda text=line: self.atlas_generation_line(text))
                     return_code = process.wait()
+                    log.write(f'Generator exit code: {return_code}\n')
                 if return_code != 0:
                     error = f"{_('Atlas generator exited with code')} {return_code}."
                 else:
@@ -1338,6 +1345,13 @@ class Launcher:
                 if process is not None and process.poll() is None:
                     process.kill()
                     process.wait()
+                try:
+                    if self.atlas_log_path:
+                        self.atlas_log_path.parent.mkdir(parents=True, exist_ok=True)
+                        with self.atlas_log_path.open('a', encoding='utf-8') as log:
+                            log.write(f'Preparation failed: {error}\n')
+                except OSError:
+                    pass
             self.ui_calls.put(lambda: self.finish_atlas_generation(error, return_code))
 
         threading.Thread(target=worker, daemon=True).start()
@@ -1345,23 +1359,23 @@ class Launcher:
     def atlas_generation_line(self, line):
         if not self.atlas_generating:
             return
-        display = line
+        display = None
         try:
             event = json.loads(line)
             if isinstance(event, dict):
                 progress = event.get('progress', event.get('percent'))
                 if isinstance(progress, (int, float)) and 0 <= progress <= 100:
                     self.atlas_progress.stop()
-                    self.atlas_progress.configure(mode='determinate', maximum=100, value=progress)
-                label = event.get('message') or event.get('stage')
-                if label:
-                    display = str(label)
+                    self.atlas_progress.configure(mode='determinate', maximum=100,
+                                                  value=min(95, round(progress * .95)))
+                    display = f'{min(95, round(progress * .95))}%'
+                    label = event.get('message') or event.get('stage')
+                    if label:
+                        display += f' — {label}'
         except (TypeError, json.JSONDecodeError):
             pass
-        self.atlas_generator_log.append(display)
-        if len(self.atlas_generator_log) > 8:
-            self.atlas_generator_log = self.atlas_generator_log[-8:]
-        self.atlas_generation_log.configure(text='\n'.join(self.atlas_generator_log))
+        if display:
+            self.atlas_generation_log.configure(text=display)
 
     def finish_atlas_generation(self, error, return_code):
         self.atlas_generating = False
@@ -1371,15 +1385,14 @@ class Launcher:
         if error:
             text = _('Atlas map preparation failed:') + ' ' + error
             self.atlas_status.configure(text=text, style='Warning.TLabel')
-            tail = '\n'.join(self.atlas_generator_log[-8:])
-            if tail:
-                self.atlas_generation_log.configure(text=tail)
+            log_hint = f'\n\nLog: {self.atlas_log_path}' if self.atlas_log_path else ''
+            self.atlas_generation_log.configure(text=_('Preparation stopped. See the log for details.'))
             self.atlas_prepare_button.configure(state='normal')
-            self.messagebox.showerror('Hunter\'s Atlas', text + (f'\n\n{tail}' if tail else ''))
+            self.messagebox.showerror('Hunter\'s Atlas', text + log_hint)
         else:
             self.atlas_status.configure(text=_('Local Atlas maps are ready. Verifying package…'),
                                         style='Muted.TLabel')
-            self.atlas_generation_log.configure(text='\n'.join(self.atlas_generator_log[-8:]))
+            self.atlas_generation_log.configure(text=_('Maps are ready.'))
             self.schedule_atlas_status(delay=0)
 
     def build_trophies(self):

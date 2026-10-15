@@ -53,11 +53,14 @@ optional local font. The generated manifest has `schema: 1`, `version: 1`, `game
 `game_version`, and a `files` SHA-256 map; it does not hash itself. The licensed fallback font
 remains immutable and is used if the local font was not generated.
 
-Mods & patches recognizes an extracted but unprepared package and offers **Prepare Atlas maps**.
-It runs the hash-verified `tools/generate_atlas.exe` directly with the configured game folder and
-selected Atlas folder, supplies a separate temporary staging folder, shows its progress output,
-uses the generator's bounded `--replace` mode to repair stale generated outputs, then revalidates
-all generated hashes before enabling Atlas. It requires no developer PATH,
+`Install.cmd` records the extracted Atlas folder in the launcher profile and prepares maps before
+replacing the stock launcher. It shows percentage progress and stores detailed generator output in
+the external rollback folder. **Prepare Atlas maps** remains available in Mods & patches for
+recovery or an older unprepared package; it shows a concise progress stage and writes a detailed
+log under the launcher profile's `logs` folder. Both paths run the hash-verified
+`tools/generate_atlas.exe` with the selected game folder and Atlas folder, use a separate temporary
+staging folder and bounded `--replace` mode to repair stale generated outputs, then revalidate
+all generated hashes before enabling Atlas. They require no developer PATH,
 manually selected executable, or game data shipped inside the Atlas package. The resolver rejects
 absolute/drive paths, traversal, links, bad hashes, unsupported game fingerprints, generator
 writes outside the approved output set, and unlisted extra files. Unicode and spaces in folders

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-param([string]$LauncherRoot, [string]$RollbackRoot)
+param([string]$LauncherRoot, [string]$RollbackRoot, [string]$GameRoot)
 $ErrorActionPreference = 'Stop'
 $releaseRoot = Split-Path -Parent $PSScriptRoot
 $setup = Join-Path $releaseRoot 'installer\AtlasSetup.exe'
@@ -25,10 +25,21 @@ if (Test-Path -LiteralPath $existingReceipt -PathType Leaf) {
     if ($existing.state -eq 'installed') { throw 'Atlas is already installed here. Close the launcher and run Uninstall.cmd from the installed package before installing again.' }
 }
 if (-not $RollbackRoot) { $RollbackRoot = Join-Path (Split-Path -Parent $LauncherRoot) ('HuntersAtlas-rollback-' + (Get-Date -Format 'yyyyMMdd-HHmmss')) }
+$settingsRoot = if ($env:BB_LAUNCHER_SETTINGS_ROOT) { $env:BB_LAUNCHER_SETTINGS_ROOT } else { Join-Path $env:APPDATA 'bbport-launcher' }
+$settingsFile = Join-Path $settingsRoot 'settings.json'
+if (-not $GameRoot -and (Test-Path -LiteralPath $settingsFile -PathType Leaf)) {
+    try { $GameRoot = (Get-Content -LiteralPath $settingsFile -Raw | ConvertFrom-Json).game_dir } catch { throw "Launcher settings could not be read: $settingsFile" }
+}
+if (-not $GameRoot -or -not (Test-Path -LiteralPath (Join-Path $GameRoot 'eboot.bin') -PathType Leaf)) {
+    $GameRoot = (Read-Host 'Game folder containing eboot.bin').Trim().Trim('"')
+}
+if (-not (Test-Path -LiteralPath (Join-Path $GameRoot 'eboot.bin') -PathType Leaf)) { throw 'eboot.bin was not found in that game folder.' }
+$GameRoot = (Resolve-Path -LiteralPath $GameRoot).Path
 Write-Host 'Close Bloodborne and its launcher before continuing.'
 Write-Host "Launcher: $LauncherRoot"
 Write-Host "Atlas: $atlas"
 Write-Host "Original launcher backup: $RollbackRoot"
-& $setup install --launcher-root $LauncherRoot --adapter-root $adapter --atlas-folder $atlas --rollback-root $RollbackRoot
+Write-Host 'Preparing maps can take about 10 minutes. Progress and details are saved to the rollback folder.'
+& $setup install --launcher-root $LauncherRoot --adapter-root $adapter --atlas-folder $atlas --rollback-root $RollbackRoot --game-dir $GameRoot
 if ($LASTEXITCODE -ne 0) { throw "Installation stopped (exit $LASTEXITCODE). No success is claimed; read the installer message above." }
-Write-Host "Installed. Open your usual launcher. Hunter's Atlas uses '$atlas'; prepare maps if prompted, enable Atlas, and press Play."
+Write-Host "Installed. Open your usual launcher, enable Hunter's Atlas, and press Play."

@@ -14,6 +14,10 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import subprocess
+import sys
+import tempfile
+from datetime import datetime, timezone
 from typing import Any
 
 STOCK_LAUNCHER_SHA256 = '4a8e67ce5c2a5e4d8f8add8b0e606caecd5a3389756aef683f3ded793d4f6a59'
@@ -24,6 +28,105 @@ DEPENDENCIES_NAME = '_atlas_internal'
 RECEIPT_NAME = 'atlas-install-receipt.json'
 ROLLBACK_DIR_NAME = 'atlas-launcher-rollback'
 ATLAS_MANIFEST_NAME = 'manifest.json'
+PROFILE_NAME = 'bbport-launcher'
+
+
+def _progress(percent: int, stage: str) -> None:
+    print(f'[{max(0, min(100, percent)):3d}%] {stage}', flush=True)
+
+
+def _append_log(path: Path, message: str) -> None:
+    with path.open('a', encoding='utf-8') as log:
+        log.write(message + '\n')
+
+
+def _profile_path() -> Path:
+    override = os.environ.get('BB_LAUNCHER_SETTINGS_ROOT')
+    if override:
+        return _resolved(override, 'Launcher settings folder', must_exist=False) / 'settings.json'
+    return Path(os.environ.get('APPDATA', Path.home())) / PROFILE_NAME / 'settings.json'
+
+
+def _read_profile(path: Path) -> tuple[dict[str, Any], bytes | None]:
+    if not path.exists():
+        return {}, None
+    try:
+        original = path.read_bytes()
+        value = json.loads(original.decode('utf-8'))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise InstallError(f'Launcher settings could not be read: {error}') from error
+    if not isinstance(value, dict):
+        raise InstallError('Launcher settings must be a JSON object.')
+    return value, original
+
+
+def _maps_ready(atlas: Path, game_dir: Path) -> bool:
+    generated = atlas / 'maps/generated-assets.json'
+    if not generated.is_file():
+        return False
+    try:
+        record = json.loads(generated.read_text(encoding='utf-8'))
+        if (record.get('schema'), record.get('version')) != (1, 1):
+            return False
+        if record.get('game_eboot_sha256', '').casefold() != sha256_file(game_dir / 'eboot.bin').casefold():
+            return False
+        files = record.get('files')
+        if not isinstance(files, dict) or not {'maps/atlas.json', 'maps/catalog.json'} <= set(files):
+            return False
+        for name, expected in files.items():
+            rel = _contained_setting(name, 'generated map').as_posix().casefold()
+            if not _generated_asset_path(rel):
+                return False
+            target = _inside(atlas.joinpath(*PurePosixPath(rel).parts), atlas, 'generated map')
+            if not target.is_file() or sha256_file(target).casefold() != str(expected).casefold():
+                return False
+        return True
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def _prepare_maps(atlas: Path, game_dir: Path, rollback: Path, log) -> None:
+    if not (game_dir / 'eboot.bin').is_file():
+        raise InstallError('Game folder must contain eboot.bin.')
+    _progress(15, 'Checking local maps')
+    if _maps_ready(atlas, game_dir):
+        log.write('Local maps already match the selected game.\n')
+        _progress(82, 'Local maps already ready')
+        return
+    generator = atlas / 'tools/generate_atlas.exe'
+    if not generator.is_file():
+        raise InstallError('Atlas map generator is missing.')
+    _progress(16, 'Preparing maps from the selected game (this can take several minutes)')
+    last_percent = 16
+    log.write(f'Map generator: {generator}\nGame folder: {game_dir}\n')
+    log.flush()
+    with tempfile.TemporaryDirectory(prefix='atlas-generation-', dir=rollback) as stage:
+        command = [str(generator), '--game-dir', str(game_dir), '--output-dir', str(atlas),
+                   '--staging-dir', str(stage)]
+        if (atlas / 'maps/generated-assets.json').exists():
+            command.append('--replace')
+        with subprocess.Popen(command, cwd=str(atlas), stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, text=True, encoding='utf-8',
+                              errors='replace', bufsize=1) as process:
+            assert process.stdout is not None
+            for line in process.stdout:
+                log.write(line)
+                log.flush()
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(record, dict) or not isinstance(record.get('progress'), int):
+                    continue
+                percent = 16 + round(max(0, min(100, record['progress'])) * 0.66)
+                if percent > last_percent:
+                    last_percent = percent
+                    _progress(percent, str(record.get('stage', 'Preparing maps')))
+            code = process.wait()
+    if code or not _maps_ready(atlas, game_dir):
+        raise InstallError(f'Map preparation failed (exit {code}); details: {log.name}. Stock launcher was not changed.')
+    _validate_addon(atlas)
+    _progress(82, 'Maps verified')
 
 
 class InstallError(RuntimeError):
@@ -217,7 +320,9 @@ def _validate_uninstalled_receipt(receipt: Path, launcher_root: Path, *,
 
 
 def install(launcher_root: str | Path, adapter_root: str | Path, atlas_folder: str | Path,
-            rollback_root: str | Path, *, expected_stock_sha256: str = STOCK_LAUNCHER_SHA256) -> Path:
+            rollback_root: str | Path, *, expected_stock_sha256: str = STOCK_LAUNCHER_SHA256,
+            prepare_maps: bool = False, game_dir: str | Path | None = None,
+            set_atlas_folder: bool = False) -> Path:
     """Install only into a separate launcher folder and return its durable receipt."""
     root = _resolved(launcher_root, 'Launcher root')
     adapter = _resolved(adapter_root, 'Adapter build')
@@ -230,7 +335,15 @@ def install(launcher_root: str | Path, adapter_root: str | Path, atlas_folder: s
         raise InstallError('Rollback folder must be outside both launcher and public Atlas folders.')
     if root == atlas or root in atlas.parents or atlas in root.parents:
         raise InstallError('Launcher root and public Atlas folder must be separate.')
+    if prepare_maps and not game_dir:
+        raise InstallError('Game folder is required to prepare local maps.')
+    game = _resolved(game_dir, 'Game folder') if prepare_maps else None
+    if game is not None and not (game / 'eboot.bin').is_file():
+        raise InstallError('Game folder must contain eboot.bin.')
+    profile_path = _profile_path() if set_atlas_folder else None
+    _progress(1, 'Checking extracted Atlas package')
     _validate_addon(atlas)
+    _progress(5, 'Checking launcher compatibility')
 
     exe = root / EXE_NAME
     run_script = root / RUN_NAME
@@ -272,13 +385,33 @@ def install(launcher_root: str | Path, adapter_root: str | Path, atlas_folder: s
 
     # All compatibility and hash checks finish before the first target mutation.
     rollback.mkdir(parents=True, exist_ok=True)
+    log_path = rollback / 'atlas-install.log'
+    try:
+        with log_path.open('a', encoding='utf-8') as log:
+            log.write(f'Atlas install UTC: {datetime.now(timezone.utc).isoformat()}\n')
+            log.write(f'Launcher: {root}\nAtlas: {atlas}\n')
+            if game is not None:
+                _prepare_maps(atlas, game, rollback, log)
+            else:
+                _progress(82, 'Atlas package checked')
+    except Exception as error:
+        with log_path.open('a', encoding='utf-8') as log:
+            log.write(f'Failed before launcher replacement: {error}\n')
+        raise
+    # Map extraction can take minutes. Snapshot the profile only after it finishes,
+    # immediately before touching launcher-owned files or settings.
+    profile_before, profile_original = _read_profile(profile_path) if profile_path else (None, None)
     original_backup = rollback / EXE_NAME
+    _progress(84, 'Saving original launcher')
     shutil.copy2(exe, original_backup)
     if sha256_file(original_backup) != original_hash:
         raise InstallError('Rollback copy verification failed; launcher was not changed.')
+    _append_log(log_path, 'Original launcher backup verified.')
     temp_deps = root / (DEPENDENCIES_NAME + '.installing')
     temp_exe = root / (EXE_NAME + '.installing')
     archived_receipt = rollback / 'previous-atlas-install-receipt.json'
+    staged_inventory: dict[str, str] | None = None
+    profile_written = False
     try:
         if prior_record is not None:
             shutil.copy2(receipt, archived_receipt)
@@ -287,13 +420,17 @@ def install(launcher_root: str | Path, adapter_root: str | Path, atlas_folder: s
             receipt.unlink()
         shutil.copytree(adapter_deps, temp_deps)
         shutil.copy2(adapter_exe, temp_exe)
+        _progress(90, 'Verifying copied launcher files')
         staged_inventory = _inventory(temp_deps)
         if staged_inventory != _inventory(adapter_deps) or sha256_file(temp_exe) != adapter_hash:
             raise InstallError('Staged adapter files failed verification.')
+        _append_log(log_path, 'Staged adapter executable and dependencies verified.')
         os.replace(temp_deps, root / DEPENDENCIES_NAME)
         os.replace(temp_exe, exe)
         if sha256_file(exe) != adapter_hash:
             raise InstallError('Installed launcher failed post-copy verification.')
+        _append_log(log_path, 'Installed launcher executable verified.')
+        _progress(96, 'Saving launcher selection')
         record = {
             'schema': 1,
             'state': 'installed',
@@ -309,26 +446,51 @@ def install(launcher_root: str | Path, adapter_root: str | Path, atlas_folder: s
             'adapter_build_receipt_sha256': sha256_file(build_receipt),
             'atlas_manifest_sha256': sha256_file(atlas / ATLAS_MANIFEST_NAME),
         }
+        if profile_path is not None:
+            assert profile_before is not None
+            current_profile = profile_path.read_bytes() if profile_path.exists() else None
+            if current_profile != profile_original:
+                raise InstallError('Launcher settings changed during installation; close the launcher and retry.')
+            record['profile_path'] = str(profile_path)
+            record['prior_atlas_dir_present'] = 'atlas_dir' in profile_before
+            record['prior_atlas_dir'] = profile_before.get('atlas_dir')
+            updated_profile = {**profile_before, 'atlas_dir': str(atlas)}
+            _atomic_json(profile_path, updated_profile)
+            profile_written = True
         _atomic_json(receipt, record)
-    except Exception:
+        _append_log(log_path, f'Install receipt written: {receipt}')
+    except Exception as error:
+        _append_log(log_path, f'Installation failed; reverting launcher and settings: {error}')
         # Roll back only the exact transient artifacts created by this invocation.
         if exe.is_file() and sha256_file(exe) == adapter_hash:
             restore = root / (EXE_NAME + '.restore')
             shutil.copy2(original_backup, restore)
             os.replace(restore, exe)
         installed_deps = root / DEPENDENCIES_NAME
-        if installed_deps.is_dir() and _inventory(installed_deps) == staged_inventory:
+        if installed_deps.is_dir() and staged_inventory is not None and _inventory(installed_deps) == staged_inventory:
             shutil.rmtree(installed_deps)
         for transient in (temp_exe, temp_deps):
             if transient.is_file():
                 transient.unlink()
             elif transient.is_dir():
                 shutil.rmtree(transient)
-        if prior_record is not None and archived_receipt.is_file() and not receipt.exists():
+        if receipt.exists() and prior_record is None:
+            receipt.unlink()
+        if prior_record is not None and archived_receipt.is_file():
             restore_receipt = root / (RECEIPT_NAME + '.restore')
             shutil.copy2(archived_receipt, restore_receipt)
             os.replace(restore_receipt, receipt)
+        if profile_path is not None and profile_written:
+            if profile_original is None:
+                profile_path.unlink(missing_ok=True)
+            else:
+                restore_profile = profile_path.with_name('settings.json.restore')
+                restore_profile.write_bytes(profile_original)
+                os.replace(restore_profile, profile_path)
+        _append_log(log_path, 'Rollback completed.')
         raise
+    _progress(100, 'Installed and ready')
+    _append_log(log_path, 'Installation completed.')
     return receipt
 
 
@@ -378,12 +540,14 @@ def main(argv: list[str] | None = None) -> int:
     install_parser.add_argument('--adapter-root', required=True)
     install_parser.add_argument('--atlas-folder', required=True)
     install_parser.add_argument('--rollback-root', required=True)
+    install_parser.add_argument('--game-dir', required=True)
     uninstall_parser = commands.add_parser('uninstall', help='restore files owned by an install receipt')
     uninstall_parser.add_argument('--receipt', required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == 'install':
-            result = install(args.launcher_root, args.adapter_root, args.atlas_folder, args.rollback_root)
+            result = install(args.launcher_root, args.adapter_root, args.atlas_folder, args.rollback_root,
+                             prepare_maps=True, game_dir=args.game_dir, set_atlas_folder=True)
         else:
             result = uninstall(args.receipt)
     except (InstallError, OSError, shutil.Error) as error:

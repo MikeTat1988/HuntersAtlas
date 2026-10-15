@@ -12,7 +12,7 @@ tools\generate_atlas.exe --game-dir "C:\Games\Bloodborne\Image0" --output-dir "C
 
 Supported tested source: SFO CUSA00207, version 01.09, eboot SHA-256 `d65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9`. Region labels alone are insufficient; the exact hash is checked. The two protected input fingerprints are rechecked before success. Runtime coverage and broader game-build compatibility remain separate acceptance gates.
 
-Stdout includes JSON progress records with `stage`, map/index/total where applicable, and a final `complete` record. Underlying copied algorithms also print extraction details. Exit 0 confirms successful generation; exit 1 reports a JSON `error` plus a stderr traceback. The launcher should retain a user-readable log and display stage progress. Initial extraction takes several minutes; do not treat a quiet individual geometry operation as a hang.
+Stdout includes newline JSON progress records with integer `progress` (0–100) and human-readable `stage`; `phase`, `completed` and `total` identify the current work unit. Progress reaches 100 only after the generated assets and final manifest are committed. Existing diagnostic stage records and underlying extraction details remain for logs, followed by a final `complete` record. Exit 0 confirms successful generation; exit 1 reports a JSON `error` plus a stderr traceback. The launcher should display the progress records and retain diagnostics in a log. The full 16-map extraction took about nine minutes on the tested PC; individual geometry operations may remain quiet for tens of seconds.
 
 Final generated outputs only:
 - `maps/atlas.json`, 16 `maps/m*.json` collision maps, `maps/catalog.json`.

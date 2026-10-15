@@ -10,6 +10,15 @@ def sha(path):
         while block:=f.read(4*1024*1024):h.update(block)
     return h.hexdigest()
 def emit(stage,**kw):print(json.dumps(dict(stage=stage,**kw),ensure_ascii=True),flush=True)
+def emit_progress(phase,completed,total,start,end,message):
+    """Stable, monotonic work progress; percentages are units, not time estimates."""
+    if not (0 <= completed <= total and 0 <= start <= end <= 100):
+        raise ValueError('Invalid Atlas generation progress')
+    # Diagnostic emit() records keep their historic stage identifiers. This
+    # separate record is the stable, human-readable progress protocol.
+    print(json.dumps(dict(progress=start+(end-start)*completed//total,
+                          stage=message,phase=phase,completed=completed,total=total),
+                     ensure_ascii=True),flush=True)
 def jsonwrite(path,value):path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
 def contained_target(output,relative):
     path=(output/relative).resolve()
@@ -94,6 +103,7 @@ def main():
     protected={p.relative_to(game).as_posix():sha(p) for p in [game/'eboot.bin',game/'sce_sys/param.sfo']}
     if protected['eboot.bin']!=SUPPORTED_EBOOT:raise ValueError('Unsupported executable fingerprint. This generator supports only the tested Bloodborne 1.09 executable; no game files were changed.')
     sfo=read_sfo(game/'sce_sys/param.sfo');emit('preflight',generator_version=VERSION,game_version=sfo.get('APP_VER'),title_id=sfo.get('TITLE_ID'),game_eboot_sha256=protected['eboot.bin'])
+    emit_progress('collision',0,16,0,30,'Reading collision maps (0/16)')
     output.mkdir(parents=True,exist_ok=True);ctx.configure(game,stage)
     # The general-purpose library normally creates editor config/log files and
     # scans other games for proprietary tools. Readers here use in-memory paths.
@@ -110,14 +120,22 @@ def main():
     mids=[p.name.split('.')[0] for p in sorted((game/'dvdroot_ps4/map/mapstudio').glob('*.msb.dcx')) if p.name[:6] in base.NAMES and p.name[7:9]=='00' and p.name[10:12]=='00']
     if len(mids)!=16:raise ValueError(f'Game source contains {len(mids)} supported maps, expected 16. Check the complete game+DLC extraction.')
     result=[];start=time.monotonic()
-    for i,mid in enumerate(mids):emit('base-collision',map=mid,index=i+1,total=16);result.append(base.generate(game,ctx.BASE,mid))
+    for i,mid in enumerate(mids):
+        emit('base-collision',map=mid,index=i+1,total=16)
+        result.append(base.generate(game,ctx.BASE,mid))
+        emit_progress('collision',i+1,16,0,30,f'Reading collision maps ({i+1}/16)')
     if any('id' not in r for r in result):raise ValueError('Missing collision binders in selected game source')
     atlas=dict(version=1,maps=result);jsonwrite(ctx.BASE/'atlas.json',atlas)
     emit('verified-ladders-npcs');markers.update(ctx.BASE,ctx.MARKERS)
+    emit_progress('markers',1,1,30,33,'Locating ladders and NPCs')
     geometry=[]
-    for i,mid in enumerate(mids):emit('vector-floorplans',map=mid,index=i+1,total=16);geometry.append(vector.generate(game,ctx.MARKERS,ctx.VECTOR,mid))
+    for i,mid in enumerate(mids):
+        emit('vector-floorplans',map=mid,index=i+1,total=16)
+        geometry.append(vector.generate(game,ctx.MARKERS,ctx.VECTOR,mid))
+        emit_progress('floorplans',i+1,16,33,76,f'Building floor plans ({i+1}/16)')
     jsonwrite(ctx.VECTOR/'atlas.json',atlas);jsonwrite(ctx.REPORTS/'geometry-report.json',geometry)
     emit('verified-gates');gates.main();gate_catalog=json.loads(ctx.GATES.read_text(encoding='utf-8'))
+    emit_progress('gates',1,1,76,80,'Locating gates')
     # The old pipeline produced only a separate gate catalog. Merge explicitly,
     # retaining authored positions and every existing verified ladder/NPC.
     for mid in mids:
@@ -125,18 +143,26 @@ def main():
         assert data['markers'][:len(prior)]==prior
         data['gate_metadata']={'source':'verified ObjectAct and resolved opening-event evidence','state_tracking':False,'count':len(gate_catalog[mid])};jsonwrite(path,data)
     emit('localized-names');names.main();catalog=json.loads((ctx.NAMES/'catalog.json').read_text(encoding='utf-8'));links=json.loads((ctx.NAMES/'collision-links.json').read_text(encoding='utf-8'))
+    emit_progress('names',1,1,80,83,'Reading area names')
     generated=stage/'final-maps'
     reports=[]
-    for i,mid in enumerate(mids):emit('continuous-heights',map=mid,index=i+1,total=16);reports.append(continuous.generate(mid,ctx.VECTOR,generated,catalog,links))
+    for i,mid in enumerate(mids):
+        emit('continuous-heights',map=mid,index=i+1,total=16)
+        reports.append(continuous.generate(mid,ctx.VECTOR,generated,catalog,links))
+        emit_progress('heights',i+1,16,83,95,f'Adding elevation ({i+1}/16)')
     jsonwrite(generated/'atlas.json',atlas);jsonwrite(generated/'catalog.json',catalog);jsonwrite(ctx.REPORTS/'continuous-report.json',reports)
     for path in generated.glob('*.json'):jsonwrite(path,portable(json.loads(path.read_text(encoding='utf-8'))))
     emit('native-font');font=stage/'native-font.ttf';native_font.extract(game/'dvdroot_ps4/menu/enggb/font.gfx',font)
+    emit_progress('font',1,1,95,97,'Preparing map labels')
     catalog=json.loads((generated/'catalog.json').read_text(encoding='utf-8'));counts=invariants(generated,catalog)
     # Protected fingerprints are rechecked after all extraction, before success.
     for relative,digest in protected.items():assert sha(game/relative)==digest,'Protected game input changed during generation'
+    emit_progress('verify',1,1,97,99,'Checking generated maps')
     sources={'maps/'+source.name:source for source in sorted(generated.glob('*.json'))};sources['art/native-font.ttf']=font
     manifest={'schema':1,'version':1,'generator_version':VERSION,'game_eboot_sha256':protected['eboot.bin'],'game_version':sfo.get('APP_VER'),'title_id':sfo.get('TITLE_ID'),'protected_inputs':protected,'counts':counts,'geometry_semantics':'16 ordinary collision-derived maps; static markers, no live gate/quest state','local_only':True}
-    commit_generated(output,stage,sources,manifest);emit('complete',manifest='maps/generated-assets.json',seconds=round(time.monotonic()-start,2),counts=counts)
+    commit_generated(output,stage,sources,manifest)
+    emit_progress('complete',1,1,99,100,'Atlas maps ready')
+    emit('complete',manifest='maps/generated-assets.json',seconds=round(time.monotonic()-start,2),counts=counts)
     return 0
 if __name__=='__main__':
     try:sys.exit(main())

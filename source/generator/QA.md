@@ -1,6 +1,6 @@
 # Generator completion receipt
 
-Final executable: `dist/generate_atlas/generate_atlas.exe`, SHA-256 `db6fc8d2be022b7035bfe348281fe741d6247fb4d9da2cf4372ca44dd8092523`. Entire folder: 263 files, 213,958,054 bytes; retain `_internal`. `generator-tools-sha256.json` lists every immutable file using final package `tools/` paths. `generator-source-sha256.json` records the exact final copied source, in-memory config adapter, relative PyInstaller spec and dependency pins.
+The 1.0 progress build is `dist/generate_atlas/generate_atlas.exe`, SHA-256 `3353e7c3bfad9962ff538ddce8d125f42348933cbd8514f569034eafeb335ab5`. The folder contains 266 files, 213,849,479 bytes; retain `_internal`. It was rebuilt on 2026-10-15 from the pinned CPython 3.12/PyInstaller 6.16.0 requirements after adding stable JSON progress events. Frozen `--version` and `--help` passed. `generator-tools-sha256.json` lists every file using final package `tools/` paths, and `generator-source-sha256.json` records the current source/spec/dependency pins. A full source/frozen map regeneration was not repeated for this progress-only change; the complete-run evidence below belongs to the preceding generator build.
 
 Two complete independent fresh-output runs passed:
 - Source pipeline: 617.53 seconds; `logs/source-generation.log`, `empty-output-source/`.

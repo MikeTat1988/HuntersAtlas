@@ -4,7 +4,9 @@
 **/__pycache__/
 **/*.pyc
 /source/generator/.venv/
+/source/generator/.builddeps/
 /source/generator/build/
+/source/generator/dist/
 /source/launcher/.builddeps/
 /source/launcher/build/*
 !/source/launcher/build/*.json

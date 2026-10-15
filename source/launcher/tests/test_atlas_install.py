@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 import atlas_install
 
@@ -88,6 +89,12 @@ class AtlasInstallTests(unittest.TestCase):
         }
         (self.atlas / 'manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
         self.rollback = self.base / 'private rollback folder'
+        self.game = self.base / 'Game Dump'
+        self.game.mkdir()
+        (self.game / 'eboot.bin').write_bytes(b'fixture game binary')
+        generated_record = json.loads((self.atlas / 'maps/generated-assets.json').read_text(encoding='utf-8'))
+        generated_record['game_eboot_sha256'] = digest(self.game / 'eboot.bin')
+        (self.atlas / 'maps/generated-assets.json').write_text(json.dumps(generated_record), encoding='utf-8')
 
     def tearDown(self):
         self.temp.cleanup()
@@ -116,6 +123,67 @@ class AtlasInstallTests(unittest.TestCase):
         self.assertFalse((self.launcher / '_atlas_internal').exists())
         self.assertEqual(settings.read_text(encoding='utf-8'), '[shortcuts]\nmap=F9\n')
         self.assertEqual(json.loads(receipt_path.read_text(encoding='utf-8'))['state'], 'uninstalled')
+
+    def test_install_sets_extracted_atlas_folder_without_changing_other_settings(self):
+        profile_root = self.base / 'profile'
+        profile_root.mkdir()
+        settings_path = profile_root / 'settings.json'
+        settings_path.write_text(json.dumps({'game_dir': str(self.game), 'atlas_dir': 'old path',
+                                             'fullscreen': True, 'mods_enabled': False}), encoding='utf-8')
+        with mock.patch.dict(os.environ, {'BB_LAUNCHER_SETTINGS_ROOT': str(profile_root)}):
+            receipt = atlas_install.install(
+                self.launcher, self.adapter, self.atlas, self.rollback,
+                expected_stock_sha256=self.stock_hash, prepare_maps=True,
+                game_dir=self.game, set_atlas_folder=True)
+        settings = json.loads(settings_path.read_text(encoding='utf-8'))
+        self.assertEqual(settings['atlas_dir'], str(self.atlas.resolve()))
+        self.assertEqual(settings['game_dir'], str(self.game))
+        self.assertTrue(settings['fullscreen'])
+        self.assertFalse(settings['mods_enabled'])
+        self.assertTrue((self.rollback / 'atlas-install.log').is_file())
+        self.assertEqual(json.loads(receipt.read_text(encoding='utf-8'))['state'], 'installed')
+        atlas_install.uninstall(receipt)
+
+    def test_map_prep_failure_does_not_change_launcher_or_profile(self):
+        profile_root = self.base / 'profile'
+        profile_root.mkdir()
+        settings_path = profile_root / 'settings.json'
+        settings_path.write_text('{"atlas_dir":"old path"}', encoding='utf-8')
+        (self.game / 'eboot.bin').write_bytes(b'different game')
+        original = self.stock.read_bytes()
+        with mock.patch.dict(os.environ, {'BB_LAUNCHER_SETTINGS_ROOT': str(profile_root)}), mock.patch(
+                'atlas_install.subprocess.Popen', side_effect=OSError('generator could not start')):
+            with self.assertRaises(OSError):
+                atlas_install.install(self.launcher, self.adapter, self.atlas, self.rollback,
+                                      expected_stock_sha256=self.stock_hash, prepare_maps=True,
+                                      game_dir=self.game, set_atlas_folder=True)
+        self.assertEqual(self.stock.read_bytes(), original)
+        self.assertFalse((self.launcher / '_atlas_internal').exists())
+        self.assertEqual(settings_path.read_text(encoding='utf-8'), '{"atlas_dir":"old path"}')
+        self.assertFalse((self.launcher / atlas_install.RECEIPT_NAME).exists())
+
+    def test_profile_change_while_maps_prepare_is_preserved(self):
+        profile_root = self.base / 'profile changed while preparing'
+        profile_root.mkdir()
+        settings_path = profile_root / 'settings.json'
+        settings_path.write_text('{"atlas_dir":"old path","fullscreen":false}', encoding='utf-8')
+
+        def user_changes_settings(_atlas, _game, _rollback, _log):
+            settings_path.write_text('{"atlas_dir":"different path","fullscreen":true,"custom":"keep"}',
+                                     encoding='utf-8')
+
+        with mock.patch.dict(os.environ, {'BB_LAUNCHER_SETTINGS_ROOT': str(profile_root)}), mock.patch(
+                'atlas_install._prepare_maps', side_effect=user_changes_settings):
+            receipt_path = atlas_install.install(
+                self.launcher, self.adapter, self.atlas, self.rollback,
+                expected_stock_sha256=self.stock_hash, prepare_maps=True,
+                game_dir=self.game, set_atlas_folder=True)
+        settings = json.loads(settings_path.read_text(encoding='utf-8'))
+        self.assertEqual(settings, {'atlas_dir': str(self.atlas.resolve()),
+                                    'fullscreen': True, 'custom': 'keep'})
+        receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+        self.assertEqual(receipt['prior_atlas_dir'], 'different path')
+        atlas_install.uninstall(receipt_path)
 
     def test_actual_frozen_build_installs_and_uninstalls_in_fixture(self):
         source_root = Path(__file__).resolve().parents[1]
@@ -150,6 +218,7 @@ class AtlasInstallTests(unittest.TestCase):
         (self.launcher / 'run.py').write_bytes((self.adapter / 'run.py').read_bytes())
         env = os.environ.copy()
         env['PATH'] = str(Path(os.environ.get('SYSTEMROOT', r'C:\Windows')) / 'System32')
+        env['BB_LAUNCHER_SETTINGS_ROOT'] = str(self.base / 'isolated profile')
         help_result = subprocess.run([str(installer), '--help'], capture_output=True, text=True,
                                      env=env, timeout=45, check=False)
         self.assertEqual(help_result.returncode, 0, help_result.stderr)
@@ -160,6 +229,7 @@ class AtlasInstallTests(unittest.TestCase):
             str(installer), 'install', '--launcher-root', str(self.launcher),
             '--adapter-root', str(self.adapter), '--atlas-folder', str(self.atlas),
             '--rollback-root', str(self.rollback),
+            '--game-dir', str(self.game),
         ], capture_output=True, text=True, env=env, timeout=90, check=False)
         self.assertEqual(install_result.returncode, 0, install_result.stderr)
         receipt = self.launcher / atlas_install.RECEIPT_NAME
@@ -180,6 +250,7 @@ class AtlasInstallTests(unittest.TestCase):
             str(installer), 'install', '--launcher-root', str(self.launcher),
             '--adapter-root', str(self.adapter), '--atlas-folder', str(self.atlas),
             '--rollback-root', str(second_rollback),
+            '--game-dir', str(self.game),
         ], capture_output=True, text=True, env=env, timeout=90, check=False)
         self.assertEqual(reinstall_result.returncode, 0, reinstall_result.stderr)
         self.assertEqual(json.loads(receipt.read_text(encoding='utf-8'))['state'], 'installed')

@@ -1,6 +1,6 @@
 {
   "frozen_executable": "repo\\source\\launcher\\build\\dist\\Bloodborne\\Bloodborne.exe",
-  "frozen_sha256": "62218210ce77f3204660710a0d837a125501e2404eadc16247e986510245892d",
+  "frozen_sha256": "57e97b9f519f2e3940fbbd2229d2ed08a9497d6e018a63dbbeeaf02da9ebf8f5",
   "frozen_dependency_sha256": {
     "_asyncio.pyd": "72b6942e20ba0043ab66af51dabe4986aeb6402bbbd2513b6a3e2eedbd2b1b3d",
     "_bz2.pyd": "e35113599dcb5518f68c0b753144218c1ec4ec9ce4bc84a1095d0905f178a536",
@@ -987,7 +987,7 @@
     "api-ms-win-crt-string-l1-1-0.dll": "fcf12466cc12fd3b73611fc0763a5a1f9d44e90349513c34a0c83b0f36421793",
     "api-ms-win-crt-time-l1-1-0.dll": "886e57c4a6adb299b38f02945369f590a67da4e79a798359fc60aaa067212d7c",
     "api-ms-win-crt-utility-l1-1-0.dll": "5f8f26b216ade615b67a41f6fbbb910972fc6153315a65bb8f09912be50215b1",
-    "base_library.zip": "e7d031fdb68c7630e54ae65da4e15026fb2d2764fcdc82fccc1b52d886776854",
+    "base_library.zip": "686217cf79357ef2764304a8d02e1fe2cc3187693734fd190db3b7302dd6d58f",
     "charset_normalizer/cd.cp312-win_amd64.pyd": "851f50a09337af7a38dce0b5002ae3d73c15ee0b9bfb1c8e435d574821a700e0",
     "charset_normalizer/md.cp312-win_amd64.pyd": "fc4e0f660817fbe7aca72aa710df6756d39cea4ad9415fb268a2c97ef9d89a6f",
     "libcrypto-3-x64.dll": "57df468e551cc2579b73bfdf9cec5e80a8e5fdbbfde46ee6344d3fcd446f7e8a",
@@ -1208,16 +1208,16 @@
   ],
   "preparation_source_sha256": {
     "repo\\source\\launcher\\run.py": "2f69776954c3ba10fd9a3aedfbaf383950d6c63a7c11f35337f0d5d0e1ed38c4",
-    "supported-launcher\\scripts\\content_profile.py": "47821450d6474762ee35aef2520e685bd0131613582c447159d7fc774d63693c",
-    "supported-launcher\\scripts\\cpu_compat.py": "570a2d1d3f1ac3434be780207253c11d39f2b868ddba73207c61dc3e717cb470",
-    "supported-launcher\\scripts\\link_libc.py": "6f5b1c472c088c9e7820c77930dd07f6c38cda42f6b60b1927728279393f7a8a",
-    "supported-launcher\\scripts\\link_modules.py": "e60af9d8fb4352c6cd6b7235ae236139f81fbf118ef70b1c604f2b02fd6b26a4",
-    "supported-launcher\\scripts\\mods.py": "8fefdcb7810dc4ad940742e7424c0d735570638d3d268747bfebde6e51a22dd8",
-    "supported-launcher\\scripts\\patches.py": "0a52697e1f6d5626a7854112883fa3ed7c7e659403aab879160f3550fcb64300",
-    "supported-launcher\\scripts\\prepare.py": "a84a7b34a877870f316650787e7f37849eee25594ba40c5de629b1a0592c182d"
+    "repo\\source\\native\\scripts\\content_profile.py": "98c94752e8b7906474c18ae3123d86cd4b182a5b94d71d07046749400b80530b",
+    "repo\\source\\native\\scripts\\cpu_compat.py": "5c526ed8b0abdbca43df6619a61894c53376a20e5e1b06f94691190203bb5ff2",
+    "repo\\source\\native\\scripts\\link_libc.py": "32327b024e8e33c19476f9bfcfb0bdf1a26daa2d5148ca36191a2dcf2eceb05c",
+    "repo\\source\\native\\scripts\\link_modules.py": "eb83236aa225422eac551ebe0a38aae42968b8d3febcda287fda99f7d36fe11c",
+    "repo\\source\\native\\scripts\\mods.py": "6aedd15ecf2832695bffebb248fdfa36c037e2f5a25f657721cf4afd16466753",
+    "repo\\source\\native\\scripts\\patches.py": "3d3bbaceee099318c0e8b90ae936df58e99c40f42011da3442521e7e956b3ccf",
+    "repo\\source\\native\\scripts\\prepare.py": "cfeb93bfdca056691425cba5a84c2aacee83d53a7c9102933c41f06adf1a6d70"
   },
   "frozen_module_source_sha256": {
-    "bbport_launcher_win": "915b9b063b3293477a08b15e9d6488db8e8c5075b404c737e8f866baedef903d",
+    "bbport_launcher_win": "6ff8c47983128c6df2d8f25c93ca81a5a1e105d498ab9a6b115e75bb64cb215b",
     "atlas_addon": "7a42291fa7f5769e572e05ee01b6cb0e73a0e36a56697bbbe47e0c2fa17c1371",
     "bbport_input_config": "9ee597bee7ea57c78c0f4e79981116ccff7339317cad311c4ce488d6b9bb109d",
     "bbport_lang": "e97ce24e08e42114919ae9edd47b9b57c7060b174d8e172156cc1124947ea6a3",

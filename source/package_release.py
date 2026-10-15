@@ -1,4 +1,4 @@
-"""Build the single installable Hunter's Atlas 1.0 archive.
+"""Build the player archive and separate corresponding-source archive.
 
 The runtime base supplies unchanged, already validated native/generator binaries.
 The launcher and installer are taken from the current verified frozen builds.
@@ -72,6 +72,7 @@ def main() -> None:
     parser.add_argument('--dependency-source', type=Path, required=True)
     parser.add_argument('--work', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--source-output', type=Path, required=True)
     args = parser.parse_args()
     repo = args.repo.resolve()
     work = args.work.resolve()
@@ -82,7 +83,7 @@ def main() -> None:
         manifest = json.loads(base.read('manifest.json'))
         for entry in base.infolist():
             name = entry.filename
-            if entry.is_dir() or name.startswith(('docs/', 'examples/', 'adapter/', 'installer/', 'legal/')):
+            if entry.is_dir() or name.startswith(('docs/', 'examples/', 'adapter/', 'installer/', 'legal/', 'tools/')):
                 continue
             if name in {'README.md', 'Install.ps1', 'Uninstall.ps1', 'manifest.json',
                         'source-receipt.json', 'installer-source-receipt.json'}:
@@ -100,6 +101,10 @@ def main() -> None:
     (work / 'examples').mkdir()
     for name in EXAMPLE_IMAGES:
         shutil.copy2(repo / 'examples' / name, work / 'examples' / name)
+    generator = repo / 'source' / 'generator' / 'dist' / 'generate_atlas'
+    if not (generator / 'generate_atlas.exe').is_file():
+        raise RuntimeError('Verified frozen map generator is missing.')
+    shutil.copytree(generator, work / 'tools')
     build = repo / 'source' / 'launcher' / 'build'
     shutil.copytree(build / 'dist' / 'Bloodborne', work / 'adapter')
     shutil.copytree(build / 'installer-dist', work / 'installer')
@@ -108,7 +113,15 @@ def main() -> None:
     for name in ('source-receipt.json', 'installer-source-receipt.json'):
         shutil.copy2(build / name, work / name)
     (work / 'legal').mkdir()
-    source_bundle(repo, args.dependency_source, work / 'legal' / 'Source.zip')
+    args.source_output.parent.mkdir(parents=True, exist_ok=True)
+    if args.source_output.exists():
+        raise RuntimeError('Refusing to overwrite an existing corresponding-source archive.')
+    source_bundle(repo, args.dependency_source, args.source_output)
+    (work / 'legal' / 'SOURCE.md').write_text(
+        'Corresponding source for this binary release is available beside the player ZIP at '\
+        'https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.0/'\
+        'Hunters-Atlas-Source-1.0.zip. It includes the full implementation and dependency source.\n',
+        encoding='utf-8')
     manifest['version'] = VERSION
     manifest['runtime_build'] = RUNTIME_BUILD
     files = sorted(path for path in work.rglob('*') if path.is_file())
@@ -135,11 +148,12 @@ def main() -> None:
             if not path.is_file():
                 continue
             name = path.relative_to(work).as_posix()
-            archive.write(path, name,
-                          compress_type=zipfile.ZIP_STORED if name == 'legal/Source.zip'
-                          else zipfile.ZIP_DEFLATED)
+            archive.write(path, name)
     print(json.dumps({'archive': str(args.output), 'version': VERSION,
                       'bytes': args.output.stat().st_size, 'sha256': digest(args.output),
+                      'source_archive': str(args.source_output),
+                      'source_bytes': args.source_output.stat().st_size,
+                      'source_sha256': digest(args.source_output),
                       'immutable_files': len(manifest['files']),
                       'example_images': len(EXAMPLE_IMAGES)}, indent=2))
 

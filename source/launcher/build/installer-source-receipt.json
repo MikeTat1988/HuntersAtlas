@@ -1,8 +1,8 @@
 {
   "executable": "repo\\source\\launcher\\build\\installer-dist\\AtlasSetup.exe",
-  "executable_sha256": "fecdf819645b4e2df1e0e37c5e5ab0eab6ed5f3066f7995c74f61fa5c13da790",
+  "executable_sha256": "6f8d888f341372c65aa1c22f0cb9d44998b8f569f33449962c1549c6602fea5a",
   "source": "repo\\source\\launcher\\atlas_install.py",
-  "source_sha256": "9df50034971a3acc0b65187db792526b0c5855bac57761f362ea0d9b9185a7f6",
+  "source_sha256": "799612e02a9e056c15c2eb004d1d2a9679ead8aac8324b79ea3cb54fe6b62501",
   "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
   "pyinstaller_version": "6.22.3",
   "verified_module": "atlas_install",
