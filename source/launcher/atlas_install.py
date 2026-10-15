@@ -85,7 +85,7 @@ def _validate_addon(folder: Path) -> dict[str, Any]:
     if not isinstance(manifest, dict) or manifest.get('id') != 'hunters-atlas':
         raise InstallError('Selected folder does not contain a Hunter\'s Atlas manifest.')
     if ('windows-v1.7.2-atlas1' not in manifest.get('launcher_builds', []) or
-            manifest.get('runtime_build') != 'hunters-atlas-runtime-1.4.0-beta1'):
+            manifest.get('runtime_build') != 'hunters-atlas-runtime-1.4.0-beta2'):
         raise InstallError('Atlas manifest does not support this launcher/runtime build.')
     files = manifest.get('files')
     mutable = manifest.get('mutable_files')

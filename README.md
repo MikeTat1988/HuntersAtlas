@@ -4,12 +4,13 @@ An optional, in-game map for Bloodborne's matching Windows PC launcher. Select t
 
 ![Hunter's Atlas — Great Bridge](examples/great-bridge.png)
 
-**[Download the beta](https://github.com/MikeTat1988/HuntersAtlas/releases/tag/v1.4.0-beta1)** · **[Easy installation](docs/INSTALL.md)** · **[Compatibility](docs/COMPATIBILITY.md)** · **[Testing and known limits](docs/QA.md)**
+**[Download the beta](https://github.com/MikeTat1988/HuntersAtlas/releases/tag/v1.4.0-beta2)** · **[Easy installation](docs/INSTALL.md)** · **[Compatibility](docs/COMPATIBILITY.md)** · **[Testing and known limits](docs/QA.md)**
 
 ## What it does
 
 - Follows your position and facing through 16 supported main-game/DLC maps.
 - Adds a clickable Map tile beside System, with controller navigation and the game's Cross/Circle Confirm mapping.
+- Wraps through Map in both directions and reads the game's cursor sounds locally for Atlas selection and confirmation.
 - Supports pan, zoom, elevation shading, recenter and Back.
 - Keeps other storeys faded for context. Dark, scratched interiors distinguish inferred enclosed spaces from pale floors.
 - Preserves the painted sides with a central frame and soft map-edge fades.
@@ -18,16 +19,16 @@ An optional, in-game map for Bloodborne's matching Windows PC launcher. Select t
 
 ## Install in a few steps
 
-1. Download **Hunters-Atlas-1.4.0-beta1.zip** from [Releases](https://github.com/MikeTat1988/HuntersAtlas/releases), rather than GitHub's **Code → Download ZIP** source archive. Extract it into a new folder.
+1. Download **Hunters-Atlas-1.4.0-beta2.zip** from [Releases](https://github.com/MikeTat1988/HuntersAtlas/releases), rather than GitHub's **Code → Download ZIP** source archive. Extract the full archive into a folder you can keep. The package files (`manifest.json`, `runtime`, `art`, `maps`, `settings`, `tools`) sit beside `Install.ps1` at the release root.
 2. Close the launcher and game. Run `Install.ps1` with PowerShell and enter your existing launcher folder. It installs the compatible adapter and retains the original executable for rollback. If your launcher does not match, it stops with an explanation.
-3. Open your usual `Bloodborne.exe`. Go to **Mods & patches → Hunter's Atlas**, browse to the extracted **Hunter's Atlas** folder, and select **Prepare Atlas maps** if prompted. Preparation takes several minutes and needs no separately installed Python.
+3. Open your usual `Bloodborne.exe`. The Atlas package path is the extracted release root. If it is not already selected in **Mods & patches → Hunter's Atlas**, browse to that root once. Select **Prepare Atlas maps** if prompted. Preparation takes several minutes and needs no separately installed Python.
 4. Enable Hunter's Atlas and click the ordinary **Play** button. In the game's quick menu, move right from System to Map and Confirm, or click Map.
 
 Disable Atlas in the same launcher panel to use its original runtime. See [installation and uninstall instructions](docs/INSTALL.md) for the command-line alternative and exact rollback procedure.
 
 ## Compatibility and beta status
 
-This is **1.4.0-beta1**, for the fingerprinted **Windows v1.7.2 Atlas adapter** and tested **CUSA00207 01.09** executable. It is not a universal plug-in for arbitrary bbport/shadPS4 builds. The installer and manifest check exact identities; see [the compatibility matrix](docs/COMPATIBILITY.md).
+This is **1.4.0-beta2**, for the fingerprinted **Windows v1.7.2 Atlas adapter** and tested **CUSA00207 01.09** executable. It is not a universal plug-in for arbitrary bbport/shadPS4 builds. The installer and manifest check exact identities; see [the compatibility matrix](docs/COMPATIBILITY.md).
 
 Normal packaged Play, enable/disable, native Confirm layouts, injected runtime input, named scene captures and exact launcher restoration were tested. Physical-device, focus-loss and disconnect acceptance remains incomplete. An idle title-screen attract movie can still cause a guest fault; its stock-versus-Atlas cause is unresolved. No complete playthrough, universal controller support or human visual approval is claimed. [Read the QA record](docs/QA.md) before installing.
 

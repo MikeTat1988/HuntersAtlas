@@ -41,7 +41,7 @@ class AtlasInstallTests(unittest.TestCase):
                 'python312.dll': digest(self.adapter / '_atlas_internal' / 'python312.dll'),
             },
             'launcher_build': 'windows-v1.7.2-atlas1',
-            'runtime_build': 'hunters-atlas-runtime-1.4.0-beta1',
+            'runtime_build': 'hunters-atlas-runtime-1.4.0-beta2',
         }), encoding='utf-8')
 
         self.atlas = self.base / 'Atlas Package 名 with spaces'
@@ -72,7 +72,7 @@ class AtlasInstallTests(unittest.TestCase):
             'id': 'hunters-atlas',
             'version': 'test',
             'launcher_builds': ['windows-v1.7.2-atlas1'],
-            'runtime_build': 'hunters-atlas-runtime-1.4.0-beta1',
+            'runtime_build': 'hunters-atlas-runtime-1.4.0-beta2',
             'paths': {
                 'probe': 'runtime/bb-probe.exe', 'maps': 'maps',
                 'config': 'settings/settings.ini', 'art': 'art',
@@ -139,7 +139,7 @@ class AtlasInstallTests(unittest.TestCase):
     def test_frozen_public_installer_help_install_uninstall_without_python_path(self):
         source_root = Path(__file__).resolve().parents[1]
         installer = source_root / 'build/installer-dist/AtlasSetup.exe'
-        stock_source = source_root.parents[2] / 'launcher-v1.7/Bloodborne.exe'
+        stock_source = Path(os.environ.get('ATLAS_STOCK_EXE', source_root.parents[2] / 'launcher-v1.7/Bloodborne.exe'))
         if not installer.is_file():
             self.skipTest('Frozen standalone AtlasSetup.exe is not built.')
         if not stock_source.is_file():

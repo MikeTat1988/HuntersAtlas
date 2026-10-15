@@ -1,4 +1,14 @@
-# Validation record — 1.4.0-beta1
+# Validation record — 1.4.0-beta2
+
+- Native runtime rebuilt after the navigation, local cursor-audio and native-label cover fixes. Final runtime SHA-256: `782f6b4f3bb6b22a0545e9d292fde022f7cf90a4f5c6ecf05e7e4acd6e91c022`.
+- Frozen launcher source/import/Tcl-Tk verification passed. Launcher/installer suite: 41 tests, 39 passes and two Windows symlink-permission skips; the real frozen installer fixtures passed installation, uninstall and reinstall.
+- Actual installed normal Play loaded a copied save in Cathedral Ward. A 16-step logical-input sequence passed left/right wrapping through Map, both exits, Confirm and Back, without player movement. Queued SDL mouse tile click and Back passed.
+- Actual runtime decoded the local move/select clips (3,072/4,096 PCM frames) and completed 9 move and 2 select clips through SDL's dummy backend. No sound was sent to hardware. The fully muted backend also passed navigation and counted suppressed audio requests.
+- Standalone real-audio-path tests confirmed nonzero mixed PCM, main-port volume zero producing silence, `BB_AUDIO=none` suppressing requests, and malformed sound-bank rejection. The game's internal FMOD-only SFX slider is not tracked by the added cursor clips.
+- Frozen installed package resolver verified beta2 and the automatic receipt-owned folder. Original save files, launcher profile and game executable hashes remained unchanged. An initial isolated test omitted the external patch directory and displayed the missing-DLC warning; restoring the existing selected patch directory in the test profile fixed it, without changing game files or the real profile.
+- External window capture timed out. Runtime swapchain captures were used to inspect the menu and map. Human visual approval and physical-device certification remain pending. Runtime tests used the bounded preparation-worker override; they are not a broad renderer or performance certification.
+
+## Earlier beta1 baseline
 
 The framing and colour revisions have actual in-game captures for review. Human visual approval remains pending. Checks below distinguish the packaged runtime, internal widget invocation and physical-device acceptance.
 

@@ -1,11 +1,8 @@
 {
-  "native": "f3d185f096afcc10a7ebb94a729da40b884cae00d41fd762e59e17ea7caf9761",
-  "launcher": "8427703e5c76aa37a36ab5f382155a357b0c6e720a59c19408f9d13af59e548f",
-  "native_tree": "37d38fc30ee2934233b91b6e9b4dbbd3e6f64d285a16486d431e84799e4cca6e",
-  "launcher_tree": "16ac9510a4e1b93a7445518816aff619b6ee427f4a2489b5ab2e97dbdf78299a",
-  "native_files": 2308,
-  "launcher_files": 19,
-  "generator_pins": 17,
-  "mismatches": 0,
-  "scope": "Compilation inputs match the tested runtime; copied generator requirements-build.txt uses the authoritative LF form. Documentation and packaging helpers were refreshed after these code identities were frozen."
+  "version": "1.4.0-beta2",
+  "native": "782f6b4f3bb6b22a0545e9d292fde022f7cf90a4f5c6ecf05e7e4acd6e91c022",
+  "launcher": "50998226ef2751957e21181ad8bb5f3e6a12c59e35d6e2fb198f858ea71537a1",
+  "installer": "a319a8e45504009293814284f0ca26862dbaff2c8e49fcdb3eb774d444864020",
+  "source_files": 4414,
+  "scope": "Current compilation sources and frozen source receipts; historical META refresh records retained as beta1 history."
 }

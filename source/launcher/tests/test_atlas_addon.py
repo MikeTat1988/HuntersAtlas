@@ -39,7 +39,7 @@ class AtlasAddonTests(unittest.TestCase):
             path.write_bytes(data)
         self.manifest = {
             'id': 'hunters-atlas',
-            'version': '1.4.0-beta1',
+            'version': '1.4.0-beta2',
             'launcher_builds': [atlas_addon.LAUNCHER_BUILD],
             'game_executables': [GAME_HASH],
             'runtime_build': atlas_addon.RUNTIME_BUILD,
@@ -82,7 +82,7 @@ class AtlasAddonTests(unittest.TestCase):
 
     def test_valid_package_resolves_unicode_paths_and_checks_hashes(self):
         package = self.inspect()
-        self.assertEqual(package.display_version, '1.4.0-beta1')
+        self.assertEqual(package.display_version, '1.4.0-beta2')
         self.assertEqual(package.paths['probe'], (self.root / 'runtime/bb-probe.exe').resolve())
         self.assertEqual(package.paths['maps'], (self.root / 'maps').resolve())
         self.assertEqual(package.paths['generator'], (self.root / 'tools/generate_atlas.exe').resolve())
@@ -344,6 +344,23 @@ class AtlasAddonTests(unittest.TestCase):
         self.assertEqual(package.paths['config'], (self.root / 'settings/settings.ini').resolve())
         (self.root / 'settings/settings.ini').write_text('enabled=0\nkeyboard=F6\n', encoding='utf-8')
         self.inspect()
+
+    def test_installed_folder_is_offered_without_enabling_or_writing_profile(self):
+        port = Path(self.temp.name) / 'launcher'
+        port.mkdir()
+        (port / 'atlas-install-receipt.json').write_text(json.dumps({
+            'state': 'installed', 'atlas_folder': str(self.root)}), encoding='utf-8')
+        with mock.patch.object(bbport_launcher_win, 'PORT_DIR', port), \
+             mock.patch.object(bbport_launcher_win, 'load_json', return_value={}):
+            settings = bbport_launcher_win.load_settings()
+            self.assertEqual(settings['atlas_dir'], str(self.root.resolve()))
+            self.assertFalse(settings['atlas_enabled'])
+        with mock.patch.object(bbport_launcher_win, 'PORT_DIR', port), \
+             mock.patch.object(bbport_launcher_win, 'load_json', return_value={
+                 'atlas_dir': 'my other package', 'atlas_enabled': False}):
+            self.assertEqual(bbport_launcher_win.load_settings()['atlas_dir'], 'my other package')
+        (port / 'atlas-install-receipt.json').write_text('{broken', encoding='utf-8')
+        self.assertEqual(atlas_addon.installed_folder(port), '')
 
     def test_launcher_settings_profile_can_be_redirected_for_isolated_runs(self):
         profile = Path(self.temp.name) / 'isolated launcher profile'

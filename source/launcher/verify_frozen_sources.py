@@ -14,12 +14,13 @@ import types
 import zlib
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(os.environ.get('ATLAS_PORT_ROOT', Path(__file__).resolve().parents[3]))
 SOURCE = Path(__file__).resolve().parent
 FROZEN = SOURCE / 'build' / 'dist' / 'Bloodborne' / 'Bloodborne.exe'
-ORIGINAL_SOURCE = ROOT / 'working' / 'atlas-root-audit' / 'windows-v1.7.2' / 'bbport_launcher_win.py'
-ORIGINAL_RUN = ROOT / 'working' / 'atlas-root-audit' / 'windows-v1.7.2' / 'run.py'
-INSTALLED_EXE = ROOT / 'launcher-v1.7' / 'Bloodborne.exe'
+BASELINE_ROOT = Path(os.environ.get('ATLAS_BASELINE_SOURCE', ROOT / 'working' / 'atlas-root-audit' / 'windows-v1.7.2'))
+ORIGINAL_SOURCE = BASELINE_ROOT / 'bbport_launcher_win.py'
+ORIGINAL_RUN = BASELINE_ROOT / 'run.py'
+INSTALLED_EXE = Path(os.environ.get('ATLAS_STOCK_EXE', ROOT / 'launcher-v1.7' / 'Bloodborne.exe'))
 BASELINE_EXE_SHA256 = '4a8e67ce5c2a5e4d8f8add8b0e606caecd5a3389756aef683f3ded793d4f6a59'
 EXPECTED_HELPERS = (
     'atlas_addon', 'bbport_input_config', 'bbport_lang', 'bbport_lang_more',
@@ -96,9 +97,14 @@ def verify_coop_functions():
 
 
 def main():
-    if digest(INSTALLED_EXE) != BASELINE_EXE_SHA256:
+    baseline_exe_checked = bool(os.environ.get('ATLAS_STOCK_EXE'))
+    baseline_source_checked = ORIGINAL_SOURCE.is_file() and ORIGINAL_RUN.is_file()
+    if baseline_exe_checked and digest(INSTALLED_EXE) != BASELINE_EXE_SHA256:
         raise RuntimeError('Installed launcher hash changed since the source audit.')
-    verify_coop_functions()
+    if os.environ.get('ATLAS_BASELINE_SOURCE') and not baseline_source_checked:
+        raise RuntimeError('Explicit baseline source directory is incomplete.')
+    if baseline_source_checked:
+        verify_coop_functions()
     data = FROZEN.read_bytes()
     entries = extract_archive(data)
     main_name = next((name for name in entries if name.endswith('bbport_launcher_win')), None)
@@ -157,8 +163,12 @@ def main():
     if not required_notices.issubset(notice_names):
         raise RuntimeError('Frozen package is missing the Python and Tcl/Tk license notices.')
 
-    scripts_root = INSTALLED_EXE.parent / 'scripts'
-    preparation_sources = [SOURCE / 'run.py', *sorted(scripts_root.glob('*.py'))]
+    scripts_root = Path(os.environ.get('ATLAS_PREPARATION_SCRIPTS', SOURCE.parent / 'native' / 'scripts'))
+    # Only runtime preparation modules belong in this import smoke check.
+    # The source checkout also contains developer tools with command-line side effects.
+    preparation_modules = ('content_profile', 'cpu_compat', 'link_libc', 'link_modules',
+                           'mods', 'patches', 'prepare')
+    preparation_sources = [SOURCE / 'run.py', *(scripts_root / f'{name}.py' for name in preparation_modules)]
     local_modules = {source.stem for source in preparation_sources}
     external_imports = set()
     for source in preparation_sources:
@@ -196,13 +206,14 @@ def main():
         'frozen_executable': str(FROZEN),
         'frozen_sha256': hashlib.sha256(data).hexdigest(),
         'frozen_dependency_sha256': frozen_dependencies,
-        'installed_baseline_executable': str(INSTALLED_EXE),
+        'installed_baseline_executable': str(INSTALLED_EXE) if baseline_exe_checked else None,
+        'stock_baseline_checked': baseline_exe_checked,
         'installed_baseline_sha256': BASELINE_EXE_SHA256,
-        'base_launcher_source_sha256': digest(ORIGINAL_SOURCE),
-        'base_run_source_sha256': digest(ORIGINAL_RUN),
+        'base_launcher_source_sha256': digest(ORIGINAL_SOURCE) if baseline_source_checked else None,
+        'base_run_source_sha256': digest(ORIGINAL_RUN) if baseline_source_checked else None,
         'atlas_game_eboot_sha256': 'd65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9',
         'launcher_build': 'windows-v1.7.2-atlas1',
-        'runtime_build': 'hunters-atlas-runtime-1.4.0-beta1',
+        'runtime_build': 'hunters-atlas-runtime-1.4.0-beta2',
         'verified_frozen_modules': [main_name, *EXPECTED_HELPERS],
         'verified_tkinter_modules': list(EXPECTED_TK_MODULES),
         'bundled_runtime_notices': {name: frozen_dependency_hashes[name] for name in sorted(required_notices)},
@@ -216,7 +227,7 @@ def main():
             name: digest(SOURCE / f'{name}.py') for name in ('bbport_launcher_win', *EXPECTED_HELPERS)
         },
         'tkinter_module_source_sha256': {name: digest(source) for name, source in EXPECTED_TK_MODULES.items()},
-        'co_op_bridge_functions_unchanged': list(COOP_FUNCTIONS),
+        'co_op_bridge_functions_unchanged': list(COOP_FUNCTIONS) if baseline_source_checked else [],
         'python_version': sys.version,
         'pyinstaller_version': '6.22.3',
     }

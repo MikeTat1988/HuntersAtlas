@@ -53,7 +53,7 @@ The required shader source inputs remain in `native/gpu/shadps4/video_core/host_
 
 The matching Atlas-integrated launcher source is in `launcher/`; the older native `native/launcher/` code is part of bbport, not this Windows UI adapter. Launcher build-receipt paths are sanitized and relative to the launcher source tree.
 
-The frozen launcher was built with MSYS2 Python 3.14.8 and PyInstaller 6.22.3. Use a Python interpreter supplied explicitly to the build script; for example:
+The frozen launcher was built with MSYS2 Python 3.14.8 and PyInstaller 6.22.3. The frozen-source verifier uses the included native preparation scripts. Optional upstream comparison audits accept `ATLAS_BASELINE_SOURCE` (original launcher/run.py folder), `ATLAS_STOCK_EXE` (fingerprinted stock launcher), and `ATLAS_PREPARATION_SCRIPTS`; without these inputs it still verifies frozen code/imports/Tk, and records that the optional baseline comparison was not performed. Use a Python interpreter supplied explicitly to the build script; for example:
 
 ```powershell
 $Python = (Resolve-Path $env:ATLAS_PYTHON).Path

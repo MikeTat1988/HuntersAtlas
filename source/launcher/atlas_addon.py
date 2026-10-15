@@ -12,7 +12,7 @@ import re
 MANIFEST_NAME = 'manifest.json'
 MANIFEST_ID = 'hunters-atlas'
 LAUNCHER_BUILD = 'windows-v1.7.2-atlas1'
-RUNTIME_BUILD = 'hunters-atlas-runtime-1.4.0-beta1'
+RUNTIME_BUILD = 'hunters-atlas-runtime-1.4.0-beta2'
 REQUIRED_PATHS = ('probe', 'maps', 'config', 'art', 'catalog', 'font')
 ENV_KEYS = ('BB_PROBE', 'BB_ATLAS_ENABLED', 'BB_ATLAS_QA', 'BB_ENTER_BUTTON')
 SHA256_RE = re.compile(r'^[0-9a-fA-F]{64}$')
@@ -22,6 +22,20 @@ GENERATED_OUTPUT_FILES = GENERATED_ASSET_FILES | frozenset({'maps/generated-asse
 
 class AtlasManifestError(ValueError):
     """An add-on package is incomplete, altered, or incompatible."""
+
+
+def installed_folder(port_dir: str | os.PathLike[str]) -> str:
+    """Offer the receipt-owned package when no user selection exists; never enable it."""
+    try:
+        receipt = json.loads((Path(port_dir) / 'atlas-install-receipt.json').read_text(encoding='utf-8'))
+        if receipt.get('state') != 'installed':
+            return ''
+        folder = Path(receipt['atlas_folder'])
+        if folder.is_dir() and (folder / MANIFEST_NAME).is_file():
+            return str(folder.resolve())
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return ''
 
 
 @dataclass(frozen=True)
@@ -137,6 +151,8 @@ def inspect_package(folder: str | os.PathLike[str], *, launcher_build: str = LAU
                     runtime_build: str = RUNTIME_BUILD, game_sha256: str | None = None,
                     allow_unprepared: bool = False) -> AtlasPackage:
     """Validate package hashes and generated local assets against the selected game."""
+    if not str(folder).strip():
+        raise AtlasManifestError('Choose the folder where you extracted Hunter\'s Atlas (the same folder as Install.ps1).')
     root = Path(folder).expanduser()
     if not root.is_dir():
         raise AtlasManifestError('Select the extracted Hunter\'s Atlas folder.')

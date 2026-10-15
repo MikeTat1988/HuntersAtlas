@@ -277,6 +277,13 @@ def load_json(path, default):
         return default
 
 
+def load_settings():
+    settings = {**APP_DEFAULTS, **load_json(CONFIG_FILE, {})}
+    if not settings.get('atlas_dir'):
+        settings['atlas_dir'] = atlas_addon.installed_folder(PORT_DIR)
+    return settings
+
+
 def ini_path():
     return Path(os.environ.get('BB_CONFIG', DATA_DIR / 'bbport.ini'))
 
@@ -519,7 +526,7 @@ class Launcher:
     def __init__(self, root, tk, ttk, filedialog, messagebox):
         self.tk, self.ttk, self.filedialog, self.messagebox = tk, ttk, filedialog, messagebox
         self.root = root
-        self.app = {**APP_DEFAULTS, **load_json(CONFIG_FILE, {})}
+        self.app = load_settings()
         self.ini, self.ini_lines = load_ini()
         self.remap_ini_path = input_ini_path(ini_path())
         self.remap_bindings, self.remap_lines, self.remap_toggle_key, self.remap_reload_key, \
@@ -2477,7 +2484,7 @@ def main():
         root.update_idletasks()
         root.destroy()
         return
-    settings = {**APP_DEFAULTS, **load_json(CONFIG_FILE, {})}
+    settings = load_settings()
     LANG = settings.get('ui_language') or windows_language()
     if args[:1] == ['--install-update'] and len(args) == 3:
         sys.exit(install_update(args[1], args[2]))

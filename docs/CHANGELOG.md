@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0-beta2
+
+- Flattened the installable release: select the same folder that contains Install.ps1 and manifest.json.
+- Launcher offers the receipt-owned Atlas folder when no folder is configured, without enabling Atlas or changing an existing selection.
+- Fixed Left from the first quick-menu tile skipping Map; Map participates in navigation in both directions.
+- Atlas selection and confirmation decode the existing cursor sounds from the player's local game bank and mix them through the main audio port. No game audio assets are distributed.
+
 ## 1.4.0-beta1 — unreleased
 
 - Added the fourth Map tile with native quick-menu state guards, controller focus/Confirm/Back behavior, and mouse activation.

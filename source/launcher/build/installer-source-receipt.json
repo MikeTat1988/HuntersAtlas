@@ -1,8 +1,8 @@
 {
-  "executable": "build/installer",
-  "executable_sha256": "936b27f8c0530f82d615605d7e355b117fc5788f6674e8455088e6c4a5d8bc2f",
-  "source": "D:\\Bloodborne\\working\\atlas-dev\\launcher\\atlas_install.py",
-  "source_sha256": "693840c576fd88f472cce3c468bec4265d03d999e7e02479ae020bac6868b922",
+  "executable": "repo\\source\\launcher\\build\\installer-dist\\AtlasSetup.exe",
+  "executable_sha256": "a319a8e45504009293814284f0ca26862dbaff2c8e49fcdb3eb774d444864020",
+  "source": "repo\\source\\launcher\\atlas_install.py",
+  "source_sha256": "e1cf6a1bb4184a582529c38e926b9a56f973ee173fcdb8148321c982fb344e24",
   "python_version": "3.14.8 (main, Oct  2 2026, 15:15:15)  [MINGW Clang UCRT 22.1.8 64 bit (AMD64) (GCC)]",
   "pyinstaller_version": "6.22.3",
   "verified_module": "atlas_install",

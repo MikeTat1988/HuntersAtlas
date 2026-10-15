@@ -8,6 +8,7 @@
 #include "bbport_atlas_menu.h"
 #include "bbport_atlas_paths.h"
 #include "../../src/runtime_map.h"
+#include "../../src/runtime_menu_sound.h"
 #include "imgui.h"
 #include <SDL3/SDL.h>
 #include <nlohmann/json.hpp>
@@ -384,7 +385,8 @@ void PollTestCommands() {
     BbMapLocation sample{};runtime_map_location(&sample);location=sample;
     if(const char* trace=std::getenv("BB_MAP_TEST_TRACE")) {
         const auto temp=std::string(trace)+".tmp";
-        {BbMapMenu menu_state{};runtime_map_menu_state(&menu_state);std::ofstream f(temp);const int live=CurrentArea();int live_layer=-1;if(live>=0&&Load(areas[live]))live_layer=AutoLayer(areas[live]);f<<Json{{"valid",sample.valid!=0},{"block",sample.block},{"x",sample.x},{"y",sample.y},{"z",sample.z},{"yaw",sample.yaw},{"menu",runtime_map_menu_open()!=0},{"menu_supported",menu_state.supported!=0},{"menu_top",menu_state.top_level!=0},{"native_focus",menu_state.selected},{"atlas_focus",BbAtlasMenu::Focused()},{"tile",BbAtlasMenu::Visible()},{"confirm",runtime_map_confirm_button()},{"open",bool(open)},{"capture",CapturesInput()},{"qa_mouse_events",qa_mouse_events.load()},{"enabled",enabled},{"shading",elevation_shading},{"selected",selected},{"current_layer",live_layer},{"zoom",zoom},{"cx",cx},{"cz",cz},{"follow",follow},{"title",live>=0?LocationTitle(areas[live]):std::string{}},{"subtitle",live>=0?LocationSubtitle(areas[live]):std::string{}}}.dump();}
+        BbMenuSoundStats audio_stats{};runtime_audio_menu_stats(&audio_stats);
+        {BbMapMenu menu_state{};runtime_map_menu_state(&menu_state);std::ofstream f(temp);const int live=CurrentArea();int live_layer=-1;if(live>=0&&Load(areas[live]))live_layer=AutoLayer(areas[live]);f<<Json{{"audio_decoded_move",audio_stats.decoded_move},{"audio_decoded_select",audio_stats.decoded_select},{"audio_queued_move",audio_stats.queued_move},{"audio_queued_select",audio_stats.queued_select},{"audio_mixed_move",audio_stats.mixed_move},{"audio_mixed_select",audio_stats.mixed_select},{"audio_muted",audio_stats.muted},{"valid",sample.valid!=0},{"block",sample.block},{"x",sample.x},{"y",sample.y},{"z",sample.z},{"yaw",sample.yaw},{"menu",runtime_map_menu_open()!=0},{"menu_supported",menu_state.supported!=0},{"menu_top",menu_state.top_level!=0},{"native_focus",menu_state.selected},{"atlas_focus",BbAtlasMenu::Focused()},{"tile",BbAtlasMenu::Visible()},{"confirm",runtime_map_confirm_button()},{"open",bool(open)},{"capture",CapturesInput()},{"qa_mouse_events",qa_mouse_events.load()},{"enabled",enabled},{"shading",elevation_shading},{"selected",selected},{"current_layer",live_layer},{"zoom",zoom},{"cx",cx},{"cz",cz},{"follow",follow},{"title",live>=0?LocationTitle(areas[live]):std::string{}},{"subtitle",live>=0?LocationSubtitle(areas[live]):std::string{}}}.dump();}
 #ifdef _WIN32
         MoveFileExA(temp.c_str(),trace,MOVEFILE_REPLACE_EXISTING);
 #else

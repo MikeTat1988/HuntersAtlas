@@ -12,3 +12,5 @@ Six unedited 1920×1080 runtime captures. All used copied saves and silent child
 | dlc.png | Hunter's Nightmare; layer4, y=1490.38 m | 71b2b5fe… |
 
 Later renderer/input repairs did not change the displayed map composition. No supplied reference photographs, copied saves, extracted game font or collision-map payload is included here.
+
+Beta2: beta2-menu-left-wrap.png and beta2-cathedral-ward.png are unedited 1920x1080 swapchain captures from the final beta2 runtime (SHA-256 782f6b4f3bb6b22a0545e9d292fde022f7cf90a4f5c6ecf05e7e4acd6e91c022), Cathedral Ward, copied save. The first follows the two-way navigation/mouse acceptance checks. Audio used SDL dummy output. These are review examples, not human visual approval.

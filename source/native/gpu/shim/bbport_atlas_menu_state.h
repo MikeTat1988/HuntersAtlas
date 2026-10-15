@@ -6,7 +6,7 @@
 class BbAtlasMenuState {
 public:
     enum : uint32_t { Right=0x20,Up=0x10,Down=0x40,Left=0x80,Cross=0x4000,Circle=0x2000 };
-    struct Result {uint32_t buttons;bool open=false,close=false;};
+    struct Result {uint32_t buttons;bool open=false,close=false,move=false;};
     bool focused=false;
     int anchor=2;
     uint32_t previous=0,blocked=0;
@@ -29,13 +29,21 @@ public:
         }
         if(!ready){focused=false;return out;}
         if(focused&&index!=anchor)focused=false;
-        if(!focused&&index==2&&(rising&Right)){focused=true;anchor=2;blocked|=Right;}
+        if(!focused&&((index==2&&(rising&Right))||(index==0&&(rising&Left)))){
+            focused=true;anchor=index;blocked|=index==2?Right:Left;out.move=true;
+        }
         else if(focused){
             if(rising&confirm){out.open=true;blocked|=buttons;}
-            else if(rising&Left){focused=false;blocked|=Left;}
-            // Native System retains focus underneath. Sending the user's
-            // actual up/down/right once preserves its existing row/wrap rules.
-            else if(rising&(Up|Down|Right|(confirm==Cross?Circle:Cross)))focused=false;
+            else if(rising&(Left|Right)){
+                const uint32_t edge=rising&(Left|Right);
+                // Revealing the underlying tile uses the local cursor sound.
+                // Moving to the opposite end uses the game's own native wrap.
+                const bool reveal=(anchor==2&&edge==Left)||(anchor==0&&edge==Right);
+                focused=false;
+                if(reveal){blocked|=edge;out.move=true;}
+            }
+            // Up/down and Back retain the game's own menu behavior.
+            else if(rising&(Up|Down|(confirm==Cross?Circle:Cross)))focused=false;
         }
         out.buttons=buttons&~blocked;return out;
     }
