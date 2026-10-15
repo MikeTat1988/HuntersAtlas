@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "status": "SOURCE_REFRESH_GUARD",
+  "tree": "matching Atlas-integrated launcher source excluding sanitized build receipts",
+  "pre_file_count": 19,
+  "current_file_count": 19,
+  "pre_tree_sha256": "16ac9510a4e1b93a7445518816aff619b6ee427f4a2489b5ab2e97dbdf78299a",
+  "current_tree_sha256": "16ac9510a4e1b93a7445518816aff619b6ee427f4a2489b5ab2e97dbdf78299a",
+  "changed_files": [],
+  "note": "Build receipts under launcher/build/ are excluded here because the public copy has local paths sanitized."
+}

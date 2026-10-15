@@ -1,0 +1,21 @@
+# Generator completion receipt
+
+Final executable: `dist/generate_atlas/generate_atlas.exe`, SHA-256 `db6fc8d2be022b7035bfe348281fe741d6247fb4d9da2cf4372ca44dd8092523`. Entire folder: 263 files, 213,958,054 bytes; retain `_internal`. `generator-tools-sha256.json` lists every immutable file using final package `tools/` paths. `generator-source-sha256.json` records the exact final copied source, in-memory config adapter, relative PyInstaller spec and dependency pins.
+
+Two complete independent fresh-output runs passed:
+- Source pipeline: 617.53 seconds; `logs/source-generation.log`, `empty-output-source/`.
+- Final frozen executable: 620.34 seconds; `logs/frozen-complete-generation.log`, `portable complete בדיקה/`. PATH was restricted to Windows System32; PYTHONPATH was absent; `PYTHONIOENCODING=cp1251` exercised explicit UTF-8 output; both selected output path spaces/Unicode and external empty staging were used. CLI included `--replace`.
+
+All 19 generated payload files are byte-identical between source and frozen runs, including deterministic native font. `logs/source-frozen-byte-comparison.json` records this. Both generated manifests validate every output SHA-256; protected original `eboot.bin` and `sce_sys/param.sfo` hashes are unchanged after extraction.
+
+All 16 maps match the installed v1.3 geometry-layer arrays, bounds, semantic lamp names/coordinates and ladder/NPC/gate identity/coordinates exactly. No installed Atlas files were overwritten. `logs/comparison-portable_complete_בדיקה.json` records per-map checks plus the complete runtime catalog indices. Catalog paths are portable; game-native internal binder entry paths are reduced to entry basenames while enclosing binder paths remain relative.
+
+Counts: 16 maps; 602 layers; 742,315 floor triangles with matching finite original vertex heights; 442,011 wall segments; 44 verified lamps; 48 registered ladders; 66 static NPC sites; 85 verified openable gates/doors; 320 named collision footprint regions. Source-provenance omissions remain explicit (including unsupported collision-tree entries in Dream/Upper Cathedral Ward/Yahar'gul). No quest/gate-state or complete walk-through coverage is claimed.
+
+`test_transaction.py` passed injected commit-failure rollback and successful replacement. Commit touches only newly generated fixed owned targets plus final manifest; it backs existing targets up in external staging and restores changed originals on failure. It never trusts path names from an older manifest. Existing output symlinks/junctions are checked for containment. `test_reader_adapter.py` passed real MSB/FMG reads through the in-memory Soulstruct config; no editor config/log file is created by the final binary. Its immutable folder remains 263 files after the complete run.
+
+The initial source-baseline import used the installed library's existing editor logger and touched `tools/map-build/appdata/soulstruct/soulstruct.log` (0-byte diagnostic file). Its configuration retained the previous day's timestamp. The final adapter prevents this incidental outside-generator diagnostic write. Original scripts and all game/save files were preserved.
+
+Public package inputs are limited to final tools, `src/`, relative spec/requirements, and reviewed source/license documentation. Do not ship this workspace's empty-output test packages, extracted native font/maps/catalogs, stages, reports containing game-derived evidence, logs, copied save data or unused helper resources. Soulstruct's general editor config and bundled Oodle/Lua/Havok/texture executable/DLL resources were excluded from the freeze.
+
+Dependency/source audit: `requirements-frozen.txt` and `frozen-dependency-inventory.json` identify actual modules/distributions in the binary. `dependency-notices.json` identifies versions, declarations and recovered notice paths; `licenses/` contains copied notices. Exact Soulstruct 2.3.2 PyPI sdist is privately retained at `dependency-sources/soulstruct-2.3.2.tar.gz` with SHA in the inventory; it contains no LICENSE/COPYING. That notice remains a release audit item. This receipt establishes local technical generation, not public redistribution approval or clean-machine/runtime visual acceptance.

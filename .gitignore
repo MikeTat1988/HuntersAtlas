@@ -1,0 +1,12 @@
+# Release binaries and local-only receipts
+/releases/
+/.local/
+**/__pycache__/
+**/*.pyc
+/source/generator/.venv/
+/source/generator/build/
+/source/launcher/.builddeps/
+/source/launcher/build/*
+!/source/launcher/build/*.json
+/source/native/out/
+**/.pytest_cache/

@@ -1,0 +1,12 @@
+__all__ = [
+    "CHARACTER_MODELS",
+    "UNUSED_CHARACTERS",
+    "WEAPON_MODELS",
+    "BEHAVIOR_SUB_ID",
+    "PLAYER_WEAPON_BEHAVIOR_VARIATIONS",
+    "HAS_ONE_HANDED_SPECIAL_ATTACK",
+    "HAS_TWO_HANDED_SPECIAL_ATTACK",
+    "SPECIAL_EFFECT_RANGES",
+]
+
+from soulstruct.darksouls1ptde.constants import *

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "status": "SOURCE_CANDIDATE_FROZEN_ROOT_QA_REPORTED_PASS_RELEASE_DOCS_PENDING",
+  "runtime_dependency_source_archive": "runtime-dependency-source.zip",
+  "runtime_dependency_source_archive_sha256": "991831499df4d5b9d75eec8de8077eb1c6162edae0c798a57c269b240febd660",
+  "exact_index": "licenses/runtime-source-index.json",
+  "soulstruct_source": "generator/licenses/soulstruct-source",
+  "soulstruct_source_provenance": "licenses/soulstruct-license-receipt.json",
+  "geos": {
+    "version": "3.13.1",
+    "shapely_version": "2.1.2",
+    "license": "LGPL-2.1",
+    "source_status": "Exact GEOS 3.13.1 source and its hash receipt are included in the sibling runtime-dependency-source.zip."
+  },
+  "pyinstaller_build_sources": [
+    {
+      "version": "6.16.0",
+      "archive_path": "licenses/source/build-tools/pyinstaller-6.16.0.tar.gz",
+      "sha256": "53559fe1e041a234f2b4dcc3288ea8bdd57f7cad8a6644e422c27bb407f3edef",
+      "pypi_json_url": "https://pypi.org/pypi/pyinstaller/6.16.0/json"
+    },
+    {
+      "version": "6.22.3",
+      "archive_path": "licenses/source/build-tools/pyinstaller-6.22.3.tar.gz",
+      "sha256": "05eb2f5615503e72939a7224d68b4aff572c6b0438ee4a17d0a4b481f399362d",
+      "pypi_json_url": "https://pypi.org/pypi/pyinstaller/6.22.3/json"
+    }
+  ]
+}

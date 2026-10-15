@@ -1,0 +1,629 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+#include "bbport_map.h"
+#include "bbport_map_art.h"
+#include "bbport_atlas_style.h"
+#include "bbport_atlas_interiors.h"
+#include "bbport_map_direction.h"
+#include "bbport_map_controller.h"
+#include "bbport_atlas_menu.h"
+#include "bbport_atlas_paths.h"
+#include "../../src/runtime_map.h"
+#include "imgui.h"
+#include <SDL3/SDL.h>
+#include <nlohmann/json.hpp>
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <vector>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+namespace BbMap {
+bool UsesControllerGlyphs(); // Input ownership/state is maintained by the map integration.
+namespace {
+using Json=nlohmann::json;
+struct Rect {float x,z,w,h;};
+struct Point {float x,z;};
+struct Triangle {float v[6];float y[3]{};};
+struct Segment {Point a,b;};
+struct Layer {float height=0,span=6,anchor=0,min_y=0,max_y=0;bool has_vertex_heights=false;std::vector<Rect> rects;std::vector<Triangle> triangles;std::vector<std::vector<Point>> outlines;std::vector<Segment> walls;};
+struct Lamp {float x,y,z;std::string name;};
+struct Marker {float x,y,z;std::string kind,name;};
+struct NamedLandmark {float x,y,z,max_horizontal=60,max_vertical=6;std::string name,prefix="Near ";};
+struct NamedRegion {std::string name;float min_y=-1e9f,max_y=1e9f;bool main_location=false;std::vector<Triangle> triangles;};
+struct Area {std::string id,name;float bounds[4]{};std::vector<Layer> layers;std::vector<Lamp> lamps;std::vector<Marker> markers;std::vector<NamedLandmark> named_landmarks;std::vector<NamedRegion> named_regions;bool loaded=false;std::string error;BbAtlasStyle::CutCache cut_cache;BbAtlasInteriors::Cache interior_cache;};
+std::vector<Area> areas;
+std::filesystem::path directory,config;
+std::filesystem::path name_catalog;
+bool enabled=true,follow=true,preview_active=false,elevation_shading=true;
+BbMapControllerChord controller_chord;
+ImFont* title_font=nullptr;
+std::atomic<bool> open{false};
+int keyboard=0,chord=1,selected=-1,preview_area=-1;
+float cx=0,cz=0,zoom=3.0f,padx=0,pady=0;
+std::string atlas_error;
+BbMapLocation location{};
+SDL_Keycode map_keys[]={SDLK_M,SDLK_F9,SDLK_F10};
+const char* key_names[] = {"M","F9","F10"};
+
+void Save() {
+    try {
+        std::filesystem::create_directories(config.parent_path());
+        auto temp=config;temp+=".tmp";
+        {std::ofstream f(temp);if(!std::getenv("BB_ATLAS_ENABLED"))f<<"enabled="<<enabled<<"\n";f<<"keyboard="<<keyboard<<"\ncontroller="<<chord<<"\n";if(!f)throw std::runtime_error("settings write failed");}
+        // Atomic replacement on Windows. Only this feature's settings are touched.
+#ifdef _WIN32
+        if (!MoveFileExW(temp.c_str(),config.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH))throw std::runtime_error("settings replacement failed");
+#else
+        std::filesystem::rename(temp,config);
+#endif
+    }catch(const std::exception& e){std::printf("Map: %s\n",e.what());}
+}
+bool Load(Area& a) {
+    if(a.loaded)return a.error.empty();
+    a.loaded=true;
+    try {
+        std::ifstream f(directory/(a.id+".json"));Json j;f>>j;
+        const int version=j.at("version");
+        if((version!=1 && version!=2) || j.at("id")!=a.id)throw std::runtime_error("Map data version mismatch");
+        for(const auto& l:j.at("layers")) {
+            Layer layer;
+            if(version==1) {
+                layer.height=l.at("height");layer.anchor=layer.height+3;
+                for(const auto& r:l.at("rects")) {
+                    if(r.size()!=4)throw std::runtime_error("Invalid map rectangle");
+                    Rect rect{r[0],r[1],r[2],r[3]};
+                    if(!std::isfinite(rect.x)||!std::isfinite(rect.z)||rect.w<=0||rect.h<=0)throw std::runtime_error("Invalid map geometry");
+                    layer.rects.push_back(rect);
+                }
+            } else {
+                layer.height=l.at("height");layer.span=l.at("span");layer.anchor=l.at("anchor");
+                if(!std::isfinite(layer.height)||!std::isfinite(layer.span)||layer.span<=0||!std::isfinite(layer.anchor))throw std::runtime_error("Invalid map layer height");
+                for(const auto& t:l.at("triangles")) {
+                    if(t.size()!=6)throw std::runtime_error("Invalid floor triangle");
+                    Triangle tri{};for(size_t k=0;k<6;++k){tri.v[k]=t[k];if(!std::isfinite(tri.v[k]))throw std::runtime_error("Invalid floor triangle");}
+                    layer.triangles.push_back(tri);
+                }
+                if(l.contains("heights")) {
+                    const auto& heights=l.at("heights");
+                    if(!heights.is_array() || heights.size()!=layer.triangles.size())throw std::runtime_error("Invalid floor vertex heights");
+                    layer.min_y=std::numeric_limits<float>::infinity();layer.max_y=-layer.min_y;
+                    for(size_t i=0;i<heights.size();++i) {
+                        if(heights[i].size()!=3)throw std::runtime_error("Invalid floor vertex heights");
+                        for(size_t k=0;k<3;++k){const float y=heights[i][k];if(!std::isfinite(y))throw std::runtime_error("Invalid floor vertex heights");layer.triangles[i].y[k]=y;layer.min_y=std::min(layer.min_y,y);layer.max_y=std::max(layer.max_y,y);}
+                    }
+                    layer.has_vertex_heights=!layer.triangles.empty();
+                }
+                for(const auto& ring:l.at("outlines")) {
+                    std::vector<Point> outline;outline.reserve(ring.size());
+                    for(const auto& p:ring){if(p.size()!=2)throw std::runtime_error("Invalid floor outline");Point pt{p[0],p[1]};if(!std::isfinite(pt.x)||!std::isfinite(pt.z))throw std::runtime_error("Invalid floor outline");outline.push_back(pt);}
+                    if(outline.size()>1)layer.outlines.push_back(std::move(outline));
+                }
+                for(const auto& w:l.at("walls")) {
+                    if(w.size()!=4)throw std::runtime_error("Invalid wall segment");
+                    Segment wall{{w[0],w[1]},{w[2],w[3]}};
+                    if(!std::isfinite(wall.a.x)||!std::isfinite(wall.a.z)||!std::isfinite(wall.b.x)||!std::isfinite(wall.b.z))throw std::runtime_error("Invalid wall segment");
+                    layer.walls.push_back(wall);
+                }
+            }
+            a.layers.push_back(std::move(layer));
+        }
+        for(const auto& l:j.at("lamps")){const auto& p=l.at("pos");a.lamps.push_back({p[0],p[1],p[2],l.at("name")});}
+        if(j.contains("markers"))for(const auto& m:j.at("markers")) {
+            const auto& p=m.at("pos");const auto kind=m.at("kind").get<std::string>();
+            if(p.size()==3 && (kind=="ladder" || kind=="npc" || kind=="gate") && std::isfinite(float(p[0])) && std::isfinite(float(p[1])) && std::isfinite(float(p[2])))
+                a.markers.push_back({p[0],p[1],p[2],kind,m.at("name")});
+        }
+    }catch(const std::exception& e){a.error=e.what();}
+    return a.error.empty();
+}
+std::string BlockId(uint32_t block) {
+    char id[24];std::snprintf(id,sizeof(id),"m%02u_%02u_%02u_%02u",block>>24,(block>>16)&255,(block>>8)&255,block&255);return id;
+}
+int CurrentArea() {
+    if(!location.valid)return -1;
+    const auto id=BlockId(location.block);
+    for(size_t i=0;i<areas.size();++i)if(areas[i].id==id)return int(i);
+    return -1;
+}
+bool InTriangle(const Triangle& t,float x,float z) {
+    if(x<std::min({t.v[0],t.v[2],t.v[4]})||x>std::max({t.v[0],t.v[2],t.v[4]})||z<std::min({t.v[1],t.v[3],t.v[5]})||z>std::max({t.v[1],t.v[3],t.v[5]}))return false;
+    auto cross=[&](int u,int v){return (t.v[v]-t.v[u])*(z-t.v[u+1])-(t.v[v+1]-t.v[u+1])*(x-t.v[u]);};
+    const float ab=cross(0,2),bc=cross(2,4),ca=cross(4,0);
+    return (ab>=-.0001f&&bc>=-.0001f&&ca>=-.0001f)||(ab<=.0001f&&bc<=.0001f&&ca<=.0001f);
+}
+bool TriangleHeightAt(const Triangle& triangle,float x,float z,float& y) {
+    const float x0=triangle.v[0],z0=triangle.v[1],x1=triangle.v[2],z1=triangle.v[3],x2=triangle.v[4],z2=triangle.v[5];
+    const float denominator=(z1-z2)*(x0-x2)+(x2-x1)*(z0-z2);
+    if(std::abs(denominator)<1.0e-8f)return false;
+    const float a=((z1-z2)*(x-x2)+(x2-x1)*(z-z2))/denominator;
+    const float b=((z2-z0)*(x-x2)+(x0-x2)*(z-z2))/denominator;
+    const float c=1.0f-a-b;
+    y=a*triangle.y[0]+b*triangle.y[1]+c*triangle.y[2];
+    return std::isfinite(y);
+}
+void LoadNameCatalog() {
+    try {
+        name_catalog=BbAtlasPath("BB_MAP_CATALOG",directory.parent_path()/"catalog.json");
+        std::ifstream f(name_catalog);if(!f)return;
+        Json j;f>>j;
+        for(auto& a:areas) {
+            if(!j.contains(a.id))continue;
+            const auto& entry=j.at(a.id);
+            if(entry.contains("landmarks"))for(const auto& item:entry.at("landmarks")) {
+                if(!item.contains("name")||!item.contains("pos")||item.at("pos").size()!=3)continue;
+                const auto& p=item.at("pos");NamedLandmark m;
+                m.name=item.at("name");m.x=p[0];m.y=p[1];m.z=p[2];
+                if(item.contains("max_horizontal_distance"))m.max_horizontal=item.at("max_horizontal_distance");
+                if(item.contains("max_vertical_distance"))m.max_vertical=item.at("max_vertical_distance");
+                if(item.contains("subtitle_prefix"))m.prefix=item.at("subtitle_prefix");
+                if(std::isfinite(m.x)&&std::isfinite(m.y)&&std::isfinite(m.z)&&m.max_horizontal>0&&m.max_vertical>=0)a.named_landmarks.push_back(std::move(m));
+            }
+            if(entry.contains("regions"))for(const auto& item:entry.at("regions")) {
+                if(!item.contains("name"))continue;
+                NamedRegion region;region.name=item.at("name");
+                if(item.contains("shape")&&item.at("shape")!="footprint")continue;
+                if(item.contains("min_y"))region.min_y=item.at("min_y");
+                if(item.contains("max_y"))region.max_y=item.at("max_y");
+                if(!std::isfinite(region.min_y)||!std::isfinite(region.max_y)||region.min_y>region.max_y)continue;
+                if(item.contains("main_location"))region.main_location=item.at("main_location");
+                if(item.contains("triangles"))for(const auto& t:item.at("triangles")) {
+                    if(!t.is_array()||t.size()!=6)continue;
+                    Triangle tri{};bool valid=true;
+                    for(size_t k=0;k<6;++k){tri.v[k]=t[k];if(!std::isfinite(tri.v[k]))valid=false;}
+                    if(valid)region.triangles.push_back(tri);
+                }
+                if(!region.triangles.empty())a.named_regions.push_back(std::move(region));
+            }
+        }
+    }catch(const std::exception& e){std::printf("Map names: %s\n",e.what());}
+}
+std::string LocationTitle(const Area& a) {
+    for(const auto& region:a.named_regions)if(region.main_location&&location.y>=region.min_y-1&&location.y<=region.max_y+2)
+        for(const auto& t:region.triangles)if(InTriangle(t,location.x,location.z))return region.name;
+    return a.name;
+}
+std::string LocationSubtitle(const Area& a) {
+    const auto title=LocationTitle(a);
+    for(const auto& region:a.named_regions)if(region.name!=title&&location.y>=region.min_y-1&&location.y<=region.max_y+2)
+        for(const auto& t:region.triangles)if(InTriangle(t,location.x,location.z))return region.name;
+    const NamedLandmark* nearest=nullptr;float best=std::numeric_limits<float>::infinity();
+    for(const auto& landmark:a.named_landmarks) {
+        const float dx=landmark.x-location.x,dz=landmark.z-location.z,dy=std::abs(landmark.y-location.y);
+        const float horizontal=std::hypot(dx,dz);
+        if(horizontal>landmark.max_horizontal||dy>landmark.max_vertical)continue;
+        const float distance=std::hypot(horizontal,dy);if(distance<best){best=distance;nearest=&landmark;}
+    }
+    return nearest?nearest->prefix+nearest->name:std::string{};
+}
+float MapUiScale() {
+    const auto size=ImGui::GetIO().DisplaySize;
+    return BbAtlasStyle::Layout(size.x,size.y).scale;
+}
+void Fit() {
+    if(selected<0)return;
+    const auto& a=areas[selected];cx=(a.bounds[0]+a.bounds[2])*0.5f;cz=(a.bounds[1]+a.bounds[3])*0.5f;
+    const auto size=ImGui::GetIO().DisplaySize;
+    const auto canvas=BbAtlasStyle::Layout(size.x,size.y).Canvas();
+    zoom=std::clamp(std::min(canvas.w/(a.bounds[2]-a.bounds[0]),canvas.h/(a.bounds[3]-a.bounds[1])),0.15f,25.0f);
+    follow=false;
+}
+void Recenter() {
+    const int current=CurrentArea();
+    selected=current;follow=true;zoom=9.0f*MapUiScale();
+    if(selected>=0){cx=location.x;cz=location.z;Load(areas[selected]);}
+}
+void SetOpen(bool value) {
+    open=enabled && value;padx=pady=0;
+    if(open){runtime_map_location(&location);Recenter();preview_active=false;preview_area=-1;}
+}
+int AutoLayer(const Area& a) {
+    int nearest=-1,local=-1;float distance=std::numeric_limits<float>::infinity(),local_distance=std::numeric_limits<float>::infinity();
+    for(size_t i=0;i<a.layers.size();++i){
+        const auto& layer=a.layers[i];float d=std::abs(location.y-layer.anchor);
+        if(d<distance){distance=d;nearest=int(i);}
+        for(const auto& t:layer.triangles)if(InTriangle(t,location.x,location.z)){
+            float surface_y=layer.anchor;
+            if(layer.has_vertex_heights&&!TriangleHeightAt(t,location.x,location.z,surface_y))continue;
+            const float surface_distance=std::abs(location.y-surface_y);
+            if(surface_distance<local_distance){local_distance=surface_distance;local=int(i);}
+        }
+        if(layer.triangles.empty())for(const auto& r:layer.rects)if(location.x>=r.x && location.x<=r.x+r.w && location.z>=r.z && location.z<=r.z+r.h){
+            if(d<local_distance){local_distance=d;local=int(i);}break;
+        }
+    }
+    return local>=0?local:nearest;
+}
+int PrimaryLayer(const Area& a) {
+    if(a.layers.empty())return -1;
+    size_t best=0;float footprint=0;
+    for(size_t i=0;i<a.layers.size();++i){
+        float area=0;
+        for(const auto& t:a.layers[i].triangles)area+=std::abs((t.v[2]-t.v[0])*(t.v[5]-t.v[1])-(t.v[4]-t.v[0])*(t.v[3]-t.v[1]))*.5f;
+        for(const auto& r:a.layers[i].rects)area+=r.w*r.h;
+        if(area>footprint){best=i;footprint=area;}
+    }
+    return int(best);
+}
+}
+
+bool Testing::AutoLayerSelectsClosestSurface() {
+    Area synthetic;
+    Layer stair;stair.anchor=1.0f;stair.span=3.0f;stair.has_vertex_heights=true;stair.min_y=4.0f;stair.max_y=4.0f;
+    Triangle stair_surface{};stair_surface.v[0]=0;stair_surface.v[1]=0;stair_surface.v[2]=2;stair_surface.v[3]=0;stair_surface.v[4]=0;stair_surface.v[5]=2;stair_surface.y[0]=stair_surface.y[1]=stair_surface.y[2]=4.0f;stair.triangles.push_back(stair_surface);
+    Layer balcony;balcony.anchor=5.0f;balcony.span=3.0f;balcony.has_vertex_heights=true;balcony.min_y=2.5f;balcony.max_y=2.5f;
+    Triangle balcony_surface=stair_surface;balcony_surface.y[0]=balcony_surface.y[1]=balcony_surface.y[2]=2.5f;balcony.triangles.push_back(balcony_surface);
+    synthetic.layers.push_back(std::move(stair));synthetic.layers.push_back(std::move(balcony));
+    const BbMapLocation previous=location;location={.5f,3.8f,.5f,0.0f,0,1};
+    const bool passed=AutoLayer(synthetic)==0;location=previous;return passed;
+}
+void Init() {
+    directory=BbAtlasPath("BB_MAP_DIR","navigation-map/maps");
+    config=BbAtlasPath("BB_MAP_CONFIG",directory.parent_path()/"settings.ini");
+    std::ifstream settings(config);std::string line;
+    while(std::getline(settings,line)) {
+        auto eq=line.find('=');if(eq==std::string::npos)continue;
+        const auto key=line.substr(0,eq);int value=std::atoi(line.c_str()+eq+1);
+        if(key=="enabled")enabled=value!=0;
+        if(key=="keyboard")keyboard=std::clamp(value,0,2);
+        if(key=="controller")chord=std::clamp(value,0,2);
+    }
+    if(const char* forced=std::getenv("BB_ATLAS_ENABLED"))enabled=std::atoi(forced)!=0;
+    try {
+        std::ifstream f(directory/"atlas.json");Json atlas;f>>atlas;
+        if(atlas.at("version")!=1)throw std::runtime_error("Map atlas version mismatch");
+        for(const auto& j:atlas.at("maps")) {
+            if(!j.contains("id"))continue;
+            Area a;a.id=j.at("id");a.name=j.at("name");
+            if(a.id.size()!=12 || a.id.find_first_not_of("m0123456789_")!=std::string::npos)continue;
+            const auto& b=j.at("bounds");for(int k=0;k<4;++k)a.bounds[k]=b[k];
+            if(a.bounds[2]>a.bounds[0] && a.bounds[3]>a.bounds[1])areas.push_back(std::move(a));
+        }
+    }catch(const std::exception& e){atlas_error=e.what();}
+    LoadNameCatalog();
+    std::printf("Map: %zu areas, %s toggles, enabled=%d\n",areas.size(),key_names[keyboard],enabled);
+    controller_chord.SetEnabled(enabled && chord==2);
+}
+bool IsOpen(){return open;}
+bool Enabled(){return enabled;}
+int ShortcutMode(){return chord;}
+bool UsesControllerGlyphs(){return BbAtlasMenu::UsesControllerGlyphs();}
+void OpenFromMenu(){SetOpen(true);}
+void MappedPad(unsigned rising,unsigned char lx,unsigned char ly) {
+    if(!open)return;
+    if(rising&0x1000u)Recenter();
+    if(rising&0x8000u)elevation_shading=!elevation_shading;
+    if(rising&0x400u)zoom=std::max(.15f*MapUiScale(),zoom/1.25f);
+    if(rising&0x800u)zoom=std::min(25.f*MapUiScale(),zoom*1.25f);
+    auto axis=[](unsigned char value){const float v=(int(value)-128)/127.f;return std::abs(v)>.18f?v:0.f;};
+    padx=axis(lx);pady=axis(ly);
+}
+bool CapturesInput(){return open || controller_chord.WantsCapture();}
+void Tick(){if(controller_chord.Tick(SDL_GetTicks()))SetOpen(!open);}
+void Close(){open=false;padx=pady=0;}
+namespace {
+struct QaMouse {std::string action;float x=0,y=0,wheel=0;};
+std::atomic<unsigned> qa_mouse_events{0};
+void PushQaMouse(void* opaque) {
+    auto* job=static_cast<QaMouse*>(opaque);
+    // Run on SDL's window thread. Never send OS input or select another app's window.
+    int count=0;SDL_Window** windows=SDL_GetWindows(&count);
+    SDL_Window* window=windows&&count==1?windows[0]:nullptr;
+    int width=0,height=0;
+    const float density=window?SDL_GetWindowPixelDensity(window):0;
+    if(window && density>0 && SDL_GetWindowSizeInPixels(window,&width,&height) &&
+       job->x>=0 && job->y>=0 && job->x<width && job->y<height) {
+        const auto id=SDL_GetWindowID(window);SDL_Event event{};
+        const float x=job->x/density,y=job->y/density;
+        static bool held=false;
+        if(job->action=="qa-mouse-move") {
+            event.type=SDL_EVENT_MOUSE_MOTION;event.motion.windowID=id;
+            event.motion.x=x;event.motion.y=y;event.motion.state=held?SDL_BUTTON_LMASK:0;
+        } else if(job->action=="qa-mouse-down" || job->action=="qa-mouse-up") {
+            held=job->action=="qa-mouse-down";
+            event.type=held?SDL_EVENT_MOUSE_BUTTON_DOWN:SDL_EVENT_MOUSE_BUTTON_UP;
+            event.button.windowID=id;event.button.x=x;event.button.y=y;
+            event.button.button=SDL_BUTTON_LEFT;event.button.down=held;event.button.clicks=1;
+        } else if(job->action=="qa-mouse-wheel") {
+            event.type=SDL_EVENT_MOUSE_WHEEL;event.wheel.windowID=id;
+            event.wheel.mouse_x=x;event.wheel.mouse_y=y;event.wheel.y=job->wheel;
+        }
+        if(event.type && SDL_PushEvent(&event))qa_mouse_events.fetch_add(1);
+    }
+    SDL_free(windows);delete job;
+}
+void QueueQaMouse(const std::string& command) {
+    const char* qa=std::getenv("BB_ATLAS_QA");
+    if(!qa || std::strcmp(qa,"1"))return;
+    std::istringstream input(command);QaMouse job;std::string extra;
+    if(!(input>>job.action>>job.x>>job.y) || !std::isfinite(job.x) || !std::isfinite(job.y))return;
+    if(job.action=="qa-mouse-wheel") {
+        if(!(input>>job.wheel) || !std::isfinite(job.wheel) || std::abs(job.wheel)>20)return;
+    } else if(job.action!="qa-mouse-move" && job.action!="qa-mouse-down" && job.action!="qa-mouse-up")return;
+    if(input>>extra)return;
+    auto* copy=new QaMouse(job);
+    if(!SDL_RunOnMainThread(PushQaMouse,copy,false))delete copy;
+}
+}
+void PollTestCommands() {
+    static const char* control=std::getenv("BB_MAP_TEST_CONTROL");
+    if(!control || !*control)return;
+    static auto last=std::chrono::steady_clock::time_point{};
+    const auto now=std::chrono::steady_clock::now();
+    if(now-last<std::chrono::milliseconds(100))return;last=now;
+    std::ifstream input(control);std::string command;
+    if(input && std::getline(input,command)) {
+        input.close();std::error_code ec;std::filesystem::remove(control,ec);
+        if(command.rfind("qa-mouse-",0)==0)QueueQaMouse(command);
+        if(command=="open" || command=="close") {SDL_Event e{};e.type=SDL_EVENT_KEY_DOWN;e.key.key=map_keys[keyboard];if((command=="open")!=bool(open))HandleEvent(e);}
+        if(command=="fit")Fit();
+        if(command=="recenter")Recenter();
+        if(command=="zoom-in"||command=="zoom-out")MappedPad(command=="zoom-in"?0x800:0x400,128,128);
+        if(command=="pan-right"||command=="pan-stop")MappedPad(0,command=="pan-right"?205:128,128);
+        if(command=="controller-back")Close();
+        if(command=="live"){preview_active=false;preview_area=-1;Recenter();}
+        if(command=="shading")elevation_shading=!elevation_shading;
+        if(command=="controller-elevation")MappedPad(0x8000,128,128);
+        if(command.rfind("area ",0)==0) {
+            const auto id=command.substr(5);
+            for(size_t i=0;i<areas.size();++i)if(areas[i].id==id){if(!open)SetOpen(true);preview_active=true;preview_area=selected=int(i);Load(areas[i]);Fit();break;}
+        }
+        if(command=="disable"){enabled=false;Close();controller_chord.SetEnabled(false);}
+        if(command=="enable"){enabled=true;controller_chord.SetEnabled(chord==2);}
+        if(command=="controller-map"){SDL_Event e{};e.type=SDL_EVENT_GAMEPAD_BUTTON_DOWN;e.gbutton.button=SDL_GAMEPAD_BUTTON_RIGHT_STICK;HandleEvent(e);}
+    }
+    BbMapLocation sample{};runtime_map_location(&sample);location=sample;
+    if(const char* trace=std::getenv("BB_MAP_TEST_TRACE")) {
+        const auto temp=std::string(trace)+".tmp";
+        {BbMapMenu menu_state{};runtime_map_menu_state(&menu_state);std::ofstream f(temp);const int live=CurrentArea();int live_layer=-1;if(live>=0&&Load(areas[live]))live_layer=AutoLayer(areas[live]);f<<Json{{"valid",sample.valid!=0},{"block",sample.block},{"x",sample.x},{"y",sample.y},{"z",sample.z},{"yaw",sample.yaw},{"menu",runtime_map_menu_open()!=0},{"menu_supported",menu_state.supported!=0},{"menu_top",menu_state.top_level!=0},{"native_focus",menu_state.selected},{"atlas_focus",BbAtlasMenu::Focused()},{"tile",BbAtlasMenu::Visible()},{"confirm",runtime_map_confirm_button()},{"open",bool(open)},{"capture",CapturesInput()},{"qa_mouse_events",qa_mouse_events.load()},{"enabled",enabled},{"shading",elevation_shading},{"selected",selected},{"current_layer",live_layer},{"zoom",zoom},{"cx",cx},{"cz",cz},{"follow",follow},{"title",live>=0?LocationTitle(areas[live]):std::string{}},{"subtitle",live>=0?LocationSubtitle(areas[live]):std::string{}}}.dump();}
+#ifdef _WIN32
+        MoveFileExA(temp.c_str(),trace,MOVEFILE_REPLACE_EXISTING);
+#else
+        std::error_code ec;std::filesystem::rename(temp,trace,ec);
+#endif
+    }
+}
+bool HandleEvent(const SDL_Event& e) {
+    if(controller_chord.HandleEvent(e))return true;
+    if(!enabled)return false;
+    if(e.type==SDL_EVENT_KEY_DOWN && !e.key.repeat) {
+        if(e.key.key==map_keys[keyboard]){SetOpen(!open);return true;}
+        if(open && e.key.key==SDLK_ESCAPE){Close();return true;}
+        if(open && e.key.key==SDLK_HOME){Recenter();return true;}
+        if(open && e.key.key==SDLK_H){elevation_shading=!elevation_shading;return true;}
+    }
+    // Actual mapped controller input is routed once at runtime_pad's logical
+    // sample boundary. SDL physical events cannot bypass remapped bindings.
+    if(e.type==SDL_EVENT_WINDOW_FOCUS_LOST)Close();
+    return false;
+}
+void Settings() {
+    ImGui::SeparatorText("Navigation map");
+    ImGui::BeginDisabled(std::getenv("BB_ATLAS_ENABLED")!=nullptr);
+    if(ImGui::Checkbox("Enable full-screen map",&enabled)){if(!enabled)Close();controller_chord.SetEnabled(enabled && chord==2);Save();}
+    ImGui::EndDisabled();
+    if(std::getenv("BB_ATLAS_ENABLED"))ImGui::TextDisabled("Enable or disable Hunter's Atlas in the launcher.");
+    if(ImGui::Combo("Map key",&keyboard,key_names,3))Save();
+    const char* chords[]={"Disabled","Open game menu, then click right stick (R3)","Hold LB / L1 + RB / R1 + Menu / Options for about 650 ms"};
+    if(ImGui::Combo("Map controller shortcut",&chord,chords,3)){controller_chord.SetEnabled(enabled && chord==2);Save();}
+    if(enabled && ImGui::Button("Open map"))SetOpen(true);
+    ImGui::TextWrapped("Select Map in the game's quick menu, or click its fourth tile. Back returns to the same menu. Keyboard and controller shortcuts are optional.");
+    if(!atlas_error.empty())ImGui::TextWrapped("Map data unavailable: %s",atlas_error.c_str());
+}
+void SetTitleFont(ImFont* font){title_font=font;}
+ImFont* TitleFont(){return title_font?title_font:ImGui::GetFont();}
+void Draw() {
+    if(!open)return;
+    runtime_map_location(&location);
+    const int current=CurrentArea();
+    if(!preview_active) {
+        if(current!=selected){selected=current;follow=true;if(current>=0)zoom=9.0f*MapUiScale();}
+        if(current>=0 && follow){cx=location.x;cz=location.z;Load(areas[current]);}
+    }
+    auto* vp=ImGui::GetMainViewport();const float scale=MapUiScale();
+    ImGui::SetNextWindowPos(vp->Pos);ImGui::SetNextWindowSize(vp->Size);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+    ImGui::Begin("Hunter's Atlas##map",nullptr,ImGuiWindowFlags_NoDecoration|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoBringToFrontOnFocus);
+    const ImVec2 screen=ImGui::GetWindowPos(),full=ImGui::GetWindowSize();auto* draw=ImGui::GetWindowDrawList();
+    const ImU32 paper=IM_COL32(223,214,187,255),muted=IM_COL32(185,180,161,255);
+    BbMapArt::DrawBackground(draw,screen,ImVec2(screen.x+full.x,screen.y+full.y));
+    const BbAtlasStyle::Layout layout(full.x,full.y,screen.x,screen.y);
+    auto at=[&](float x,float y){const auto p=layout.At(x,y);return ImVec2(p.x,p.z);};
+    auto ornament=[&](float x,float y,float r,ImU32 color){const auto p=at(x,y);const float d=r*scale;draw->AddQuad(ImVec2(p.x-d,p.y),ImVec2(p.x,p.y-d*.55f),ImVec2(p.x+d,p.y),ImVec2(p.x,p.y+d*.55f),color,.7f*scale);};
+    const ImU32 rule=IM_COL32(152,146,128,125);
+    draw->AddRect(at(10,8),at(1270,710),IM_COL32(156,148,126,95),0,0,.8f*scale);
+    // Frame details remain decoration; no semantic map geometry is created.
+    for(float x:{10.f,1270.f})for(float y:{8.f,710.f}){const float sx=x<640?1.f:-1.f,sy=y<360?1.f:-1.f;draw->AddBezierCubic(at(x,y+sy*42),at(x+sx*3,y+sy*4),at(x+sx*24,y+sy*26),at(x+sx*42,y),rule,.7f*scale);ornament(x+sx*16,y+sy*15,4,rule);}
+    const bool available=selected>=0&&Load(areas[selected])&&(!preview_active?location.valid&&current==selected:true);
+    const std::string title=available?LocationTitle(areas[selected]):(location.valid?"Location unavailable":"Awaiting your location");
+    const std::string subtitle=available?LocationSubtitle(areas[selected]):std::string{};
+    ImFont* font=title_font?title_font:ImGui::GetFont();
+    // Fit the actual UTF-8 string, then align visible glyph bounds rather than
+    // assuming a font's nominal point size equals its cap height.
+    auto centered=[&](const std::string& text,float visible_top,float preferred,float minimum,float max_width,float region_height,ImU32 color){
+        float size=preferred*scale;const float limit=max_width*scale;
+        auto extent=font->CalcTextSizeA(size,FLT_MAX,0,text.c_str());
+        if(extent.x>limit)size=std::max(minimum*scale,size*limit/extent.x);
+        extent=font->CalcTextSizeA(size,FLT_MAX,0,text.c_str());
+        auto glyphBounds=[&](float at_size){
+            float top=at_size,bottom=0;auto* baked=font->GetFontBaked(at_size);
+            for(size_t i=0;i<text.size();){uint32_t ch=static_cast<unsigned char>(text[i++]);int extra=0;if(ch>=0xc0&&ch<0xe0){ch&=31;extra=1;}else if(ch>=0xe0&&ch<0xf0){ch&=15;extra=2;}else if(ch>=0xf0){ch&=7;extra=3;}for(int j=0;j<extra&&i<text.size();++j)ch=(ch<<6)|(static_cast<unsigned char>(text[i++])&63);if(auto* g=baked->FindGlyph(ImWchar(ch));g&&g->Visible){top=std::min(top,g->Y0);bottom=std::max(bottom,g->Y1);}}
+            return std::pair{top,bottom};
+        };
+        auto bounds=glyphBounds(size);
+        if(bounds.second-bounds.first>region_height*scale){size*=region_height*scale/(bounds.second-bounds.first);bounds=glyphBounds(size);extent=font->CalcTextSizeA(size,FLT_MAX,0,text.c_str());}
+        const float glyph_top=bounds.first;
+        const float top=layout.y+visible_top*scale;
+        if(extent.x>limit){size=std::min(minimum*.8f,region_height*.5f)*scale;draw->PushClipRect(at((1280-max_width)*.5f,visible_top-2),at((1280+max_width)*.5f,visible_top+region_height),true);draw->AddText(font,size,ImVec2(layout.x+(1280*scale-limit)*.5f,top),color,text.c_str(),nullptr,limit);draw->PopClipRect();}
+        else draw->AddText(font,size,ImVec2(layout.x+(1280*scale-extent.x)*.5f,top-glyph_top),color,text.c_str());
+    };
+    centered(title,BbAtlasStyle::Layout::title_top,BbAtlasStyle::Layout::title_size,BbAtlasStyle::Layout::title_min,BbAtlasStyle::Layout::title_width,BbAtlasStyle::Layout::title_region_h,paper);
+    draw->AddLine(at(320,BbAtlasStyle::Layout::header_rule),at(960,BbAtlasStyle::Layout::header_rule),rule,.8f*scale);
+    for(float x:{336.f,640.f,944.f})ornament(x,BbAtlasStyle::Layout::header_rule,x==640?5.f:3.f,rule);
+    if(!subtitle.empty())centered(subtitle,BbAtlasStyle::Layout::subtitle_top,BbAtlasStyle::Layout::subtitle_size,BbAtlasStyle::Layout::subtitle_min,BbAtlasStyle::Layout::subtitle_width,BbAtlasStyle::Layout::subtitle_region_h,muted);
+    const auto canvas=layout.Canvas();
+    const ImVec2 origin(canvas.x,canvas.y),canvas_size(canvas.w,canvas.h);
+    draw->PushClipRect(origin,ImVec2(origin.x+canvas_size.x,origin.y+canvas_size.y),true);
+    ImGui::SetCursorScreenPos(origin);ImGui::InvisibleButton("atlas-canvas",canvas_size,ImGuiButtonFlags_MouseButtonLeft);
+    const bool hovered=ImGui::IsItemHovered();const ImVec2 canvas_center(origin.x+canvas_size.x*.5f,origin.y+canvas_size.y*.5f);
+    if(hovered&&ImGui::IsMouseDragging(ImGuiMouseButton_Left)){follow=false;cx-=ImGui::GetIO().MouseDelta.x/zoom;cz+=ImGui::GetIO().MouseDelta.y/zoom;}
+    if(hovered&&ImGui::GetIO().MouseWheel)zoom=std::clamp(zoom*std::pow(1.2f,ImGui::GetIO().MouseWheel),.15f,25.0f);
+    if(padx||pady){follow=false;cx+=padx*350*ImGui::GetIO().DeltaTime/zoom;cz-=pady*350*ImGui::GetIO().DeltaTime/zoom;}
+    auto project=[&](float x,float z){return ImVec2(canvas_center.x+(x-cx)*zoom,canvas_center.y-(z-cz)*zoom);};
+    auto visible=[&](float minx,float minz,float maxx,float maxz){const auto p=project(minx,maxz),q=project(maxx,minz);return !(q.x<origin.x||p.x>origin.x+canvas_size.x||q.y<origin.y||p.y>origin.y+canvas_size.y);};
+    auto outline=[&](const std::vector<Point>& ring,ImU32 color,float width){for(size_t i=0;i<ring.size();++i){const auto a=ring[i],b=ring[(i+1)%ring.size()];if(visible(std::min(a.x,b.x),std::min(a.z,b.z),std::max(a.x,b.x),std::max(a.z,b.z)))draw->AddLine(project(a.x,a.z),project(b.x,b.z),color,width);}};
+    if(!available){const char* message=location.valid?"Map data is not available for this location":"Your position is unavailable while loading or outside a supported area";const ImVec2 extent=font->CalcTextSizeA(20*scale,FLT_MAX,0,message);draw->AddText(font,20*scale,ImVec2(canvas_center.x-extent.x*.5f,canvas_center.y-10*scale),muted,message);}
+    else {
+        auto& a=areas[selected];
+        const int active=current==selected?AutoLayer(a):PrimaryLayer(a);
+        // Reserve actual glyph footprints in screen space as well as excluding
+        // collision floors in world space. Transparent icon edges stay clean.
+        std::vector<BbAtlasStyle::Box> glyph_masks;
+        auto reserveGlyph=[&](float x,float y,float z,float radius){if(active>=0&&std::abs(y-a.layers[active].anchor)>std::max(6.f,a.layers[active].span*1.4f))return;const auto p=project(x,z);const float r=radius*scale;glyph_masks.push_back({p.x-r,p.y-r,2*r,2*r});};
+        for(const auto& lamp:a.lamps)reserveGlyph(lamp.x,lamp.y,lamp.z,18);
+        for(const auto& marker:a.markers)reserveGlyph(marker.x,marker.y,marker.z,18);
+        if(current==selected&&!preview_active)reserveGlyph(location.x,location.y,location.z,20);
+        const auto compass=at(BbAtlasStyle::Layout::compass_x,BbAtlasStyle::Layout::compass_y);glyph_masks.push_back({compass.x-38*scale,compass.y-38*scale,76*scale,76*scale});
+
+        std::vector<std::pair<float,float>> blocked;
+        auto scratch=[&](ImVec2 a,ImVec2 b,ImU32 color){
+            blocked.clear();const BbAtlasStyle::Point p{a.x,a.y},q{b.x,b.y};
+            for(const auto& r:glyph_masks){if(std::max(a.x,b.x)<r.x||std::min(a.x,b.x)>r.x+r.w||std::max(a.y,b.y)<r.y||std::min(a.y,b.y)>r.y+r.h)continue;const std::array<BbAtlasStyle::Point,4> polygon={BbAtlasStyle::Point{r.x,r.y},BbAtlasStyle::Point{r.x+r.w,r.y},BbAtlasStyle::Point{r.x+r.w,r.y+r.h},BbAtlasStyle::Point{r.x,r.y+r.h}};float lo,hi;if(BbAtlasStyle::Clip(polygon,p,q,lo,hi))blocked.emplace_back(lo,hi);}
+            std::sort(blocked.begin(),blocked.end());float begin=0;
+            auto emit=[&](float lo,float hi){if(hi-lo<.001f)return;const auto u=BbAtlasStyle::Mix(p,q,lo),v=BbAtlasStyle::Mix(p,q,hi);draw->AddLine(ImVec2(u.x,u.z),ImVec2(v.x,v.z),color,std::clamp(.72f*scale,.6f,1.3f));};
+            for(const auto& interval:blocked){if(interval.first>begin)emit(begin,interval.first);begin=std::max(begin,interval.second);}if(begin<1)emit(begin,1);
+        };
+        const ImVec2 texture_origin((a.bounds[0]+a.bounds[2])*.5f,(a.bounds[1]+a.bounds[3])*.5f);
+        const float texture_span=std::max(a.bounds[2]-a.bounds[0],a.bounds[3]-a.bounds[1]);
+        float height_min=active>=0&&active<int(a.layers.size())?a.layers[active].anchor:location.y-3.0f;
+        float height_max=height_min;
+        for(size_t li=0;active>=0&&active<int(a.layers.size())&&li<a.layers.size();++li)if(int(li)==active||std::abs(a.layers[li].anchor-a.layers[active].anchor)<=6.0f){
+            const auto& layer=a.layers[li];
+            const float low=layer.has_vertex_heights?layer.min_y:layer.anchor;
+            const float high=layer.has_vertex_heights?layer.max_y:layer.anchor;
+            height_min=std::min(height_min,low);height_max=std::max(height_max,high);
+        }
+        auto heightTint=[&](float y,int alpha){const float t=elevation_shading?std::clamp((y-height_min)/std::max(.01f,height_max-height_min),0.0f,1.0f):.72f;const int shade=int(118+120*t);return IM_COL32(shade+4,shade+2,shade,alpha);};
+        auto floorTriangle=[&](const Layer& layer,const Triangle& t,int alpha){
+            const float minx=std::min({t.v[0],t.v[2],t.v[4]}),maxx=std::max({t.v[0],t.v[2],t.v[4]}),minz=std::min({t.v[1],t.v[3],t.v[5]}),maxz=std::max({t.v[1],t.v[3],t.v[5]});if(!visible(minx,minz,maxx,maxz))return;
+            const ImVec2 screen_pts[3]={project(t.v[0],t.v[1]),project(t.v[2],t.v[3]),project(t.v[4],t.v[5])};
+            const ImVec2 world_pts[3]={ImVec2(t.v[0],t.v[1]),ImVec2(t.v[2],t.v[3]),ImVec2(t.v[4],t.v[5])};
+            const ImU32 colors[3]={heightTint(layer.has_vertex_heights?t.y[0]:layer.anchor,alpha),heightTint(layer.has_vertex_heights?t.y[1]:layer.anchor,alpha),heightTint(layer.has_vertex_heights?t.y[2]:layer.anchor,alpha)};
+            if(BbMapArt::IsReady())BbMapArt::DrawFloorTriangle(draw,screen_pts,world_pts,colors,texture_span,texture_origin);
+            else draw->AddTriangleFilled(screen_pts[0],screen_pts[1],screen_pts[2],colors[0]);
+        };
+        // Wall-band strokes exclude all projected floors. Interior fills instead
+        // describe a closed gap on a displayed storey. All floors draw above them.
+        if(!a.cut_cache.ready){std::vector<BbAtlasStyle::Triangle> floors;for(const auto& layer:a.layers){for(const auto& t:layer.triangles)floors.push_back({{{{t.v[0],t.v[1]},{t.v[2],t.v[3]},{t.v[4],t.v[5]}}}});for(const auto& r:layer.rects){floors.push_back({{{{r.x,r.z},{r.x+r.w,r.z},{r.x,r.z+r.h}}}});floors.push_back({{{{r.x+r.w,r.z},{r.x+r.w,r.z+r.h},{r.x,r.z+r.h}}}});}}a.cut_cache.Build(std::move(floors),a.layers.size());}
+        if(!a.interior_cache.ready){
+            std::vector<std::vector<BbAtlasInteriors::Ring>> rings;
+            for(const auto& layer:a.layers){rings.emplace_back();for(const auto& outline:layer.outlines){BbAtlasInteriors::Ring ring;for(auto p:outline)ring.push_back({p.x,p.z});rings.back().push_back(std::move(ring));}}
+            std::vector<BbAtlasStyle::FloorIndex> layer_floors(a.layers.size());
+            for(size_t li=0;li<a.layers.size();++li){std::vector<BbAtlasStyle::Triangle> floors;for(const auto& t:a.layers[li].triangles)floors.push_back({{{{t.v[0],t.v[1]},{t.v[2],t.v[3]},{t.v[4],t.v[5]}}}});for(const auto& r:a.layers[li].rects){floors.push_back({{{{r.x,r.z},{r.x+r.w,r.z},{r.x,r.z+r.h}}}});floors.push_back({{{{r.x+r.w,r.z},{r.x+r.w,r.z+r.h},{r.x,r.z+r.h}}}});}layer_floors[li].Build(std::move(floors));}
+            a.interior_cache.Build(rings,layer_floors);
+        }
+        const int interior_lod=BbAtlasStyle::CutCache::Level(zoom,scale);
+        // Context interiors first, then the current storey's stronger material.
+        // Every floor is painted afterward, so a void on another storey can
+        // never hide the current floor or remove faded other-level context.
+        for(int pass=0;pass<2;++pass)for(size_t li=0;li<a.interior_cache.layers.size();++li){
+            if((int(li)==active)!=(pass==1))continue;
+            for(const auto& t:a.interior_cache.layers[li]){
+                const auto& p=t.p;if(!visible(std::min({p[0].x,p[1].x,p[2].x}),std::min({p[0].z,p[1].z,p[2].z}),std::max({p[0].x,p[1].x,p[2].x}),std::max({p[0].z,p[1].z,p[2].z})))continue;
+                // A closed hole in this storey, not a globally blocked building.
+                draw->AddTriangleFilled(project(p[0].x,p[0].z),project(p[1].x,p[1].z),project(p[2].x,p[2].z),pass==1?IM_COL32(53,48,39,255):IM_COL32(44,41,34,255));
+            }
+        }
+        for(size_t li=0;li<a.interior_cache.layers.size();++li)for(const auto& line:a.interior_cache.Get(li,interior_lod)){
+            if(!visible(std::min(line.a.x,line.b.x),std::min(line.a.z,line.b.z),std::max(line.a.x,line.b.x),std::max(line.a.z,line.b.z)))continue;
+            scratch(project(line.a.x,line.a.z),project(line.b.x,line.b.z),IM_COL32(135,119,90,int(li)==active?28+line.wear%20:15+line.wear%13));
+        }
+        // Keep the whole area's other storeys as subdued context. A narrow
+        // height window hid the streets below bridges and made orientation
+        // difficult. Context draws above all enclosed interiors; active floor stays opaque.
+        for(size_t li=0;li<a.layers.size();++li)if(int(li)!=active&&active>=0){
+            const auto& layer=a.layers[li];
+            const bool nearby=std::abs(layer.anchor-a.layers[active].anchor)<=6.0f;
+            const int alpha=nearby?38:27;
+            for(const auto& t:layer.triangles)floorTriangle(layer,t,alpha);
+            for(const auto& r:layer.rects)if(visible(r.x,r.z,r.x+r.w,r.z+r.h))draw->AddRectFilled(project(r.x,r.z+r.h),project(r.x+r.w,r.z),heightTint(layer.anchor,alpha));
+            for(const auto& ring:layer.outlines)outline(ring,IM_COL32(213,203,177,nearby?62:49),.7f*scale);
+        }
+        if(active>=0&&active<int(a.layers.size())){
+
+            const int lod=BbAtlasStyle::CutCache::Level(zoom,scale);
+            std::vector<BbAtlasStyle::Line> wall_support;if(!a.cut_cache.layers[active][lod].built)for(const auto& w:a.layers[active].walls)wall_support.push_back({{w.a.x,w.a.z},{w.b.x,w.b.z}});
+            for(const auto& hatch:a.cut_cache.Get(active,lod,wall_support)){
+                if(!visible(std::min(hatch.a.x,hatch.b.x),std::min(hatch.a.z,hatch.b.z),std::max(hatch.a.x,hatch.b.x),std::max(hatch.a.z,hatch.b.z)))continue;
+                // Deterministic worn opacity, never random or frame dependent.
+                const int alpha=23+int(hatch.wear%30);scratch(project(hatch.a.x,hatch.a.z),project(hatch.b.x,hatch.b.z),IM_COL32(166,160,143,alpha));
+            }
+        }
+        if(active>=0&&active<int(a.layers.size())){
+            const auto& layer=a.layers[active];for(const auto& t:layer.triangles)floorTriangle(layer,t,255);
+            for(const auto& r:layer.rects)if(visible(r.x,r.z,r.x+r.w,r.z+r.h))draw->AddRectFilled(project(r.x,r.z+r.h),project(r.x+r.w,r.z),heightTint(layer.anchor,255));
+            for(const auto& ring:layer.outlines)outline(ring,IM_COL32(204,193,163,220),.85f*scale);
+            const float wall=std::clamp(zoom*.13f,2.5f*scale,5.0f*scale);for(const auto& w:layer.walls)if(visible(std::min(w.a.x,w.b.x),std::min(w.a.z,w.b.z),std::max(w.a.x,w.b.x),std::max(w.a.z,w.b.z)))draw->AddLine(project(w.a.x,w.a.z),project(w.b.x,w.b.z),IM_COL32(15,18,19,255),wall);
+        }
+        const float marker_height=active>=0?a.layers[active].span:6.0f;
+        auto marker=[&](float x,float y,float z,const std::string& kind,const std::string& name){const auto p=project(x,z);if(p.x<origin.x-22*scale||p.y<origin.y-22*scale||p.x>origin.x+canvas_size.x+22*scale||p.y>origin.y+canvas_size.y+22*scale)return;if(active>=0&&std::abs(y-a.layers[active].anchor)>std::max(6.0f,marker_height*1.4f))return;const char* icon=kind=="lamp"?"lamp":kind=="ladder"?"ladder":kind=="gate"?"gate":"talk";BbMapArt::DrawIcon(draw,icon,p,32.0f*scale);if(hovered&&std::hypot(ImGui::GetIO().MousePos.x-p.x,ImGui::GetIO().MousePos.y-p.y)<18.0f*scale){if(kind=="gate")ImGui::SetTooltip("%s\nOpenable gate / door\nMay require unlocking; status is not tracked.",name.c_str());else ImGui::SetTooltip("%s",name.c_str());}};
+        for(const auto& m:a.lamps)marker(m.x,m.y,m.z,"lamp",m.name);for(const auto& m:a.markers)marker(m.x,m.y,m.z,m.kind,m.name);
+        if(current==selected&&!preview_active){const auto p=project(location.x,location.z);const auto dir=FacingOnMap(location.yaw);const float angle=std::atan2(dir.x,-dir.y);draw->AddCircleFilled(p,18.5f*scale,IM_COL32(96,139,138,27),32);draw->AddCircleFilled(p,16.0f*scale,IM_COL32(20,29,29,210),32);draw->AddCircle(p,17.0f*scale,IM_COL32(125,160,155,120),32,.8f*scale);BbMapArt::DrawIcon(draw,"player",p,BbAtlasStyle::Layout::player_size*scale,angle,IM_COL32(178,206,200,230));}
+    }
+    // Restore the same background texture at all four edges. Matching UVs
+    // preserve the painting; nonoverlapping corner wedges avoid dark seams.
+    BbMapArt::DrawBackgroundFade(draw,screen,ImVec2(screen.x+full.x,screen.y+full.y),origin,ImVec2(origin.x+canvas_size.x,origin.y+canvas_size.y),BbAtlasStyle::Layout::edge_fade*scale);
+    draw->PopClipRect();
+    for(float x:{230.f,1065.f}){
+        draw->AddLine(at(x,123),at(x,643),IM_COL32(154,144,119,76),.65f*scale);
+        draw->AddLine(at(x-2,145),at(x-2,621),IM_COL32(112,107,91,35),.5f*scale);
+        ornament(x,123,3,IM_COL32(154,144,119,95));ornament(x,643,3,IM_COL32(154,144,119,95));
+    }
+    BbMapArt::DrawIcon(draw,"compass",at(BbAtlasStyle::Layout::compass_x,BbAtlasStyle::Layout::compass_y),BbAtlasStyle::Layout::compass_size*scale,0,IM_COL32(174,166,143,170));
+    if(elevation_shading&&available){
+        const auto top=at(BbAtlasStyle::Layout::legend_x,BbAtlasStyle::Layout::legend_y),bottom=at(BbAtlasStyle::Layout::legend_x+BbAtlasStyle::Layout::legend_w,BbAtlasStyle::Layout::legend_y+BbAtlasStyle::Layout::legend_h);
+        draw->AddRectFilledMultiColor(top,bottom,IM_COL32(225,220,202,195),IM_COL32(225,220,202,195),IM_COL32(52,55,51,195),IM_COL32(52,55,51,195));draw->AddRect(top,bottom,IM_COL32(182,174,152,170),0,0,.8f*scale);
+        draw->AddText(font,16*scale,at(1192,BbAtlasStyle::Layout::legend_y-4),muted,"High");draw->AddText(font,16*scale,at(1192,BbAtlasStyle::Layout::legend_y+BbAtlasStyle::Layout::legend_h-13),muted,"Low");
+    }
+    if(available){
+        // Material meanings sit below the separate elevation gradient, in the
+        // right artwork gutter and beyond the footer's last control.
+        constexpr float x=BbAtlasStyle::Layout::key_x,y=BbAtlasStyle::Layout::key_y;
+        draw->AddLine(at(x,y-8),at(x+BbAtlasStyle::Layout::key_w,y-8),IM_COL32(154,144,119,65),.6f*scale);
+        const char* labels[]={"Floor","Other levels","Interior"};
+        if(ImGui::IsMouseHoveringRect(at(x,y+36),at(x+BbAtlasStyle::Layout::key_w,y+54)))ImGui::SetTooltip("A closed interior in a displayed storey.\nFloors at other heights may cross it and remain visible.");
+        const ImU32 colors[]={IM_COL32(207,204,196,255),IM_COL32(70,70,63,255),IM_COL32(53,48,39,255)};
+        for(int i=0;i<3;++i){const float row=y+i*18;draw->AddRectFilled(at(x,row+2),at(x+13,row+13),colors[i]);draw->AddRect(at(x,row+2),at(x+13,row+13),IM_COL32(151,140,113,130),0,0,.6f*scale);if(i==2)for(int k=0;k<3;++k)draw->AddLine(at(x+1+k*4,row+12),at(x+4+k*4,row+3),IM_COL32(135,119,90,130),.7f*scale);draw->AddText(font,13*scale,at(x+20,row-1),muted,labels[i]);}
+    }
+    draw->AddLine(at(152,BbAtlasStyle::Layout::footer_rule),at(1116,BbAtlasStyle::Layout::footer_rule),rule,.8f*scale);ornament(157,659,3,rule);ornament(1111,659,3,rule);
+    const bool controller=UsesControllerGlyphs(),cancel_cross=runtime_map_confirm_button()==0x2000u;
+    const char* labels[]={controller?"Pan":"Drag: Pan","Zoom","Elevation","Recenter","Back"};
+    const char* icons[]={"LS","LB","X","Y","B"};
+    const char* keys[]={"Mouse","- / +","H","Home","Esc"};
+    const float slot=BbAtlasStyle::Layout::footer_w/5.f,footer_font=BbAtlasStyle::Layout::footer_size*scale;
+    for(int i=0;i<5;++i){
+        const float center=152+slot*(i+.5f),y=BbAtlasStyle::Layout::footer_baseline;
+        if(i)draw->AddLine(at(152+slot*i,672),at(152+slot*i,694),rule,.8f*scale);
+        const ImVec2 text_size=font->CalcTextSizeA(footer_font,FLT_MAX,0,labels[i]);
+        const float glyph_width=controller?(i==1?58.f:27.f):font->CalcTextSizeA(15*scale,FLT_MAX,0,keys[i]).x/scale+12.f;
+        float px=center-(glyph_width+8+text_size.x/scale)*.5f;
+        const auto hit_min=at(152+slot*i+5,669);ImGui::SetCursorScreenPos(hit_min);ImGui::PushID(i);
+        if(ImGui::InvisibleButton("footer",ImVec2((slot-10)*scale,32*scale))){if(i==1){const bool plus=ImGui::GetIO().MousePos.x>at(center,0).x;zoom=std::clamp(zoom*(plus?1.25f:.8f),.15f*scale,25.f*scale);}if(i==2)elevation_shading=!elevation_shading;if(i==3)Recenter();if(i==4)Close();}
+        if(ImGui::IsItemHovered()){draw->AddLine(at(152+slot*i+15,699),at(152+slot*(i+1)-15,699),IM_COL32(185,178,154,160),.8f*scale);if(i==1)ImGui::SetTooltip("Click left to zoom out, right to zoom in. Mouse wheel also zooms.");if(i==0)ImGui::SetTooltip("Drag the map to pan.");}
+        ImGui::PopID();
+        if(controller){if(i==4&&cancel_cross){const auto p=at(px+13.5f,y-5);draw->AddCircle(p,10.5f*scale,IM_COL32(127,163,140,220),24,1.f*scale);const auto size=font->CalcTextSizeA(16*scale,FLT_MAX,0,"A");draw->AddText(font,16*scale,ImVec2(p.x-size.x*.5f,p.y-size.y*.5f),IM_COL32(127,163,140,220),"A");}else BbMapArt::DrawIcon(draw,icons[i],at(px+13.5f,y-5),27*scale);if(i==1){draw->AddText(font,footer_font,at(px+27,y-15),muted,"/");BbMapArt::DrawIcon(draw,"RB",at(px+45,y-5),27*scale);}}
+        else {draw->AddRect(at(px,y-16),at(px+glyph_width,y+5),IM_COL32(168,166,151,180),3*scale,0,.8f*scale);draw->AddText(font,15*scale,at(px+6,y-15),muted,keys[i]);}
+        draw->AddText(font,footer_font,at(px+glyph_width+8,y-15),paper,labels[i]);
+    }
+    ImGui::End();
+}
+}

@@ -1,0 +1,162 @@
+// AVX10 FP16 VNNI, media and zero-extending
+vdpphps(xm1, xm2, xm3);
+vdpphps(xm1, xm2, ptr[rax+64]);
+vdpphps(xm1, xm2, ptr_b[rax+64]);
+
+vdpphps(ym1, ym2, ym3);
+vdpphps(ym1, ym2, ptr[rax+64]);
+vdpphps(ym1, ym2, ptr_b[rax+64]);
+
+vdpphps(zm1, zm2, zm3);
+vdpphps(zm1, zm2, ptr[rax+64]);
+vdpphps(zm1, zm2, ptr_b[rax+64]);
+//
+vmpsadbw(xm1, xm3, xm15, 3);
+vmpsadbw(xm1, xm4, ptr[rax+64], 5);
+
+vmpsadbw(ym1|k4, ym3, ym15, 3);
+vmpsadbw(ym1, ym4, ptr[rax+64], 5);
+
+vmpsadbw(zm1|k4, zm3, zm15, 3);
+vmpsadbw(zm1, zm4, ptr[rax+64], 5);
+//
+vmovd(xm10, xm20);
+vmovd(xm1, xm2);
+vmovd(xm10, ptr[rax+64]);
+vmovd(ptr[rax+64], xm30);
+//
+push(rax);
+push(rcx);
+push(rdx);
+push(rbx);
+push(rsp);
+push(rbp);
+push(rsi);
+push(rdi);
+push(r8);
+push(r9);
+push(r10);
+push(r11);
+push(r12);
+push(r13);
+push(r14);
+push(r15);
+push(r16);
+push(r17);
+push(r18);
+push(r19);
+push(r20);
+push(r21);
+push(r22);
+push(r23);
+push(r24);
+push(r25);
+push(r26);
+push(r27);
+push(r28);
+push(r29);
+push(r30);
+push(r31);
+pop(rax);
+pop(rcx);
+pop(rdx);
+pop(rbx);
+pop(rsp);
+pop(rbp);
+pop(rsi);
+pop(rdi);
+pop(r8);
+pop(r9);
+pop(r10);
+pop(r11);
+pop(r12);
+pop(r13);
+pop(r14);
+pop(r15);
+pop(r16);
+pop(r17);
+pop(r18);
+pop(r19);
+pop(r20);
+pop(r21);
+pop(r22);
+pop(r23);
+pop(r24);
+pop(r25);
+pop(r26);
+pop(r27);
+pop(r28);
+pop(r29);
+pop(r30);
+pop(r31);
+push(r24w);
+push(word[r16]);
+push(qword[r24]);
+pop(r20w);
+pop(word[r24]);
+pop(qword[r16]);
+
+movrs(rcx, ptr[rax]);
+movrs(ecx, ptr[rax]);
+movrs(cx, ptr[rax]);
+movrs(cl, ptr[rax+rdx*4]);
+
+prefetchnta(ptr[rcx]);
+prefetcht0(ptr[rcx]);
+prefetcht1(ptr[rcx]);
+prefetcht2(ptr[rcx]);
+prefetchit1(ptr[rip+64]);
+prefetchit0(ptr[rip+64]);
+prefetchit0(ptr[rax]);
+prefetchit1(ptr[rax]);
+prefetchrst2(ptr[rcx]);
+
+vmovrsb(xm1|k1|T_z, ptr[rax+64]);
+vmovrsb(ym1|k1|T_z, ptr[rax+64]);
+vmovrsb(zm1|k1|T_z, ptr[rax+64]);
+
+vmovrsd(xm1|k1|T_z, ptr[rax+64]);
+vmovrsd(ym1|k1|T_z, ptr[rax+64]);
+vmovrsd(zm1|k1|T_z, ptr[rax+64]);
+
+vmovrsq(xm1|k1|T_z, ptr[rax+64]);
+vmovrsq(ym1|k1|T_z, ptr[rax+64]);
+vmovrsq(zm1|k1|T_z, ptr[rax+64]);
+
+vmovrsw(xm1|k1|T_z, ptr[rax+64]);
+vmovrsw(ym1|k1|T_z, ptr[rax+64]);
+vmovrsw(zm1|k1|T_z, ptr[rax+64]);
+// moved for bug of nasm 3.x
+vcvtsd2si(esp, xmm4|T_rd_sae);
+vcvtsd2si(r8, xmm4|T_rd_sae);
+vcvtsd2usi(ecx, xmm4|T_rd_sae);
+vcvtsd2usi(r14, xmm4|T_rd_sae);
+vcvtss2si(ecx, xmm4|T_rd_sae);
+vcvtss2si(r13, xmm4|T_rd_sae);
+vcvtss2usi(esi, xmm4|T_rd_sae);
+vcvtss2usi(r10, xmm4|T_rd_sae);
+vcvttsd2si(ecx, xmm25|T_sae);
+vcvttsd2si(r12, xmm25|T_sae);
+vcvttsd2usi(edx, xmm25|T_sae);
+vcvttsd2usi(rbp, xmm25|T_sae);
+vcvttss2si(esp, xmm25|T_sae);
+vcvttss2si(r11, xmm25|T_sae);
+vcvttss2usi(edi, xmm25|T_sae);
+vcvttss2usi(r14, xmm25|T_sae);
+
+umwait(eax);
+umwait(ebx);
+umwait(r8d);
+umwait(r31d);
+
+umonitor(eax);
+umonitor(ecx);
+umonitor(r31d);
+umonitor(rax);
+umonitor(rcx);
+umonitor(r31);
+
+tpause(eax);
+tpause(ebx);
+tpause(r8d);
+tpause(r31d);

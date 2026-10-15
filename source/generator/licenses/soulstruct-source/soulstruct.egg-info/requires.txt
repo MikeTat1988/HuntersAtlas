@@ -1,0 +1,14 @@
+constrata>=1.3.1
+numpy
+rich>=13
+typer
+zstandard
+
+[graphs]
+matplotlib
+
+[runtime]
+psutil
+
+[sound]
+pydub

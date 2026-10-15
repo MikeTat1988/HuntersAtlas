@@ -1,0 +1,6 @@
+from __future__ import annotations
+
+__all__ = ["SINGLE_MIN", "SINGLE_MAX"]
+
+SINGLE_MAX = 340282346638528859811704183484516925440.0
+SINGLE_MIN = -SINGLE_MAX
