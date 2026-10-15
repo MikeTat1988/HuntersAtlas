@@ -207,6 +207,7 @@ class BootstrapTests(unittest.TestCase):
             "BB_MAP_DIR": "C:\\old-atlas\\maps",
             "BB_MAP_QA": "1",
             "BB_ATLAS_ENABLED": "1",
+            "BB_PREP_WORKERS": "8",
             "BB_MAP_TEST_CONTROL": "C:\\old-atlas\\control.txt",
             "BB_PAD_FILE": "C:\\old-atlas\\pad.txt",
             "BB_DUMP_DIR": "C:\\old-atlas\\captures",
@@ -220,6 +221,7 @@ class BootstrapTests(unittest.TestCase):
             "extra_env": "BB_PROBE=C:\\spoof.exe BB_MAP_QA=1 CUSTOM_SETTING=ok",
         }
         env = bootstrap.game_environment(self.contract, profile, inherited)
+        self.assertEqual(env["BB_PREP_WORKERS"], "0")
         self.assertEqual(env["BB_PROBE"], str((self.root / "bin/bb-probe.exe").resolve()))
         self.assertEqual(env["BB_MAP_DIR"], str((self.root / "maps").resolve()))
         self.assertEqual(env["BB_ATLAS_ENABLED"], "0")

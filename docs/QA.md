@@ -18,6 +18,12 @@ The prepared asset pack is 21,870,216 bytes with SHA-256 `b889555f3aae436a3a59c0
 
 The complete preparation used the unchanged frozen generator. The final source refresh renamed the former internal edition identifier to Atlas and verified that identifier, source hashes, contract, environment and readiness in the stock interpreter. The installer cancellation fallback was tested separately; its successful preparation path is unchanged. A separate hidden-window smoke attempt was inconclusive and is not claimed as a pass.
 
+## October 15 hotfix
+
+After an owner-reported crash when opening Atlas through its menu icon, the log ended with the renderer assertion `MapNumberConversion`, `data_fmt=45`. The owner repeated the test without a crash with `BB_PREP_WORKERS=0`; the saved log confirms zero draw-preparation workers and Atlas enabled. Atlas launch paths now enforce this serial preparation mode. This is a workaround supported by that repeat test; the underlying renderer defect and universal stability are not established. Serial preparation may reduce performance.
+
+The map footer now shows only Zoom, Recenter and Back. Pan and Elevation hints and their footer hit targets have been removed. Existing map input handling and height visualization are otherwise retained.
+
 ## Scope and limits
 
-The native map host is the owner-approved runtime with debug sections removed; retained executable sections and RVAs are byte-identical. Owner play approval and these technical checks do not certify every route, floor, controller, graphics device or full playthrough. Chalice Dungeons, live quest/gate tracking and unlisted game regions are unsupported. Only the exact game and launcher fingerprints in [Compatibility](COMPATIBILITY.md) are supported.
+The initial native host used the owner-approved runtime with debug sections removed. The October 15 footer hotfix rebuilds that native source; it is a new executable and requires another owner play check. Owner play approval and these technical checks do not certify every route, floor, controller, graphics device or full playthrough. Chalice Dungeons, live quest/gate tracking and unlisted game regions are unsupported. Only the exact game and launcher fingerprints in [Compatibility](COMPATIBILITY.md) are supported.

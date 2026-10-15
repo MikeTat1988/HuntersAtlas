@@ -608,21 +608,21 @@ void Draw() {
     }
     draw->AddLine(at(152,BbAtlasStyle::Layout::footer_rule),at(1116,BbAtlasStyle::Layout::footer_rule),rule,.8f*scale);ornament(157,659,3,rule);ornament(1111,659,3,rule);
     const bool controller=UsesControllerGlyphs(),cancel_cross=runtime_map_confirm_button()==0x2000u;
-    const char* labels[]={controller?"Pan":"Drag: Pan","Zoom","Elevation","Recenter","Back"};
-    const char* icons[]={"LS","LB","X","Y","B"};
-    const char* keys[]={"Mouse","- / +","H","Home","Esc"};
-    const float slot=BbAtlasStyle::Layout::footer_w/5.f,footer_font=BbAtlasStyle::Layout::footer_size*scale;
-    for(int i=0;i<5;++i){
+    const char* labels[]={"Zoom","Recenter","Back"};
+    const char* icons[]={"LB","Y","B"};
+    const char* keys[]={"- / +","Home","Esc"};
+    const float slot=BbAtlasStyle::Layout::footer_w/3.f,footer_font=BbAtlasStyle::Layout::footer_size*scale;
+    for(int i=0;i<3;++i){
         const float center=152+slot*(i+.5f),y=BbAtlasStyle::Layout::footer_baseline;
         if(i)draw->AddLine(at(152+slot*i,672),at(152+slot*i,694),rule,.8f*scale);
         const ImVec2 text_size=font->CalcTextSizeA(footer_font,FLT_MAX,0,labels[i]);
-        const float glyph_width=controller?(i==1?58.f:27.f):font->CalcTextSizeA(15*scale,FLT_MAX,0,keys[i]).x/scale+12.f;
+        const float glyph_width=controller?(i==0?58.f:27.f):font->CalcTextSizeA(15*scale,FLT_MAX,0,keys[i]).x/scale+12.f;
         float px=center-(glyph_width+8+text_size.x/scale)*.5f;
         const auto hit_min=at(152+slot*i+5,669);ImGui::SetCursorScreenPos(hit_min);ImGui::PushID(i);
-        if(ImGui::InvisibleButton("footer",ImVec2((slot-10)*scale,32*scale))){if(i==1){const bool plus=ImGui::GetIO().MousePos.x>at(center,0).x;zoom=std::clamp(zoom*(plus?1.25f:.8f),.15f*scale,25.f*scale);}if(i==2)elevation_shading=!elevation_shading;if(i==3)Recenter();if(i==4)Close();}
-        if(ImGui::IsItemHovered()){draw->AddLine(at(152+slot*i+15,699),at(152+slot*(i+1)-15,699),IM_COL32(185,178,154,160),.8f*scale);if(i==1)ImGui::SetTooltip("Click left to zoom out, right to zoom in. Mouse wheel also zooms.");if(i==0)ImGui::SetTooltip("Drag the map to pan.");}
+        if(ImGui::InvisibleButton("footer",ImVec2((slot-10)*scale,32*scale))){if(i==0){const bool plus=ImGui::GetIO().MousePos.x>at(center,0).x;zoom=std::clamp(zoom*(plus?1.25f:.8f),.15f*scale,25.f*scale);}if(i==1)Recenter();if(i==2)Close();}
+        if(ImGui::IsItemHovered()){draw->AddLine(at(152+slot*i+15,699),at(152+slot*(i+1)-15,699),IM_COL32(185,178,154,160),.8f*scale);if(i==0)ImGui::SetTooltip("Click left to zoom out, right to zoom in. Mouse wheel also zooms.");}
         ImGui::PopID();
-        if(controller){if(i==4&&cancel_cross){const auto p=at(px+13.5f,y-5);draw->AddCircle(p,10.5f*scale,IM_COL32(127,163,140,220),24,1.f*scale);const auto size=font->CalcTextSizeA(16*scale,FLT_MAX,0,"A");draw->AddText(font,16*scale,ImVec2(p.x-size.x*.5f,p.y-size.y*.5f),IM_COL32(127,163,140,220),"A");}else BbMapArt::DrawIcon(draw,icons[i],at(px+13.5f,y-5),27*scale);if(i==1){draw->AddText(font,footer_font,at(px+27,y-15),muted,"/");BbMapArt::DrawIcon(draw,"RB",at(px+45,y-5),27*scale);}}
+        if(controller){if(i==2&&cancel_cross){const auto p=at(px+13.5f,y-5);draw->AddCircle(p,10.5f*scale,IM_COL32(127,163,140,220),24,1.f*scale);const auto size=font->CalcTextSizeA(16*scale,FLT_MAX,0,"A");draw->AddText(font,16*scale,ImVec2(p.x-size.x*.5f,p.y-size.y*.5f),IM_COL32(127,163,140,220),"A");}else BbMapArt::DrawIcon(draw,icons[i],at(px+13.5f,y-5),27*scale);if(i==0){draw->AddText(font,footer_font,at(px+27,y-15),muted,"/");BbMapArt::DrawIcon(draw,"RB",at(px+45,y-5),27*scale);}}
         else {draw->AddRect(at(px,y-16),at(px+glyph_width,y+5),IM_COL32(168,166,151,180),3*scale,0,.8f*scale);draw->AddText(font,15*scale,at(px+6,y-15),muted,keys[i]);}
         draw->AddText(font,footer_font,at(px+glyph_width+8,y-15),paper,labels[i]);
     }

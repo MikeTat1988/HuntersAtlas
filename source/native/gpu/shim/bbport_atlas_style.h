@@ -31,7 +31,7 @@ struct Layout {
     static constexpr float compass_x=77,compass_y=105,compass_size=73,player_size=35;
     static constexpr float legend_x=1163,legend_y=524,legend_w=18,legend_h=104;
     static constexpr float key_x=1126,key_y=644,key_w=116,key_h=54;
-    static constexpr float footer_x=152,footer_w=964,footer_slots=5;
+    static constexpr float footer_x=152,footer_w=964,footer_slots=3;
 };
 inline float Cross(Point a,Point b){return a.x*b.z-a.z*b.x;}
 inline Point Sub(Point a,Point b){return {a.x-b.x,a.z-b.z};}

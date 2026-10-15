@@ -1,6 +1,6 @@
 # Hunter’s Atlas 1.0
 
-Hunter’s Atlas adds a fullscreen navigation map to Bloodborne on Windows. It shows your position and facing, supports pan and zoom, and includes floor context for 16 supported areas.
+Hunter’s Atlas adds a fullscreen navigation map to Bloodborne on Windows. It shows your position and facing, supports zoom and recentering, and includes floor context for 16 supported areas.
 
 ## Downloads
 

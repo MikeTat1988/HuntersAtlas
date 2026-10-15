@@ -20,7 +20,8 @@ def environment(core, contract, paths, inherited):
         if key.upper().startswith(('BB_MAP_','BB_LITE_','BB_ATLAS')) or key.upper()=='BB_PROBE':
             env.pop(key,None)
     base=contract['base_root'];state=contract['state_root']
-    env.update(BB_ATLAS_ENABLED='1',BB_ATLAS_QA='0',BB_MAP_QA='0',
+    # Serial draw preparation avoids the observed FMask conversion assertion.
+    env.update(BB_ATLAS_ENABLED='1',BB_ATLAS_QA='0',BB_MAP_QA='0',BB_PREP_WORKERS='0',
         BB_PROBE=str(paths['probe']),BB_MAP_DIR=str(paths['maps']),
         BB_MAP_ART_DIR=str(paths['art']),BB_MAP_CATALOG=str(paths['catalog']),
         BB_MAP_FONT=str(paths['font']),BB_MAP_CONFIG=str(contract['paths']['config']),
