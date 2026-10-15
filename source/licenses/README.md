@@ -1,6 +1,6 @@
 # Licenses, notices, and source receipts
 
-Hunter’s Atlas Lite combines project code with the native Bloodborne port and third-party components. Each component remains under its own license. Read the license and notice files shipped in the corresponding source tree; the root `LICENSE` does not replace those component notices.
+Hunter’s Atlas combines project code with the native Bloodborne port and third-party components. Each component remains under its own license. Read the license and notice files shipped in the corresponding source tree; the root `LICENSE` does not replace those component notices.
 
 ## Native host and Atlas source
 

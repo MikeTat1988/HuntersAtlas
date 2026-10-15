@@ -1,4 +1,4 @@
-"""Lossless runtime asset storage. Expanded files live only for a locked Lite session."""
+"""Lossless runtime asset storage. Expanded files live only for a locked Atlas session."""
 from __future__ import annotations
 from contextlib import contextmanager
 import hashlib, json, shutil, stat, tempfile, zipfile
@@ -116,13 +116,13 @@ def materialize(contract):
             cleanup_prepared_cache(contract)
 
 def cleanup_prepared_cache(contract):
-    """Drop only named, reproducible Lite preparation intermediates after a session."""
+    """Drop only named, reproducible Atlas preparation intermediates after a session."""
     if not contract.get('config',{}).get('compact_prepared_cache',False):return
     state=contract['state_root'].resolve()
     root=contract['root'].resolve()
     state.relative_to(root)
     out=state/'out'
-    if out.is_symlink() or getattr(out,'is_junction',lambda:False)():raise ValueError('Unsafe Lite preparation directory')
+    if out.is_symlink() or getattr(out,'is_junction',lambda:False)():raise ValueError('Unsafe Atlas preparation directory')
     names=('analysis.json','boot-libc.bin','boot-linked.bin','boot.bin','content-profile.json',
            'content.bin','eboot.elf','entry.bin','libc-link.json','link.json','patches.bin')
     for name in names:

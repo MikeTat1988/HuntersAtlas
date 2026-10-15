@@ -1,7 +1,7 @@
 {
   "schema": 2,
-  "version": "2.0.0",
-  "product": "Hunters Atlas Lite",
+  "version": "1.0",
+  "product": "Hunters Atlas",
   "scope": "Sole supported release implementation. Complete native corresponding source and required dependency sources accompany the player download.",
   "upstream_launcher": {
     "tag": "windows-v1.7.2",
@@ -14,7 +14,6 @@
     "eboot_sha256": "d65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9"
   },
   "binary_inputs": {
-    "AtlasLiteLauncher.exe": "25c4fa780affb462f88895b4c98e616d9614f28fd5dc64d4d1c796c810939d4b",
     "generator.atlaslite": "621300c2660025db454b45e6152e14b5c18f6b93e24867e9cc1e661c68c2af36",
     "runtime-dependency-source.zip": "db2868569edbef2518fbe36f3a47398fd129190349c2f5b8e013e0cdbbff0306",
     "runtime/bb-probe.exe": "37e18517405cf023a32dad5826f0657ef372e9da11655c3c6ff0c9862299c525",
@@ -30,7 +29,8 @@
     "runtime/libomp.dll": "bc3880baa3d7770c3b598dd709a01fb54540a99139a526cb503764e6d6520a06",
     "runtime/libsoxr.dll": "b694e58e04c0e1668173c4ecc1fa6c14d8f14a0c575777d04be2ce00dc5e2ab0",
     "runtime/libunwind.dll": "3f2e409cdfb426bd380044ae60a865355634c60bba7ea87aa37a13b06b70bfe5",
-    "runtime/vulkan-1.dll": "fa5939ec9e78fe3ff15aababd9462b28d9969ea2809faca35314f9a7e9d8c0e4"
+    "runtime/vulkan-1.dll": "fa5939ec9e78fe3ff15aababd9462b28d9969ea2809faca35314f9a7e9d8c0e4",
+    "AtlasLauncher.exe": "771fcb45aab7bceed4fcf2c72e96cbffa75199eb9939c287f7dc6f5fd41237af"
   },
   "native_runtime": {
     "source": "source/native",

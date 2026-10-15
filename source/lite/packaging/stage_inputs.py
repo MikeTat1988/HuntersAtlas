@@ -16,7 +16,7 @@ def main():
     for p in args.runtime_dir.iterdir():
         if p.is_file() and p.suffix.lower() in ('.exe','.dll'):shutil.copy2(p,runtime/p.name)
     shutil.copy2(args.generator_bundle,out/'generator.atlaslite')
-    shutil.copy2(args.wrapper,out/'AtlasLiteLauncher.exe')
+    shutil.copy2(args.wrapper,out/'AtlasLauncher.exe')
     target=out/'runtime-dependency-source.zip'
     with zipfile.ZipFile(args.dependency_source) as src,zipfile.ZipFile(target,'w',compression=zipfile.ZIP_STORED) as dst:
         count=0

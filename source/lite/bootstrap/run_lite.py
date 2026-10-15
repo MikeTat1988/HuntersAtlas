@@ -16,7 +16,7 @@ import shutil
 import subprocess
 import sys
 
-# Lite-owned copy of the verified ordinary run.py. Keep every source behavior except
+# Atlas-owned copy of the verified ordinary run.py. Keep every source behavior except
 # the edition root, developer DLL fallback, and restart target below.
 PORT = Path(os.environ["BB_LITE_PORT_DIR"]).resolve(strict=True)
 
@@ -365,21 +365,21 @@ def main():
         user_dir.mkdir(parents=True, exist_ok=True)
         env.setdefault('BB_GPU_USER_DIR', str(user_dir))
         # The runtime consumes boot-linked.bin/content.bin/patches.bin only.
-        # Drop earlier Lite-owned compiler intermediates before gameplay starts.
+        # Drop earlier Atlas-owned compiler intermediates before gameplay starts.
         if env.get('BB_LITE_MINIMUM_DISK') == '1':
             if out.is_symlink() or getattr(out, 'is_junction', lambda: False)():
-                fail('Refusing an unsafe Lite preparation directory.')
+                fail('Refusing an unsafe Atlas preparation directory.')
             for intermediate in ('eboot.elf', 'boot.bin', 'boot-libc.bin', 'entry.bin'):
                 path = out / intermediate
                 if path.is_symlink():
-                    fail('Refusing a linked Lite preparation intermediate.')
+                    fail('Refusing a linked Atlas preparation intermediate.')
                 path.unlink(missing_ok=True)
         if env.get('BB_ONLINE') == '1' and env.get('BB_BRIDGE') == '1':
             bridge = start_bridge(env, user_dir)
         elif env.get('BB_ONLINE') == '1':
             online_overrides(env, user_dir)
-        # Restart through the Lite entrypoint so it waits for this outer session,
-        # reacquires the Lite lock, and retains edition-owned paths.
+        # Restart through the Atlas entrypoint so it waits for this outer session,
+        # reacquires the Atlas lock, and retains edition-owned paths.
         restart = [sys.executable, '--script', env['BB_LITE_ENTRY'],
                    '--after', env['BB_LITE_BOOTSTRAP_PID']]
         if env.get('BB_LITE_QA_TIMEOUT'):

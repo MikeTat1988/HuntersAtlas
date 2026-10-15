@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse,hashlib,importlib.util,json,shutil,struct,subprocess,tempfile,zipfile
 from pathlib import Path
 
-VERSION='2.0.0'
+VERSION='1.0'
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[1]
 
@@ -48,7 +48,7 @@ def main():
     p.add_argument('--player-only',action='store_true',help='Build a validation player package; final releases also require the source ZIP')
     args=p.parse_args();out=args.output.resolve()
     if out.exists():raise ValueError('Output must be a new directory; preserve existing releases')
-    out.mkdir(parents=True);package=out/'HuntersAtlasLite';package.mkdir()
+    out.mkdir(parents=True);package=out/'HuntersAtlas';package.mkdir()
     assets=load('atlas_lite_build_assets',HERE/'bootstrap/assets.py')
     deps=load('atlas_lite_build_deps',HERE/'packaging/build_dependencies.py')
     # The checked-in template comes from the official supported immutable release.
@@ -72,9 +72,9 @@ def main():
     for n in ('entry.py','assets.py','run_lite.py','run_lite-source.json','integrated_play.py','config.json'):copy(HERE/'bootstrap'/n,package/'bootstrap'/n)
     for n in ('prepare.py','atlas_lite_bundle.py'):copy(HERE/'generator'/n,package/'tools'/n)
     copy(args.generator_bundle,package/'tools/generator.atlaslite')
-    copy(args.wrapper,package/'integration/AtlasLiteLauncher.exe')
+    copy(args.wrapper,package/'integration/AtlasLauncher.exe')
     for ui in (HERE/'integration/ui').glob('*.py'):copy(ui,package/'integration/ui'/ui.name)
-    copy(REPO/'installer/Manage-Lite.ps1',package/'installer/Manage-Lite.ps1')
+    copy(REPO/'installer/Manage-Atlas.ps1',package/'installer/Manage-Atlas.ps1')
     for name in ('Install.cmd','Uninstall.cmd','LICENSE'):copy(REPO/name,package/name)
     readme=(REPO/'README.md').read_text(encoding='utf-8')
     readme=readme.replace('(examples/','(https://raw.githubusercontent.com/MikeTat1988/HuntersAtlas/main/examples/')
@@ -106,23 +106,23 @@ def main():
     manifest['files']={f.relative_to(package).as_posix():sha(f) for f in package.rglob('*') if f.is_file() and f.relative_to(package).as_posix()!='settings/settings.ini'}
     manifest['mutable_files']=['settings/settings.ini']
     write_json(package/'manifest.json',manifest)
-    player=out/f'Hunters-Atlas-Lite-{VERSION}.zip'
+    player=out/f'Hunters-Atlas-{VERSION}.zip'
     with zipfile.ZipFile(player,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
         for f in sorted(package.rglob('*')):
-            if f.is_file():z.write(f,'HuntersAtlasLite/'+f.relative_to(package).as_posix())
+            if f.is_file():z.write(f,'HuntersAtlas/'+f.relative_to(package).as_posix())
     if args.player_only:
         with zipfile.ZipFile(player) as z:
             if z.testzip():raise ValueError('Archive CRC verification failed')
         print(json.dumps({'validation_only':True,'player':str(player),'bytes':player.stat().st_size,'sha256':sha(player)},indent=2))
         return
-    sources=out/f'Hunters-Atlas-Lite-Source-{VERSION}.zip'
+    sources=out/f'Hunters-Atlas-Source-{VERSION}.zip'
     source_zip(sources,args.dependency_source)
     for archive in (player,sources):
         with zipfile.ZipFile(archive) as z:
             if z.testzip():raise ValueError('Archive CRC verification failed')
     report={'schema':1,'version':VERSION,'player':{'name':player.name,'bytes':player.stat().st_size,'sha256':sha(player),'extracted_bytes':sum(f.stat().st_size for f in package.rglob('*') if f.is_file())},
         'source':{'name':sources.name,'bytes':sources.stat().st_size,'sha256':sha(sources)},
-        'components':{'runtime':sha(package/'bin/bb-probe.exe'),'generator':sha(package/'tools/generator.atlaslite'),'launcher_wrapper':sha(package/'integration/AtlasLiteLauncher.exe')},
+        'components':{'runtime':sha(package/'bin/bb-probe.exe'),'generator':sha(package/'tools/generator.atlaslite'),'launcher_wrapper':sha(package/'integration/AtlasLauncher.exe')},
         'includes_game_maps_or_font':False,'depends_on_installed_previous_atlas':False}
     write_json(out/'release-manifest.json',report)
     (out/'SHA256SUMS.txt').write_text('\n'.join(sha(f)+'  '+f.name for f in (player,sources))+'\n',encoding='ascii')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a path-portable Atlas Lite dependency template from a pristine release.
+"""Build a path-portable Atlas dependency template from a pristine release.
 
 The generated JSON pins the ordinary launcher's Python entry point and scripts,
 direct bin EXE/DLL files, the stock executable hash as a launcher variant, and

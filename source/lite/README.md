@@ -1,4 +1,4 @@
-# Atlas Lite implementation
+# Atlas implementation
 
 `bootstrap/entry.py` validates the package and the exact supported ordinary
 launcher dependencies. `bootstrap/integrated_play.py` receives the normal

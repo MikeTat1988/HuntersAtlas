@@ -20,7 +20,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,PWSTR ignored,int show
     STARTUPINFOW startup;GetStartupInfoW(&startup);startup.cb=sizeof(startup);
     PROCESS_INFORMATION process;
     if(!CreateProcessW(executable,command,NULL,NULL,TRUE,0,NULL,directory,&startup,&process)) {
-        MessageBoxW(NULL,L"Hunter's Atlas Lite launcher files are missing. Run Uninstall.cmd or reinstall Lite.",L"Bloodborne",MB_OK|MB_ICONERROR);
+        MessageBoxW(NULL,L"Hunter's Atlas launcher files are missing. Run Uninstall.cmd or reinstall Atlas.",L"Bloodborne",MB_OK|MB_ICONERROR);
         return 2;
     }
     CloseHandle(process.hThread);WaitForSingleObject(process.hProcess,INFINITE);

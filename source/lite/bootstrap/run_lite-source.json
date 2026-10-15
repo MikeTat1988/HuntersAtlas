@@ -5,11 +5,11 @@
   "source_sha256": "2f69776954c3ba10fd9a3aedfbaf383950d6c63a7c11f35337f0d5d0e1ed38c4",
   "source_bytes": 19032,
   "copy_path": "bootstrap/run_lite.py",
-  "copy_sha256": "def277882e4c46ec554dbb405d20572bde5721aed289593e60853b4a164453ca",
+  "copy_sha256": "c58ee4c874f86db23e369bab1afa94b07a8fa4978e7f670afa61ce09a2d31146",
   "changes": [
     "Set PORT from the validated BB_LITE_PORT_DIR environment variable.",
     "Remove the developer-only MSYS2 DLL fallback.",
-    "Route Apply and restart through bootstrap/entry.py and wait for the outer Lite session.",
-    "Delete four named Lite-owned intermediate compiler files after patches are prepared, before the game starts; keep runtime inputs."
+    "Route Apply and restart through bootstrap/entry.py and wait for the outer Atlas session.",
+    "Delete four named Atlas-owned intermediate compiler files after patches are prepared, before the game starts; keep runtime inputs."
   ]
 }

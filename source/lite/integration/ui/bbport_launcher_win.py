@@ -117,7 +117,7 @@ def run_role(argv):
 
 
 def run_command(child_environment=None):
-    """Route the usual Play action through Lite only when its verified marker is set."""
+    """Route the usual Play action through Atlas only when its verified marker is set."""
     lite_root = (child_environment or {}).get('BB_LITE_PACKAGE', '').strip()
     if lite_root:
         entry = (Path(lite_root) / 'bootstrap' / 'integrated_play.py').resolve()
@@ -126,7 +126,7 @@ def run_command(child_environment=None):
 
 
 def atlas_prepare_command(package, game_folder):
-    """Build the Lite generator invocation using the launcher's frozen interpreter."""
+    """Build the Atlas generator invocation using the launcher's frozen interpreter."""
     generator = package.paths['generator']
     command = ([sys.executable, '--script', str(generator)] if FROZEN else
                [sys.executable, str(generator)])
@@ -498,15 +498,15 @@ def game_environment(s):
             env['BB_SHADNET_PASSWORD'] = ''
     env['PYTHONUNBUFFERED'] = '1'
     env['PYTHONIOENCODING'] = 'utf-8'
-    # Resolve Lite only in the child process. The launcher profile stores its folder and
-    # enable switch; its package settings remain owned by the Lite package.
+    # Resolve Atlas only in the child process. The launcher profile stores its folder and
+    # enable switch; its package settings remain owned by the Atlas package.
     if s.get('atlas_enabled'):
         try:
             game_executable = Path(s['game_dir']) / 'eboot.bin'
             game_hash = atlas_addon.sha256_file(game_executable)
             package = atlas_addon.inspect_package(s.get('atlas_dir', ''), game_sha256=game_hash)
         except OSError as error:
-            raise atlas_addon.AtlasManifestError(f'Could not validate the selected Atlas Lite package: {error}') from error
+            raise atlas_addon.AtlasManifestError(f'Could not validate the selected Atlas package: {error}') from error
         # Match the existing game patch setting. Legacy app-profile enter_button
         # values are retained in settings.json but no longer control Atlas.
         ini, _lines = load_ini()
@@ -1224,7 +1224,7 @@ class Launcher:
         self.patches_frame.grid(row=self.next_row(f), column=0, columnspan=2, sticky='we', pady=(8, 0))
         self.ttk.Button(f, text=_('Refresh', 'Обновить'), command=self.refresh_lists).grid(
             row=self.next_row(f), column=0, sticky='w', pady=(14, 0))
-        self.section(f, _('Hunter\'s Atlas Lite'))
+        self.section(f, _('Hunter\'s Atlas'))
         self.check(f, 'atlas_enabled', 'app', _('Enable Hunter\'s Atlas'),
                    _('The selected package is checked for file integrity and compatibility before play.'))
         self.var('atlas_enabled', 'app').trace_add('write', lambda *_a: self.schedule_atlas_status())
@@ -1267,7 +1267,7 @@ class Launcher:
         game_executable = Path(self.var('game_dir', 'app').get()) / 'eboot.bin'
         atlas_folder = self.var('atlas_dir', 'app').get()
         enabled = self.var('atlas_enabled', 'app').get()
-        self.atlas_status.configure(text=_('Checking Atlas Lite package…'), style='Muted.TLabel')
+        self.atlas_status.configure(text=_('Checking Atlas package…'), style='Muted.TLabel')
 
         def validate():
             package, error = atlas_addon.package_status(atlas_folder, game_executable=game_executable)
@@ -1284,7 +1284,7 @@ class Launcher:
             style = 'Muted.TLabel'
             self.atlas_prepare_button.configure(state='disabled')
         elif package:
-            state = _('Hunter\'s Atlas Lite package recognized.')
+            state = _('Hunter\'s Atlas package recognized.')
             message = f'{state} {error or package.generated_message}'
             style = 'Warning.TLabel'
             self.atlas_prepare_button.configure(state='normal' if not self.atlas_generating else 'disabled')
@@ -2240,10 +2240,10 @@ class Launcher:
             return
         if (PORT_DIR / 'atlas-lite-install.json').is_file():
             self.messagebox.showwarning('Bloodborne', _(
-                "Uninstall Hunter's Atlas Lite before updating the launcher. "
-                "Atlas Lite requires its verified supported launcher version.",
-                "Перед обновлением лаунчера удалите Hunter's Atlas Lite через Uninstall.cmd. "
-                "Atlas Lite требует проверенную поддерживаемую версию лаунчера."))
+                "Uninstall Hunter's Atlas before updating the launcher. "
+                "Atlas requires its verified supported launcher version.",
+                "Перед обновлением лаунчера удалите Hunter's Atlas через Uninstall.cmd. "
+                "Atlas требует проверенную поддерживаемую версию лаунчера."))
             return
         if not FROZEN or not url:  # a source tree updates with git
             webbrowser.open(page)
@@ -2455,12 +2455,12 @@ def install_update(target, wait_pid):
     waits for the old launcher to close, copies this version over TARGET (never the saves,
     settings or mods) and starts it."""
     # This is a separate headless process. Check the persisted profile here as a final guard
-    # so the stock release cannot silently replace the Lite-enabled launcher while Atlas is on.
+    # so the stock release cannot silently replace the Atlas-enabled launcher while Atlas is on.
     installed_settings = {**APP_DEFAULTS, **load_json(CONFIG_FILE, {})}
     if installed_settings.get('atlas_enabled'):
         ctypes.windll.user32.MessageBoxW(None, _(
             "Hunter's Atlas is enabled. Turn it off in the launcher before installing this stock update. "
-            "The update replaces the Atlas Lite launcher integration; Atlas settings and package files will be kept.",
+            "The update replaces the Atlas launcher integration; Atlas settings and package files will be kept.",
             "Hunter's Atlas включён. Отключите его в лаунчере перед установкой этого обновления. "
             "Обновление заменит лаунчер с поддержкой Atlas; настройки Atlas и файлы пакета сохранятся."),
             'Bloodborne', 0x30)

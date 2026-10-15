@@ -1,11 +1,11 @@
-# Hunter’s Atlas Lite 2.0.0 source and build guide
+# Hunter’s Atlas 1.0 source and build guide
 
-This guide describes the corresponding source release. Players use the prepared Lite ZIP and do not need Python, a compiler, or the developer dependencies below. A rebuild is not guaranteed to produce byte-identical executables.
+This guide describes the corresponding source release. Players use the prepared Atlas ZIP and do not need Python, a compiler, or the developer dependencies below. A rebuild is not guaranteed to produce byte-identical executables.
 
 ## Source layout
 
 - `native/` contains the Windows native host and Atlas changes, with the required upstream vendor source and patches.
-- `generator/src/` contains the original map-generation algorithms. The Lite generator code under `lite/generator/` wraps, packages, and prepares that source for the first-install workflow; it does not replace the original algorithms.
+- `generator/src/` contains the original map-generation algorithms. The Atlas generator code under `lite/generator/` wraps, packages, and prepares that source for the first-install workflow; it does not replace the original algorithms.
 - `lite/bootstrap/` contains the isolated package and launch checks.
 - `lite/integration/ui/` and `lite/integration/` contain the launcher integration and its C wrapper source.
 - `licenses/` contains project and third-party notices and source receipts. Runtime dependency source is supplied under `runtime-dependencies/` in the corresponding source release, not the player package.
@@ -21,7 +21,7 @@ python source/lite/build_release.py `
   --runtime-dir <native-build-output-with-required-dlls> `
   --generator-bundle <generator.atlaslite> `
   --launcher-root <pristine-windows-v1.7.2-tree> `
-  --wrapper <AtlasLiteLauncher.exe> `
+  --wrapper <AtlasLauncher.exe> `
   --dependency-source <runtime-dependency-source.zip> `
   --output <new-output-directory>
 ```
@@ -47,7 +47,7 @@ Set `MSYS2_ROOT` to the actual MSYS2 root if it is elsewhere. The Windows build 
 
 ## Build the generator
 
-The original algorithms are under `generator/src/`. The Lite wrapper, bundle packer, and headless preparation entry points are under `lite/generator/`. Build the frozen generator with the CPython 3.12 toolchain and pinned dependencies described by the generator requirements and source receipts. The corresponding source archive includes the required project-only source and the optional dependency-source material referenced by those receipts.
+The original algorithms are under `generator/src/`. The Atlas wrapper, bundle packer, and headless preparation entry points are under `lite/generator/`. Build the frozen generator with the CPython 3.12 toolchain and pinned dependencies described by the generator requirements and source receipts. The corresponding source archive includes the required project-only source and the optional dependency-source material referenced by those receipts.
 
 The prepared player uses the frozen generator through the verified launcher’s private runtime. It prepares 16 maps and the required font from the compatible game files chosen by the user. Keep generated output outside the source tree and do not add game-derived maps or fonts to the release asset.
 

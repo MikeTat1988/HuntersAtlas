@@ -1,4 +1,4 @@
-"""Build and run the self-contained, compressed Atlas Lite preparation bundle.
+"""Build and run the self-contained, compressed Atlas preparation bundle.
 
 The bundle carries the existing frozen CPython 3.12 generator unchanged. At
 runtime the wrapper needs only the standard library; it verifies every payload
@@ -106,7 +106,7 @@ def _read_manifest(archive: zipfile.ZipFile) -> tuple[dict[str, object], dict[st
     except (KeyError, json.JSONDecodeError) as exc:
         raise ValueError("bundle manifest is missing or invalid") from exc
     if not isinstance(manifest, dict) or manifest.get("format") != FORMAT_VERSION:
-        raise ValueError("unsupported Atlas Lite bundle format")
+        raise ValueError("unsupported Atlas bundle format")
     if manifest.get("entrypoint") not in ENTRYPOINTS or not isinstance(manifest.get("files"), dict):
         raise ValueError("bundle entrypoint or file table is invalid")
 

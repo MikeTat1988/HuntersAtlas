@@ -11,8 +11,8 @@ New-Item -ItemType Directory -Path $OutputDir|Out-Null
 $OutputDir=(Resolve-Path -LiteralPath $OutputDir).Path
 Copy-Item -LiteralPath (Join-Path $source 'bloodborne.ico') -Destination (Join-Path $OutputDir 'bloodborne.ico')
 [IO.File]::WriteAllText((Join-Path $OutputDir 'launcher.rc'),'1 ICON "bloodborne.ico"')
-$command="@echo off`r`ncall `"$dev`" -arch=x64 -no_logo`r`nif errorlevel 1 exit /b 1`r`nrc.exe /nologo /fo launcher.res launcher.rc`r`nif errorlevel 1 exit /b 1`r`ncl.exe /nologo /O1 /MT `"$(Join-Path $source 'launcher_wrapper.c')`" /link /SUBSYSTEM:WINDOWS /OUT:AtlasLiteLauncher.exe launcher.res user32.lib kernel32.lib`r`nexit /b %errorlevel%`r`n"
+$command="@echo off`r`ncall `"$dev`" -arch=x64 -no_logo`r`nif errorlevel 1 exit /b 1`r`nrc.exe /nologo /fo launcher.res launcher.rc`r`nif errorlevel 1 exit /b 1`r`ncl.exe /nologo /O1 /MT `"$(Join-Path $source 'launcher_wrapper.c')`" /link /SUBSYSTEM:WINDOWS /OUT:AtlasLauncher.exe launcher.res user32.lib kernel32.lib`r`nexit /b %errorlevel%`r`n"
 [IO.File]::WriteAllText((Join-Path $OutputDir 'build.cmd'),$command,[Text.Encoding]::ASCII)
 Push-Location $OutputDir
 try{& $env:ComSpec /d /c build.cmd;if($LASTEXITCODE -ne 0){throw 'Wrapper build failed.'}}finally{Pop-Location}
-Get-FileHash -LiteralPath (Join-Path $OutputDir 'AtlasLiteLauncher.exe') -Algorithm SHA256
+Get-FileHash -LiteralPath (Join-Path $OutputDir 'AtlasLauncher.exe') -Algorithm SHA256

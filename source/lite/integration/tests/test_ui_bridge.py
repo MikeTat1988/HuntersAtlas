@@ -33,7 +33,7 @@ def load_ui_module():
 class LiteLauncherBridgeTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.package = Path(self.temp.name) / "Hunter's Atlas Lite"
+        self.package = Path(self.temp.name) / "Hunter's Atlas"
         (self.package / "bootstrap").mkdir(parents=True)
         (self.package / "bin").mkdir()
         (self.package / "tools").mkdir()
@@ -125,7 +125,7 @@ def load_contract(root):
     def test_lite_resolver_checks_pack_hash_before_reading_metadata(self):
         pack = self.package / "assets.atlaslite"
         pack.write_bytes(pack.read_bytes() + b"altered")
-        with self.assertRaisesRegex(atlas_addon.AtlasManifestError, "Could not verify the Hunter's Atlas Lite package"):
+        with self.assertRaisesRegex(atlas_addon.AtlasManifestError, "Could not verify the Hunter's Atlas package"):
             atlas_addon.inspect_package(self.package, game_sha256=GAME_SHA)
 
     def test_lite_readiness_uses_packed_metadata_for_selected_game(self):

@@ -1,4 +1,4 @@
-"""Headless first-install map preparation for a packaged Hunter's Atlas Lite."""
+"""Headless first-install map preparation for a packaged Hunter's Atlas."""
 
 from __future__ import annotations
 
@@ -191,7 +191,7 @@ def _validate_contract_paths(root: Path, output_dir: Path, contract: dict[str, A
     package_root = root.resolve(strict=True)
     output = output_dir.expanduser().resolve(strict=True)
     if output != package_root or contract["root"].resolve(strict=True) != package_root:
-        raise ValueError("--output-dir must be the installed Lite package root containing this prepare.py.")
+        raise ValueError("--output-dir must be the installed Atlas package root containing this prepare.py.")
     own_files: dict[str, Path] = contract["own_files"]
 
     def pinned(path: Path, label: str) -> Path:
@@ -205,7 +205,7 @@ def _validate_contract_paths(root: Path, output_dir: Path, contract: dict[str, A
     bundle_path = pinned(package_root / "tools" / "generator.atlaslite", "generator bundle")
     pack_spec = contract.get("asset_pack")
     if not isinstance(pack_spec, dict):
-        raise ValueError("The Lite manifest must declare its asset pack before preparation.")
+        raise ValueError("The Atlas manifest must declare its asset pack before preparation.")
     manager = pack_spec.get("manager")
     if not isinstance(manager, Path) or manager.resolve(strict=True) != pinned(package_root / "bootstrap" / "assets.py", "asset manager"):
         raise ValueError("The prepared asset manager is not the verified bundled implementation.")
@@ -217,13 +217,13 @@ def _validate_contract_paths(root: Path, output_dir: Path, contract: dict[str, A
     pack_path = Path(pack_spec["path"]).resolve(strict=True)
     expected_pack = (package_root / "assets.atlaslite").resolve(strict=True)
     if pack_path != expected_pack:
-        raise ValueError("The Lite asset pack must be the package's assets.atlaslite file.")
+        raise ValueError("The Atlas asset pack must be the package's assets.atlaslite file.")
     manifest_relative = Path(contract.get("config", {}).get("manifest", "manifest.json"))
     if manifest_relative.is_absolute() or ".." in manifest_relative.parts:
         raise ValueError("The package manifest path is unsafe.")
     manifest_path = (package_root / manifest_relative).resolve(strict=True)
     if not _inside(package_root, manifest_path):
-        raise ValueError("The package manifest must remain inside the Lite root.")
+        raise ValueError("The package manifest must remain inside the Atlas root.")
     return driver, bundle_path, pack_path, manifest_path
 
 
@@ -249,9 +249,9 @@ def _prepare(game_dir: Path, output_dir: Path, *, cancel_file: Path | None = Non
     game = _resolve_game_dir(game_dir)
     state = Path(contract["state_root"]).resolve(strict=False)
     if not _inside(root.resolve(), state):
-        raise ValueError("Preparation state must remain inside the installed Lite package.")
+        raise ValueError("Preparation state must remain inside the installed Atlas package.")
     if _inside(game, root.resolve()) or _inside(root.resolve(), game):
-        raise ValueError("The Lite package and selected game directory must be separate.")
+        raise ValueError("The Atlas package and selected game directory must be separate.")
     if cancel_file is not None:
         cancel_file = cancel_file.expanduser().resolve(strict=False)
         if _is_cancelled(cancel_file):
@@ -374,7 +374,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--game-dir", type=Path, required=True,
                         help="Selected Bloodborne 1.09 Image0 directory or its parent.")
     parser.add_argument("--output-dir", type=Path, required=True,
-                        help="Installed Hunter's Atlas Lite package root.")
+                        help="Installed Hunter's Atlas package root.")
     parser.add_argument("--headless", action="store_true", required=True,
                         help="Run without opening a GUI; intended for the installer launcher.")
     parser.add_argument("--cancel-file", type=Path,

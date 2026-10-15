@@ -1,4 +1,4 @@
-"""Isolated Hunter's Atlas Lite bootstrap for the ordinary frozen Windows launcher.
+"""Isolated Hunter's Atlas bootstrap for the ordinary frozen Windows launcher.
 
 The launcher invokes this file with ``Bloodborne.exe --script entry.py``. This
 standard-library bridge validates package inputs and stages the isolated runtime.
@@ -48,13 +48,13 @@ def sha256_file(path: Path) -> str:
 def validate_game_source(contract: dict[str, Any], profile: dict[str, Any]) -> None:
     declared = contract.get("manifest", {}).get("game_executables", [SUPPORTED_GAME_SHA256])
     if declared != [SUPPORTED_GAME_SHA256]:
-        raise BootstrapError("This Lite build does not support its declared game fingerprint.")
+        raise BootstrapError("This Atlas build does not support its declared game fingerprint.")
     game = Path(str(profile.get("game_dir", "")))
     executable = game / "eboot.bin"
     if not executable.is_file():
         raise BootstrapError("Choose the Bloodborne game folder containing eboot.bin in Settings.cmd.")
     if sha256_file(executable) != SUPPORTED_GAME_SHA256:
-        raise BootstrapError("Unsupported Bloodborne executable. Atlas Lite supports the verified 1.09 build only; no game files were changed.")
+        raise BootstrapError("Unsupported Bloodborne executable. Atlas supports the verified 1.09 build only; no game files were changed.")
 
 
 def _json_object(path: Path, label: str) -> dict[str, Any]:
@@ -118,22 +118,22 @@ def _hash_table(root: Path, table: object, label: str) -> dict[str, Path]:
 
 
 def load_contract(root: Path) -> dict[str, Any]:
-    """Validate Lite-owned files and separately typed ordinary-port dependencies."""
+    """Validate Atlas-owned files and separately typed ordinary-port dependencies."""
     root = root.resolve(strict=True)
     config = _json_object(root / "bootstrap" / "config.json", "bootstrap config")
-    if config.get("schema") != 1 or config.get("edition") != "Lite":
-        raise BootstrapError("bootstrap/config.json must declare schema 1 and edition Lite.")
+    if config.get("schema") != 1 or config.get("edition") != "Atlas":
+        raise BootstrapError("bootstrap/config.json must declare schema 1 and edition Atlas.")
     manifest_path = _inside(root, config.get("manifest", "manifest.json"), "manifest", file=True)
-    manifest = _json_object(manifest_path, "Lite manifest")
+    manifest = _json_object(manifest_path, "Atlas manifest")
     if manifest.get("schema") != 1 or manifest.get("id") != MANIFEST_ID:
-        raise BootstrapError("Unsupported Lite manifest identity or schema.")
+        raise BootstrapError("Unsupported Atlas manifest identity or schema.")
     own_files = _hash_table(root, manifest.get("files"), "manifest.files")
 
     deps_path = _inside(root, config.get("dependencies", "dependencies.json"),
                         "dependencies manifest", file=True)
     deps = _json_object(deps_path, "dependencies manifest")
     if deps.get("schema") != 1 or deps.get("id") != DEPENDENCIES_ID:
-        raise BootstrapError("Unsupported Lite dependencies identity or schema.")
+        raise BootstrapError("Unsupported Atlas dependencies identity or schema.")
     ordinary = deps.get("ordinary_port")
     if not isinstance(ordinary, dict):
         raise BootstrapError("dependencies.ordinary_port must be an object.")
@@ -214,11 +214,11 @@ def load_contract(root: Path) -> dict[str, Any]:
     source_receipt = _inside(root, "bootstrap/run_lite-source.json", "run_lite source receipt", file=True)
     for label, path in (("entrypoint", entry), ("runner", runner), ("source receipt", source_receipt)):
         if path.relative_to(root).as_posix().casefold() not in own_files:
-            raise BootstrapError(f"Lite manifest does not hash its {label}.")
+            raise BootstrapError(f"Atlas manifest does not hash its {label}.")
     receipt = _json_object(source_receipt, "run_lite source receipt")
     if (receipt.get("schema") != 1 or receipt.get("source_sha256") != sha256_file(run_script) or
             receipt.get("copy_sha256") != sha256_file(runner)):
-        raise BootstrapError("run_lite source receipt does not match the verified ordinary run.py and Lite copy.")
+        raise BootstrapError("run_lite source receipt does not match the verified ordinary run.py and Atlas copy.")
     bin_paths: list[Path] = []
     for path in base_files.values():
         if path.suffix.casefold() == ".dll" and path.parent.name.casefold() == "bin":
@@ -226,7 +226,7 @@ def load_contract(root: Path) -> dict[str, Any]:
 
     paths = manifest.get("paths")
     if not isinstance(paths, dict):
-        raise BootstrapError("Lite manifest must define its owned runtime paths.")
+        raise BootstrapError("Atlas manifest must define its owned runtime paths.")
     state_relative = _relative(config.get("state_dir", "state"), "state_dir")
     state_root = root.joinpath(*state_relative.parts)
     state_cursor = root
@@ -237,7 +237,7 @@ def load_contract(root: Path) -> dict[str, Any]:
     try:
         state_root.resolve(strict=False).relative_to(root)
     except ValueError as error:
-        raise BootstrapError("state_dir must stay inside the Lite package root.") from error
+        raise BootstrapError("state_dir must stay inside the Atlas package root.") from error
     raw_asset_pack = manifest.get("asset_pack")
     asset_pack = None
     if raw_asset_pack is not None:
@@ -248,7 +248,7 @@ def load_contract(root: Path) -> dict[str, Any]:
         pack_key = pack.relative_to(root).as_posix().casefold()
         if (not isinstance(expected_pack_hash, str) or not SHA256_RE.fullmatch(expected_pack_hash.lower()) or
                 sha256_file(pack) != expected_pack_hash.lower() or own_files.get(pack_key) != pack):
-            raise BootstrapError("Lite asset pack must match its SHA-256 and manifest.files entry.")
+            raise BootstrapError("Atlas asset pack must match its SHA-256 and manifest.files entry.")
         asset_manager = _inside(root, "bootstrap/assets.py", "asset manager", file=True)
         if asset_manager.relative_to(root).as_posix().casefold() not in own_files:
             raise BootstrapError("Packed mode requires a manifest-hashed bootstrap/assets.py.")
@@ -273,30 +273,30 @@ def load_contract(root: Path) -> dict[str, Any]:
     probe_relative = owned_paths["probe"].relative_to(root)
     if (len(probe_relative.parts) != 2 or probe_relative.parts[0].casefold() != "bin" or
             probe_relative.name.casefold() != "bb-probe.exe"):
-        raise BootstrapError("paths.probe must be Lite's bin/bb-probe.exe.")
+        raise BootstrapError("paths.probe must be Atlas's bin/bb-probe.exe.")
     own_bin = root / "bin"
     pinned_own_bin = {path.resolve() for path in own_files.values() if path.parent.name.casefold() == "bin"}
     if own_bin.is_dir():
         unpinned = [path for path in own_bin.iterdir() if path.is_file() and
                     path.suffix.casefold() in {".dll", ".exe"} and path.resolve() not in pinned_own_bin]
         if unpinned:
-            raise BootstrapError(f"Lite bin contains an unverified executable or DLL: {unpinned[0].name}.")
+            raise BootstrapError(f"Atlas bin contains an unverified executable or DLL: {unpinned[0].name}.")
     for name in ("probe", "catalog", "font"):
         if asset_pack and name in {"catalog", "font"}:
             continue
         rel = owned_paths[name].relative_to(root).as_posix().casefold()
         if rel not in own_files:
-            raise BootstrapError(f"Lite manifest does not hash its {name} file.")
+            raise BootstrapError(f"Atlas manifest does not hash its {name} file.")
     if not asset_pack and not any(path.relative_to(root).as_posix().casefold().startswith(
             owned_paths["art"].relative_to(root).as_posix().casefold().rstrip("/") + "/")
             for path in own_files.values()):
-        raise BootstrapError("Lite manifest has no hashed files under paths.art.")
+        raise BootstrapError("Atlas manifest has no hashed files under paths.art.")
 
     generator = None
     if manifest.get("generator"):
         generator = _inside(root, manifest["generator"], "generator", file=True)
         if generator.relative_to(root).as_posix().casefold() not in own_files:
-            raise BootstrapError("Lite generator must be covered by manifest.files.")
+            raise BootstrapError("Atlas generator must be covered by manifest.files.")
     return {"root": root, "config": config, "manifest": manifest, "own_files": own_files,
             "dependencies": deps, "base_root": base_root, "base_files": base_files,
             "launcher_variant": selected_variant, "launcher_hash": actual_launcher_hash,
@@ -349,7 +349,7 @@ def import_profile_once(state_root: Path, source: Path | None = None) -> Path:
 
 
 def import_port_data_once(base_root: Path, state_root: Path) -> None:
-    """Copy the ordinary launcher's editable graphics/input/mod settings into Lite once."""
+    """Copy the ordinary launcher's editable graphics/input/mod settings into Atlas once."""
     receipt = state_root / "profile" / "port-data-import-receipt.json"
     if receipt.exists():
         return
@@ -385,7 +385,7 @@ def _atomic_json(path: Path, data: dict[str, Any]) -> None:
 
 
 def load_profile(path: Path) -> dict[str, Any]:
-    value = _json_object(path, "Lite profile")
+    value = _json_object(path, "Atlas profile")
     return value
 
 
@@ -407,7 +407,7 @@ def _ini_value(path: Path, key: str) -> str | None:
 def game_environment(contract: dict[str, Any], profile: dict[str, Any],
                      inherited: dict[str, str] | None = None, *, qa_timeout: int | None = None,
                      qa_control_dir: str | os.PathLike[str] | None = None) -> dict[str, str]:
-    """Translate standard launcher preferences to a child-only, Lite-isolated environment."""
+    """Translate standard launcher preferences to a child-only, Atlas-isolated environment."""
     env = dict(os.environ if inherited is None else inherited)
     for key in tuple(env):
         canonical = key.upper()
@@ -452,7 +452,7 @@ def game_environment(contract: dict[str, Any], profile: dict[str, Any],
         "BB_LITE_MINIMUM_DISK": "1" if contract["config"].get("compact_prepared_cache", False) else "0",
         # run.py's developer fallback prepends MSYS2 when the probe's own folder
         # lacks SDL3.dll. This private nonexistent root disables that fallback;
-        # the child PATH contains only the verified Lite/base DLL folders.
+        # the child PATH contains only the verified Atlas/base DLL folders.
         "MSYS2_ROOT": str(root / ".disabled-msys2-fallback"),
         "PYTHONUNBUFFERED": "1",
         "PYTHONIOENCODING": "utf-8",
@@ -556,7 +556,7 @@ def game_environment(contract: dict[str, Any], profile: dict[str, Any],
         try:
             qa_dir.relative_to(qa_root)
         except ValueError as error:
-            raise BootstrapError("QA control directory must stay inside Lite state/qa.") from error
+            raise BootstrapError("QA control directory must stay inside Atlas state/qa.") from error
         env["BB_ATLAS_QA"] = "1"
         env["BB_MAP_QA"] = "1"
         env["BB_MAP_TEST_CONTROL"] = str(qa_dir / "control.txt")
@@ -626,7 +626,7 @@ def _pid_alive(pid: int) -> bool:
 
 
 def wait_for_pid(pid: int) -> None:
-    """Wait for a previous Lite bootstrap process before a restart takes its lock."""
+    """Wait for a previous Atlas bootstrap process before a restart takes its lock."""
     if pid <= 0 or not _pid_alive(pid):
         return
     if os.name == "nt":
@@ -647,7 +647,7 @@ def wait_for_pid(pid: int) -> None:
             try:
                 result = wait_for_single_object(handle, 0xFFFFFFFF)
                 if result != 0:
-                    raise BootstrapError(f"Could not wait for the previous Lite session (PID {pid}).")
+                    raise BootstrapError(f"Could not wait for the previous Atlas session (PID {pid}).")
             finally:
                 close_handle(handle)
             return
@@ -674,16 +674,16 @@ def _report_startup_error(root: Path | None, message: str) -> None:
             from tkinter import messagebox
             window = tk.Tk()
             window.withdraw()
-            messagebox.showerror("Hunter's Atlas Lite", message, parent=window)
+            messagebox.showerror("Hunter's Atlas", message, parent=window)
             window.destroy()
             return
         except Exception:
             pass
-    print(f"Hunter's Atlas Lite: {message}", file=sys.stderr)
+    print(f"Hunter's Atlas: {message}", file=sys.stderr)
 
 
 class SessionLock:
-    """Exclusive Lite session marker with conservative stale-PID recovery."""
+    """Exclusive Atlas session marker with conservative stale-PID recovery."""
     def __init__(self, path: Path):
         self.path = path
         self.owned = False
@@ -700,17 +700,17 @@ class SessionLock:
                 except (OSError, ValueError, TypeError, AttributeError):
                     pid = -1
                 if pid > 0 and _pid_alive(pid):
-                    raise BootstrapError(f"Hunter's Atlas Lite already has an active session (PID {pid}).")
+                    raise BootstrapError(f"Hunter's Atlas already has an active session (PID {pid}).")
                 try:
                     self.path.unlink()
                 except OSError as error:
-                    raise BootstrapError(f"Could not clear a stale Lite session lock: {error}") from error
+                    raise BootstrapError(f"Could not clear a stale Atlas session lock: {error}") from error
                 continue
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
                 json.dump({"pid": os.getpid(), "started_at_epoch": int(time.time())}, stream)
             self.owned = True
             return self
-        raise BootstrapError("Could not acquire the Lite session lock.")
+        raise BootstrapError("Could not acquire the Atlas session lock.")
 
     def __exit__(self, *_exc):
         if self.owned:
@@ -789,7 +789,7 @@ def ensure_no_game_processes(*, process_names: set[str] | None = None,
 def _generator_command(contract: dict[str, Any]) -> list[str]:
     generator = contract.get("generator")
     if generator is None:
-        raise BootstrapError("Lite manifest does not yet define a hash-verified generator.")
+        raise BootstrapError("Atlas manifest does not yet define a hash-verified generator.")
     if generator.suffix.casefold() == ".py":
         return [str(contract["launcher"]), "--script", str(generator)]
     return [str(generator)]
@@ -802,7 +802,7 @@ def _materialized_asset_paths(contract: dict[str, Any]):
     import importlib.util
     spec = importlib.util.spec_from_file_location("atlas_lite_assets", packed["manager"])
     if spec is None or spec.loader is None:
-        raise BootstrapError("Could not load the hash-verified Lite asset manager.")
+        raise BootstrapError("Could not load the hash-verified Atlas asset manager.")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     materialize = getattr(module, "materialize", None)
@@ -823,9 +823,9 @@ def _validated_materialized_paths(contract: dict[str, Any], paths: object) -> di
             path = Path(paths[key]).resolve(strict=True)
             relative = path.relative_to(state_root)
         except (OSError, TypeError, ValueError, RuntimeError) as error:
-            raise BootstrapError(f"Materialized {key} path is missing or outside the Lite state folder.") from error
+            raise BootstrapError(f"Materialized {key} path is missing or outside the Atlas state folder.") from error
         if not relative.parts or not relative.parts[0].casefold().startswith("session-assets-"):
-            raise BootstrapError(f"Materialized {key} path must stay in a temporary Lite session-assets folder.")
+            raise BootstrapError(f"Materialized {key} path must stay in a temporary Atlas session-assets folder.")
         if session_root_name is None:
             session_root_name = relative.parts[0]
         elif relative.parts[0] != session_root_name:
@@ -846,14 +846,14 @@ def _validated_materialized_paths(contract: dict[str, Any], paths: object) -> di
             probe = raw_probe.resolve(strict=True)
             relative = probe.relative_to(state_root)
         except (OSError, TypeError, ValueError, RuntimeError) as error:
-            raise BootstrapError("Materialized probe is missing or outside the Lite state folder.") from error
+            raise BootstrapError("Materialized probe is missing or outside the Atlas state folder.") from error
         if (not relative.parts or relative.parts[0] != session_root_name or len(relative.parts) != 3 or
                 relative.parts[1].casefold() != "bin" or relative.parts[2].casefold() != "bb-probe.exe" or
                 not probe.is_file()):
             raise BootstrapError("Materialized probe must be bin/bb-probe.exe in the shared session-assets folder.")
         verified_probe = contract["paths"]["probe"]
         if sha256_file(probe) != sha256_file(verified_probe):
-            raise BootstrapError("Materialized probe SHA-256 does not match the verified Lite probe.")
+            raise BootstrapError("Materialized probe SHA-256 does not match the verified Atlas probe.")
         result["probe"] = probe
     return result
 
@@ -864,13 +864,13 @@ def _run_generator(contract: dict[str, Any]) -> int:
 
 
 def show_settings(profile_path: Path, contract: dict[str, Any]) -> int:
-    """Small Lite-only settings window: game folder and Atlas toggle."""
+    """Small Atlas-only settings window: game folder and Atlas toggle."""
     import tkinter as tk
     from tkinter import filedialog, messagebox, ttk
 
     profile = load_profile(profile_path)
     window = tk.Tk()
-    window.title("Hunter's Atlas Lite")
+    window.title("Hunter's Atlas")
     window.geometry("580x190")
     window.minsize(480, 170)
     frame = ttk.Frame(window, padding=16)
@@ -889,34 +889,34 @@ def show_settings(profile_path: Path, contract: dict[str, Any]) -> int:
         row=2, column=0, sticky="w", pady=(0, 12))
     buttons = ttk.Frame(frame)
     buttons.grid(row=3, column=0, columnspan=2, sticky="ew")
-    ttk.Label(frame, text="Settings and saves are stored in the Lite profile.").grid(
+    ttk.Label(frame, text="Settings and saves are stored in the Atlas profile.").grid(
         row=4, column=0, columnspan=2, sticky="w", pady=(12, 0))
     frame.columnconfigure(0, weight=1)
     def save():
         profile["game_dir"] = game_var.get().strip()
         profile["atlas_enabled"] = bool(enabled_var.get())
         _atomic_json(profile_path, profile)
-        messagebox.showinfo("Hunter's Atlas Lite", "Lite settings saved.", parent=window)
+        messagebox.showinfo("Hunter's Atlas", "Atlas settings saved.", parent=window)
     ttk.Button(buttons, text="Save", command=save).pack(side="left")
     def prepare():
         generator = contract.get("generator")
         if generator is None:
-            messagebox.showinfo("Hunter's Atlas Lite",
-                                "Map preparation is available when the Lite generator is packaged.",
+            messagebox.showinfo("Hunter's Atlas",
+                                "Map preparation is available when the Atlas generator is packaged.",
                                 parent=window)
             return
         try:
             result = subprocess.run(_generator_command(contract), cwd=str(contract["root"]), check=False,
                                     capture_output=True, text=True, encoding="utf-8", errors="replace")
         except OSError as error:
-            messagebox.showerror("Hunter's Atlas Lite", f"Could not start map preparation: {error}",
+            messagebox.showerror("Hunter's Atlas", f"Could not start map preparation: {error}",
                                  parent=window)
             return
         detail = (result.stdout + result.stderr).strip()[-3000:]
         if result.returncode == 0:
-            messagebox.showinfo("Hunter's Atlas Lite", "Map preparation completed.\n" + detail, parent=window)
+            messagebox.showinfo("Hunter's Atlas", "Map preparation completed.\n" + detail, parent=window)
         else:
-            messagebox.showerror("Hunter's Atlas Lite",
+            messagebox.showerror("Hunter's Atlas",
                                  f"Map preparation failed (exit {result.returncode}).\n{detail}", parent=window)
     ttk.Button(buttons, text="Prepare maps…", command=prepare).pack(side="left", padx=8)
     ttk.Button(buttons, text="Close", command=window.destroy).pack(side="right")
@@ -935,7 +935,7 @@ def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool 
     log_path = state / "last_run.log"
     if dry_run:
         env = game_environment(contract, profile, qa_timeout=qa_timeout, qa_control_dir=qa_control_dir)
-        print(json.dumps({"edition": "Lite", "launcher": str(contract["launcher"]),
+        print(json.dumps({"edition": "Atlas", "launcher": str(contract["launcher"]),
                           "command": [str(contract["launcher"]), "--script", str(contract["runner"])],
                           "environment": _redacted_env(env)}, ensure_ascii=False, indent=2))
         return 0
@@ -944,7 +944,7 @@ def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool 
             if contract.get("asset_pack"):
                 active_paths = _validated_materialized_paths(contract, active_paths)
             # The asset manager returns only the four staged map/art paths.
-            # Keep the already verified Lite probe and config paths in place.
+            # Keep the already verified Atlas probe and config paths in place.
             launch_contract = {**contract, "paths": {**contract["paths"], **active_paths}}
             env = game_environment(launch_contract, profile, qa_timeout=qa_timeout,
                                    qa_control_dir=qa_control_dir)
@@ -952,7 +952,7 @@ def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool 
                 Path(env["BB_MAP_TEST_CONTROL"]).parent.mkdir(parents=True, exist_ok=True)
                 env["BB_DUMP_DIR"] and Path(env["BB_DUMP_DIR"]).mkdir(parents=True, exist_ok=True)
             with log_path.open("a", encoding="utf-8") as log:
-                log.write(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Lite launch\n")
+                log.write(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Atlas launch\n")
                 log.flush()
                 process = subprocess.Popen([str(contract["launcher"]), "--script", str(contract["runner"])],
                                            cwd=str(contract["base_root"]), env=env,
@@ -967,13 +967,13 @@ def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool 
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Hunter's Atlas Lite bootstrap")
-    parser.add_argument("--settings", action="store_true", help="open Lite profile settings")
-    parser.add_argument("--prepare", action="store_true", help="run the Lite-owned map generator")
-    parser.add_argument("--dry-run", action="store_true", help="print the sanitized Lite launch contract")
+    parser = argparse.ArgumentParser(description="Hunter's Atlas bootstrap")
+    parser.add_argument("--settings", action="store_true", help="open Atlas profile settings")
+    parser.add_argument("--prepare", action="store_true", help="run the Atlas-owned map generator")
+    parser.add_argument("--dry-run", action="store_true", help="print the sanitized Atlas launch contract")
     parser.add_argument("--qa-timeout", type=int, help="set a bounded timeout for an explicitly enabled QA run")
-    parser.add_argument("--after", type=int, help="wait for the prior Lite bootstrap process before restart")
-    parser.add_argument("--qa-control-dir", help="enable map QA hooks in a directory under Lite state/qa")
+    parser.add_argument("--after", type=int, help="wait for the prior Atlas bootstrap process before restart")
+    parser.add_argument("--qa-control-dir", help="enable map QA hooks in a directory under Atlas state/qa")
     args = parser.parse_args(argv)
     root = None
     try:

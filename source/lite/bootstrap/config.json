@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "edition": "Lite",
+  "edition": "Atlas",
   "manifest": "manifest.json",
   "dependencies": "dependencies.json",
   "state_dir": "state",

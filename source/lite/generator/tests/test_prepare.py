@@ -245,7 +245,7 @@ class PrepareTests(unittest.TestCase):
 
     def test_output_root_must_be_package_root(self):
         module_loader, contract_loader = self._dependencies()
-        with self.assertRaisesRegex(ValueError, "installed Lite package root"):
+        with self.assertRaisesRegex(ValueError, "installed Atlas package root"):
             self.script._prepare(self.game, self.temp, notify=lambda _record: None,
                                  module_loader=module_loader, contract_loader=contract_loader)
 

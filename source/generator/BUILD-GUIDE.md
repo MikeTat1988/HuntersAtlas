@@ -1,4 +1,4 @@
-# Atlas Lite generator build record
+# Atlas generator build record
 
 The official frozen entry point is `src/generate_atlas_lite.py`.
 That thin wrapper adds `--self-test-imports`, then delegates ordinary generation

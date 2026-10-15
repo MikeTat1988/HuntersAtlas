@@ -31,7 +31,7 @@ def digest(path: Path) -> str:
 class BootstrapTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name) / "Atlas Lite"
+        self.root = Path(self.temp.name) / "Atlas"
         self.base = Path(self.temp.name) / "ordinary port"
         self.root.mkdir(parents=True)
         self.base.mkdir(parents=True)
@@ -93,7 +93,7 @@ class BootstrapTests(unittest.TestCase):
         }
         write(self.root / "dependencies.json", json.dumps(dependencies))
         write(self.root / "bootstrap/config.json", json.dumps({
-            "schema": 1, "edition": "Lite", "manifest": "manifest.json",
+            "schema": 1, "edition": "Atlas", "manifest": "manifest.json",
             "runner": "bootstrap/run_lite.py", "dependencies": "dependencies.json",
             "state_dir": "state", "qa_enabled": False,
         }))
@@ -281,7 +281,7 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(env["BB_MAP_QA"], "1")
         self.assertEqual(env["BB_MAP_TEST_CONTROL"], str(qa_dir / "control.txt"))
         self.assertEqual(env["BB_MAP_TEST_TRACE"], str(qa_dir / "trace.json"))
-        with self.assertRaisesRegex(bootstrap.BootstrapError, "inside Lite state/qa"):
+        with self.assertRaisesRegex(bootstrap.BootstrapError, "inside Atlas state/qa"):
             bootstrap.game_environment(self.contract, {}, {}, qa_control_dir=self.root / "outside")
 
     def test_online_preferences_keep_the_hunters_dream_bridge_behavior(self):

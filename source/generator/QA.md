@@ -21,7 +21,7 @@ it retains the numerical and geometry dependencies used by generation.
 The package preparation entry point accepts:
 
 ```text
---game-dir <Image0-or-parent> --output-dir <Lite-package-root> --headless [--cancel-file <path>]
+--game-dir <Image0-or-parent> --output-dir <Atlas-package-root> --headless [--cancel-file <path>]
 ```
 
 It loads the package's verified bootstrap contract, requires the output

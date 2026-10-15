@@ -19,7 +19,7 @@ function No-Running-Game([string]$port,[string]$package) {
     $running = @(Get-Process -Name Bloodborne,Bloodborne.stock,bb-probe -ErrorAction SilentlyContinue | Where-Object {
         $_.Path -and ($_.Path.StartsWith($port+'\',[StringComparison]::OrdinalIgnoreCase) -or $_.Path.StartsWith($package+'\',[StringComparison]::OrdinalIgnoreCase))
     })
-    if ($running.Count) { throw 'Close Bloodborne and its launcher before installing or uninstalling Atlas Lite.' }
+    if ($running.Count) { throw 'Close Bloodborne and its launcher before installing or uninstalling Atlas.' }
 }
 function Profile-Path {
     if ($env:BB_LAUNCHER_SETTINGS_ROOT) { return Join-Path $env:BB_LAUNCHER_SETTINGS_ROOT 'settings.json' }
@@ -157,7 +157,7 @@ try {
     $state = Join-Path $PackageRoot '.install'
     $packageReceipt = Join-Path $state 'receipt.json'
     if ($Mode -eq 'Uninstall') {
-        if (-not (Test-Path -LiteralPath $packageReceipt -PathType Leaf)) { throw 'This extracted package has no installed Atlas Lite receipt.' }
+        if (-not (Test-Path -LiteralPath $packageReceipt -PathType Leaf)) { throw 'This extracted package has no installed Atlas receipt.' }
         $receipt = Read-Json $packageReceipt
         if (-not (Same-Path $receipt.atlas_folder $PackageRoot)) { throw 'Extracted package moved after installation. Restore its original folder first.' }
         if (-not $LauncherRoot) { $LauncherRoot = $receipt.launcher_root }
@@ -172,20 +172,20 @@ try {
     }
     $LauncherRoot = (Resolve-Path -LiteralPath $LauncherRoot).Path
     No-Running-Game $LauncherRoot $PackageRoot
-    if ($PackageRoot.StartsWith($LauncherRoot+'\',[StringComparison]::OrdinalIgnoreCase) -or (Same-Path $PackageRoot $LauncherRoot)) { throw 'Extract Atlas Lite to a separate folder outside the launcher directory.' }
+    if ($PackageRoot.StartsWith($LauncherRoot+'\',[StringComparison]::OrdinalIgnoreCase) -or (Same-Path $PackageRoot $LauncherRoot)) { throw 'Extract Atlas to a separate folder outside the launcher directory.' }
     $exe = Owned-Path $LauncherRoot 'Bloodborne.exe'
     $stock = Owned-Path $LauncherRoot 'Bloodborne.stock.exe'
     $bridge = Owned-Path $LauncherRoot 'atlas-lite-launcher.py'
     $launcherReceipt = Owned-Path $LauncherRoot 'atlas-lite-install.json'
     $profilePath = Profile-Path
     if ($Mode -eq 'Install') {
-        if ((Test-Path -LiteralPath $launcherReceipt) -or (Test-Path -LiteralPath $stock) -or (Test-Path -LiteralPath $bridge)) { throw 'Atlas Lite is already installed or has unfinished files. Uninstall that package first.' }
+        if ((Test-Path -LiteralPath $launcherReceipt) -or (Test-Path -LiteralPath $stock) -or (Test-Path -LiteralPath $bridge)) { throw 'Atlas is already installed or has unfinished files. Uninstall that package first.' }
         $legacyReceipt = Join-Path $LauncherRoot 'atlas-install-receipt.json'
         $legacyActive = (Test-Path -LiteralPath $legacyReceipt)
         if ($legacyActive) { $legacyActive = (Read-Json $legacyReceipt).state -ne 'uninstalled' }
         if ($legacyActive -or (Hash $exe) -ne $stockHash) { throw 'This installer requires the original supported Bloodborne v1.7 launcher. Uninstall the previous Atlas adapter first.' }
         if (Test-Path -LiteralPath $state) { throw 'This extracted package already contains installation state. Use a fresh extraction or uninstall it first.' }
-        Write-Host 'Verifying Lite package and existing launcher dependencies...'
+        Write-Host 'Verifying Atlas package and existing launcher dependencies...'
         $manifest = Read-Json (Join-Path $PackageRoot 'manifest.json')
         if ($manifest.id -ne 'hunters-atlas-lite') { throw 'Wrong package identity.' }
         foreach ($f in $manifest.files.PSObject.Properties) {
@@ -201,13 +201,13 @@ try {
             if ((Hash (Owned-Path $LauncherRoot $f.Name)) -ne $f.Value) { throw "Unsupported launcher Python runtime: $($f.Name)" }
         }
         $profile = if (Test-Path -LiteralPath $profilePath) { Read-Json $profilePath } else { New-Object PSObject }
-        if (-not $profile.game_dir -or -not (Test-Path -LiteralPath (Join-Path $profile.game_dir 'eboot.bin'))) { throw 'Choose your game folder in the ordinary launcher before installing Lite.' }
+        if (-not $profile.game_dir -or -not (Test-Path -LiteralPath (Join-Path $profile.game_dir 'eboot.bin'))) { throw 'Choose your game folder in the ordinary launcher before installing Atlas.' }
         $gameRoot = (Resolve-Path -LiteralPath $profile.game_dir).Path
         $blockedRoots = @($gameRoot)
         foreach ($blocked in $blockedRoots) {
-            if ((Same-Path $PackageRoot $blocked) -or $PackageRoot.StartsWith($blocked+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'Extract Atlas Lite into a separate permanent folder outside the game and launcher directories.' }
+            if ((Same-Path $PackageRoot $blocked) -or $PackageRoot.StartsWith($blocked+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'Extract Atlas into a separate permanent folder outside the game and launcher directories.' }
         }
-        if ((Hash (Join-Path $profile.game_dir 'eboot.bin')) -ne 'd65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9') { throw 'Atlas Lite supports the verified CUSA00207 1.09 executable. Other regions and modified executables are not currently verified.' }
+        if ((Hash (Join-Path $profile.game_dir 'eboot.bin')) -ne 'd65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9') { throw 'Atlas supports the verified CUSA00207 1.09 executable. Other regions and modified executables are not currently verified.' }
         New-Item -ItemType Directory -Path $state | Out-Null
         Copy-Item -LiteralPath $exe -Destination (Join-Path $state 'stock.exe')
         Copy-Item -LiteralPath (Join-Path $PackageRoot 'dependencies.json') -Destination (Join-Path $state 'dependencies.json')
@@ -231,7 +231,7 @@ try {
             $uiPath = Join-Path $PackageRoot 'integration\ui\bbport_launcher_win.py'
             $pythonString = ConvertTo-Json $uiPath -Compress
             [IO.File]::WriteAllText($bridge,"import runpy`nrunpy.run_path($pythonString, run_name='__main__')`n",(New-Object Text.UTF8Encoding($false)))
-            Copy-Item -LiteralPath (Join-Path $PackageRoot 'integration\AtlasLiteLauncher.exe') -Destination $exe -Force
+            Copy-Item -LiteralPath (Join-Path $PackageRoot 'integration\AtlasLauncher.exe') -Destination $exe -Force
             Set-Field $profile 'atlas_dir' $PackageRoot
             Set-Field $profile 'atlas_enabled' $false
             Write-Json $profilePath $profile
@@ -290,6 +290,6 @@ try {
         Write-Host 'Uninstalled. The original launcher is restored. Game files, saves, DLC and ordinary settings were preserved.'
     }
 } catch {
-    Write-Host "Atlas Lite: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Atlas: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }

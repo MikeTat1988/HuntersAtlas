@@ -1,12 +1,12 @@
-# Hunter's Atlas Lite generator
+# Hunter's Atlas generator
 
-This directory contains the source and build inputs for the Atlas Lite map
-generator. Atlas Lite is product version **2.0.0**; the unchanged generator
+This directory contains the source and build inputs for the Atlas map
+generator. Atlas is product version **1.0**; the unchanged generator
 algorithm reports its own internal version **1.0.0**. The frozen entry point is
 `src/generate_atlas_lite.py`. It provides a bundle import self-test and then
 delegates map generation to the original `generate_atlas.py` pipeline. The 13
 algorithm and support scripts are byte-identical to the original generator
-sources; Lite changes packaging and orchestration, not the map algorithm.
+sources; Atlas changes packaging and orchestration, not the map algorithm.
 
 ## Shipped bundle
 
@@ -40,7 +40,7 @@ and shipped-bundle hashes plus the tested dependency versions. The expected
 internal bundle version is `1.0.0`.
 
 The preparation entry point lives in `source/lite/generator/prepare.py` and is
-invoked by the verified frozen launcher with `--script`. See the Lite source
+invoked by the verified frozen launcher with `--script`. See the Atlas source
 README and preparation QA for its package-root, cancellation, and rollback
 contract. The generator bundle itself remains independent of the old Atlas
 installation at runtime.
