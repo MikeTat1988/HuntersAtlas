@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "status": "BETA_SOURCE_WITH_REFRESHED_PROVENANCE",
-  "file_count": 4421,
+  "file_count": 4422,
   "files": [
     {
       "path": "art-originals/icon-handoff/atlas-menu-icon-master.png",
@@ -37,6 +37,11 @@
       "path": "art-originals/map-v1.3-originals/parchment.png",
       "bytes": 2811377,
       "sha256": "efe5c74a72ba24bc64c1b06f378534717319e603beee84acb2eab0e3d5df3b42"
+    },
+    {
+      "path": "generator/.gitattributes",
+      "bytes": 84,
+      "sha256": "b3473014bdcac93c3a6dffe0153f2affefb8fae85a1a02f262dd32c26b2d207f"
     },
     {
       "path": "generator/compare_outputs.py",

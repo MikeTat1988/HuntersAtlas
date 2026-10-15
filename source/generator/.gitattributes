@@ -1,0 +1,2 @@
+# Preserve the byte hashes of pinned generator inputs on Windows checkouts.
+* -text

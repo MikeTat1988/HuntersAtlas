@@ -49,6 +49,8 @@ These are actual captured runtime images. Some use earlier builds with the same 
 
 The corresponding implementation is under [`source/`](source/), including the native host, matching launcher adapter, complete generator and required vendored source. Start with [SOURCE-BUILD.md](source/SOURCE-BUILD.md). Runtime/dependency source archives and checksums are attached to the release; large compiled packages are deliberately kept out of Git history.
 
+Source inventory hashes describe the corresponding-source release ZIP. Git may apply upstream vendors' line-ending rules on checkout; use that ZIP when comparing exact archived bytes. Generator input hashes are preserved explicitly on Windows checkouts.
+
 Hunter's Atlas builds on [Supermedo's bloodborne_pc](https://github.com/Supermedo/bloodborne_pc), its bbport runtime and incorporated projects. Recorded baselines are native `e699fdf76ff001df159dab049dfdac1a3446f13d` and launcher `e5d04e2ba4864ccf40de6c3cf6aa532855320b0d`. This is an independent community add-on, not an official FromSoftware/Sony project.
 
 The native host and Atlas additions retain their GPL notices; see [LICENSE](LICENSE), individual source headers and [dependency notices](source/licenses/). Other components and art retain their respective licenses/provenance. Development and original illustrative assets used AI assistance. Game-derived maps and fonts are generated on the user's computer and are not distributed here.
