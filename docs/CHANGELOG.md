@@ -9,4 +9,5 @@
 - Includes a standalone installer, compatibility checks, rollback and local map/font preparation from the user's own game files.
 - Installation shows percentage progress, prepares maps automatically, and sets the extracted Atlas folder in the launcher. Detailed diagnostics are saved in the rollback log.
 - Provides separate player and complete source archives; the player download excludes bundled source dependencies.
+- The uninstall command finds the launcher selected at installation, so it does not ask players to locate the receipt.
 - Plays the game's existing cursor sounds for Atlas selection and confirmation. No game or save files are included.

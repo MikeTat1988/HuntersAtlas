@@ -42,4 +42,15 @@ Write-Host "Original launcher backup: $RollbackRoot"
 Write-Host 'Preparing maps can take about 10 minutes. Progress and details are saved to the rollback folder.'
 & $setup install --launcher-root $LauncherRoot --adapter-root $adapter --atlas-folder $atlas --rollback-root $RollbackRoot --game-dir $GameRoot
 if ($LASTEXITCODE -ne 0) { throw "Installation stopped (exit $LASTEXITCODE). No success is claimed; read the installer message above." }
+$stateRoot = if ($env:ATLAS_INSTALL_STATE_ROOT) { $env:ATLAS_INSTALL_STATE_ROOT } else { Join-Path $env:LOCALAPPDATA 'HuntersAtlas' }
+try {
+    New-Item -ItemType Directory -Path $stateRoot -Force | Out-Null
+    $location = Join-Path $stateRoot 'install-location.json'
+    $temporary = Join-Path $stateRoot 'install-location.json.tmp'
+    @{ atlas_folder = $atlas; launcher_root = $LauncherRoot; receipt = $existingReceipt } |
+        ConvertTo-Json | Set-Content -LiteralPath $temporary -Encoding UTF8
+    Move-Item -LiteralPath $temporary -Destination $location -Force
+} catch {
+    Write-Warning "Installed, but could not save the automatic uninstall location: $_"
+}
 Write-Host "Installed. Open your usual launcher, enable Hunter's Atlas, and press Play."

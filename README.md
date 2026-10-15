@@ -18,7 +18,7 @@ First, make sure Bloodborne runs with the [supported PC launcher v1.7.2](https:/
 
 In the game, open the quick menu and select **Map**.
 
-To turn Atlas off, uncheck **Enable Hunter’s Atlas**. To remove its launcher integration, close the game and launcher, then double-click **Uninstall.cmd** in the same extracted folder. Keep the package and original-launcher backup until uninstall completes.
+To turn Atlas off, uncheck **Enable Hunter’s Atlas**. To remove its launcher integration, close the game and launcher, then double-click **Uninstall.cmd** in the same extracted folder. It finds the launcher used during installation automatically. Keep the package and original-launcher backup until uninstall completes.
 
 <details>
 <summary>Установка по-русски</summary>
@@ -28,7 +28,7 @@ To turn Atlas off, uncheck **Enable Hunter’s Atlas**. To remove its launcher i
 3. Дважды нажмите **Install.cmd**. Укажите папку своего лаунчера, где находится **Bloodborne.exe**. Установщик сам выберет папку Atlas и подготовит карты из файлов игры. Обычно это занимает **5–15 минут** и добавляет около **100 МБ**.
 4. Откройте обычный лаунчер → **Mods & patches** → **Hunter’s Atlas**. Включите **Enable Hunter’s Atlas**, нажмите **Play** и выберите **Map** в быстром меню игры.
 
-Для удаления закройте игру и лаунчер и запустите **Uninstall.cmd**. Установка не требует изменения системной политики PowerShell.
+Для удаления закройте игру и лаунчер и запустите **Uninstall.cmd** из той же распакованной папки. Путь к лаунчеру он определит сам. Установка не требует изменения системной политики PowerShell.
 
 </details>
 

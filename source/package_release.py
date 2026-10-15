@@ -55,6 +55,8 @@ def source_bundle(repo: Path, dependency_source: Path, destination: Path) -> Non
                          compresslevel=6, allowZip64=True) as bundle:
         for path in paths:
             bundle.write(path, path.relative_to(repo / 'source').as_posix())
+        for name in ('Install.cmd', 'Uninstall.cmd', 'installer/Install.ps1', 'installer/Uninstall.ps1'):
+            bundle.write(repo / name, 'release-scripts/' + name)
         with zipfile.ZipFile(dependency_source) as dependencies:
             for entry in dependencies.infolist():
                 if entry.is_dir():
