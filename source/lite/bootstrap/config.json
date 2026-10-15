@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "edition": "Lite",
+  "manifest": "manifest.json",
+  "dependencies": "dependencies.json",
+  "state_dir": "state",
+  "qa_enabled": false,
+  "compact_prepared_cache": true,
+  "stage_dlss": true
+}

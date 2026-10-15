@@ -1,34 +1,44 @@
-# Hunter’s Atlas 1.0
+# Hunter’s Atlas Lite 2.0.0
 
-An in-game map for Bloodborne on PC.
+Hunter’s Atlas Lite adds a fullscreen navigation map to Bloodborne on Windows. It shows your position and facing, supports pan and zoom, and includes floor context for 16 supported areas.
 
-Find your way through Yharnam with a fullscreen map that shows your position, facing direction, and locations of lamps, ladders, gates and NPCs. Explore 16 supported areas across the main game and DLC, with zoom, pan and different floor levels.
+## Downloads
 
-First, make sure Bloodborne runs with the [supported PC launcher v1.7.2](https://github.com/Supermedo/bloodborne_pc/releases/tag/windows-v1.7.2).
+- **Play:** [Hunters-Atlas-Lite-2.0.0.zip](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v2.0.0/Hunters-Atlas-Lite-2.0.0.zip)
+- **Corresponding source:** [Hunters-Atlas-Lite-Source-2.0.0.zip](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v2.0.0/Hunters-Atlas-Lite-Source-2.0.0.zip)
 
-**Choose your download:**
+**Code → Download ZIP** contains source code. Use the Play download to install Atlas Lite.
 
-- **To play:** download [Hunters-Atlas-1.0.zip](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.0/Hunters-Atlas-1.0.zip) from Releases (about 300 MB). This is the installable package.
-- **To develop:** download [Hunters-Atlas-Source-1.0.zip](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.0/Hunters-Atlas-Source-1.0.zip) (about 200 MB) for the complete corresponding source and dependency source. [This repository](https://github.com/MikeTat1988/HuntersAtlas) is also available to browse or clone; **Code → Download ZIP** is about 50 MB and omits the bundled dependency source. Build instructions are in [source/launcher/README.md](source/launcher/README.md).
+The player download is approximately **62 MB**, or **86 MB** extracted before local map preparation. The installed package is approximately **111 MB**, including maps and the uninstall backup. Preparation and play use additional temporary disk space, which is cleaned after normal completion.
 
-1. Download the **To play** ZIP above and extract it into a folder you’ll keep.
-2. Close the game and launcher. Double-click **Install.cmd** in the extracted folder. When prompted, select your launcher folder — the one containing **Bloodborne.exe**.
-3. The installer selects your extracted Atlas folder in the launcher and prepares maps from your game files. Allow about **5–15 minutes**, depending on your PC; the generated maps add approximately **100 MB**.
-4. Open the launcher → **Mods & patches** → **Hunter’s Atlas**, check **Enable Hunter’s Atlas**, and click **Play**.
+Atlas Lite supports the official [Bloodborne for Windows v1.7.2 launcher](https://github.com/Supermedo/bloodborne_pc/releases/tag/windows-v1.7.2) and the verified CUSA00207 game build at version 1.09. Other regions and game builds are unverified. See [Compatibility](docs/COMPATIBILITY.md) before installing.
 
-In the game, open the quick menu and select **Map**.
+## Install and play
 
-To turn Atlas off, uncheck **Enable Hunter’s Atlas**. To remove its launcher integration, close the game and launcher, then double-click **Uninstall.cmd** in the same extracted folder. It finds the launcher used during installation automatically. Keep the package and original-launcher backup until uninstall completes.
+1. In the official launcher, choose your Bloodborne game folder containing `eboot.bin`. Close the game and launcher.
+2. Extract the Play ZIP completely to a folder you will keep. Put it outside the game and launcher folders; do not run `Install.cmd` from inside the ZIP.
+3. Run `Install.cmd` and select the folder containing the official `Bloodborne.exe`. The installer verifies compatibility and automatically prepares all 16 maps and the font from your game files. Allow 5–15 minutes. The original launcher is retained if preparation fails.
+4. Open Bloodborne with your usual launcher shortcut. In **Mods**, enable **Hunter’s Atlas Lite**, then click **Play**. **Prepare Atlas maps** is also available there if local maps need repair.
+5. Start the game and open the quick menu to select **Map**.
+
+The Play ZIP does not include Bloodborne files, generated maps, or the game font. Player installation does not require a separately installed Python runtime or compiler. Atlas Lite uses the saves and game folder selected in the ordinary launcher; it does not create a separate game-save copy. The installer and Atlas do not patch game files or saves.
+
+Keep the extracted folder in place while Atlas Lite is installed. To remove it, close the game and launcher and run `Uninstall.cmd` from that folder. The original launcher executable is restored by the uninstaller.
+
+If preparation fails or is cancelled, the installer restores the original launcher and package. Keep `.install/prepare.stdout.log`, `.install/prepare.stderr.log`, and `state/preparation.log` for diagnosis. After fixing the reported problem, extract the Play ZIP into a new folder and run Install again; an incomplete extraction is deliberately not reused.
+
+If an error explicitly says preparation shutdown could not be verified, keep the folder and logs for recovery until the generator has stopped. The installer withholds package rollback in that case to avoid concurrent writes. Uninstall Atlas Lite before updating the launcher to another version.
 
 <details>
 <summary>Установка по-русски</summary>
 
-1. Для игры скачайте **Hunters-Atlas-1.0.zip** по ссылке выше. Для разработки есть отдельный полный архив **Hunters-Atlas-Source-1.0.zip**. Кнопка **Code → Download ZIP** скачивает только содержимое репозитория.
-2. Полностью распакуйте архив в постоянную папку. Закройте игру и лаунчер.
-3. Дважды нажмите **Install.cmd**. Укажите папку своего лаунчера, где находится **Bloodborne.exe**. Установщик сам выберет папку Atlas и подготовит карты из файлов игры. Обычно это занимает **5–15 минут** и добавляет около **100 МБ**.
-4. Откройте обычный лаунчер → **Mods & patches** → **Hunter’s Atlas**. Включите **Enable Hunter’s Atlas**, нажмите **Play** и выберите **Map** в быстром меню игры.
+1. Убедитесь, что игра CUSA00207 1.09 уже запускается в поддерживаемом лаунчере v1.7.2. Закройте игру и лаунчер.
+2. Скачайте архив **Play** и полностью распакуйте в постоянную папку вне папок игры и лаунчера.
+3. Запустите **Install.cmd**, выберите папку с **Bloodborne.exe**. Установщик сам подготовит все 16 карт и шрифт из вашей игры; обычно это занимает 5–15 минут.
+4. Откройте обычный лаунчер → **Моды → Hunter’s Atlas Lite**, включите карту и нажмите **Играть**. В быстром меню игры выберите **Map**.
+5. Для удаления закройте игру и лаунчер, затем запустите **Uninstall.cmd** из той же распакованной папки. Не перемещайте её до удаления.
 
-Для удаления закройте игру и лаунчер и запустите **Uninstall.cmd** из той же распакованной папки. Путь к лаунчеру он определит сам. Установка не требует изменения системной политики PowerShell.
+Отдельные Python и компилятор не нужны. Установка и удаление сохраняют ваши игровые файлы, сейвы и обычные настройки.
 
 </details>
 
@@ -46,22 +56,16 @@ To turn Atlas off, uncheck **Enable Hunter’s Atlas**. To remove its launcher i
 | --- | --- |
 | ![Map view in Iosefka’s Clinic](examples/clinic.png) | ![Map view in Hunter’s Dream](examples/dream.png) |
 
-| Hunter’s Nightmare DLC | Menu navigation |
+| Hunter’s Nightmare | Menu navigation |
 | --- | --- |
 | ![Map view in the DLC](examples/dlc.png) | ![Map tile reached with left and right menu navigation](examples/menu-left-wrap.png) |
 
-These runtime captures show selected areas, heights and interface states. Some were collected during development; they illustrate the final map layouts. They do not certify every route or supported floor. Human visual review remains separate from technical checks.
+These captures show example map layouts and interface states. They do not certify every route, floor, controller, or scene.
 
-## Compatibility and limits
+## Limits
 
-Hunter’s Atlas supports the matching Windows PC launcher v1.7.2 and tested game executable. Installation verifies compatibility before replacing the launcher and retains its original executable for rollback. Game files, saves and personal settings are preserved.
-
-The map supports controller navigation and mouse clicks, pan, zoom, elevation levels, recenter and Back. Other floors remain faintly visible for context, and enclosed spaces use a dark scratched treatment. Marker locations are static: they do not track live quest or gate states. Chalice Dungeons are not supported. Collision-derived floors and inferred interiors can contain omissions.
-
-Map data and the required game font are prepared locally from the user’s own game files; they are not included in the download. Physical controller disconnect and focus-loss behavior still need broader testing. An idle title-screen attract movie can cause a guest fault; its cause remains unresolved.
+Markers are static and do not track live quest or gate states. Chalice Dungeons and unlisted game regions are unsupported. Compatibility and current release checks are recorded in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) and [docs/QA.md](docs/QA.md).
 
 ## Source and licenses
 
-Hunter’s Atlas builds on [Supermedo’s bloodborne_pc](https://github.com/Supermedo/bloodborne_pc). It is an independent community project and is not affiliated with FromSoftware or Sony. Development and original illustrative assets used AI assistance.
-
-The [source repository](https://github.com/MikeTat1988/HuntersAtlas/tree/main/source) contains the implementation and build instructions. The separate [full source download](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.0/Hunters-Atlas-Source-1.0.zip) contains corresponding source and dependency source. The native host and Atlas additions retain their GPL notices; see **LICENSE**, source headers and dependency notices. Other components and art retain their respective licenses and provenance.
+The corresponding source archive includes Atlas Lite’s bootstrap, launcher integration and wrapper source, generator packaging and preparation code, the original map-generation algorithms, the native host, vendored sources, notices, and the build guide. See [source/SOURCE-BUILD.md](source/SOURCE-BUILD.md), [source/licenses/README.md](source/licenses/README.md), and the included license files. Hunter’s Atlas is an independent community project and is not affiliated with FromSoftware or Sony Interactive Entertainment.

@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "status": "SOURCE_CANDIDATE_FROZEN_ROOT_QA_REPORTED_PASS_RELEASE_DOCS_PENDING",
+  "status": "CURRENT_LITE_DEPENDENCY_SOURCE_INDEX",
   "runtime_dependency_source_archive": "runtime-dependency-source.zip",
-  "runtime_dependency_source_archive_sha256": "991831499df4d5b9d75eec8de8077eb1c6162edae0c798a57c269b240febd660",
+  "runtime_dependency_source_archive_sha256": "db2868569edbef2518fbe36f3a47398fd129190349c2f5b8e013e0cdbbff0306",
   "exact_index": "licenses/runtime-source-index.json",
   "soulstruct_source": "generator/licenses/soulstruct-source",
   "soulstruct_source_provenance": "licenses/soulstruct-license-receipt.json",
@@ -10,7 +10,7 @@
     "version": "3.13.1",
     "shapely_version": "2.1.2",
     "license": "LGPL-2.1",
-    "source_status": "Exact GEOS 3.13.1 source and its hash receipt are included in the sibling runtime-dependency-source.zip."
+    "source_status": "Exact GEOS 3.13.1 source and its hash receipt are included under runtime-dependencies/ in the corresponding source ZIP."
   },
   "pyinstaller_build_sources": [
     {
@@ -25,5 +25,6 @@
       "sha256": "05eb2f5615503e72939a7224d68b4aff572c6b0438ee4a17d0a4b481f399362d",
       "pypi_json_url": "https://pypi.org/pypi/pyinstaller/6.22.3/json"
     }
-  ]
+  ],
+  "source_release_location": "runtime-dependencies/ in Hunters-Atlas-Lite-Source-2.0.0.zip"
 }

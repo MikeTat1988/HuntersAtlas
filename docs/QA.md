@@ -1,27 +1,23 @@
-# Validation and known limits — Hunter's Atlas 1.0
+# Release validation
 
-The installer, launcher integration and Atlas runtime were checked together before this clean end-user test. The 1.0 player archive has a rebuilt launcher adapter and installer with Windows `Install.cmd`/`Uninstall.cmd` entry points. The native Atlas runtime executable is byte-identical to the previously validated build. A fresh install by the owner is still pending, so the public release remains unpublished.
+Hunter’s Atlas Lite 2.0.0 is the sole current release. The owner tested and approved Lite in play. A separate first installation from an art-only player ZIP into an independently downloaded official Windows v1.7.2 launcher also passed under Windows PowerShell 5.1, without any previous Atlas installation.
 
-## Checks already completed
+| Check | Result |
+| --- | --- |
+| Fresh installation and automatic preparation | Passed; installer exit 0 |
+| Generated maps | 16 maps, 602 layers, 742,315 triangles, 442,011 walls |
+| Markers and catalog | 44 lamps, 48 ladders, 66 NPCs, 85 gates, 320 regions |
+| Generator duration | 567.91 seconds at BelowNormal priority |
+| Current bootstrap in the stock launcher's private Python | Passed; package contract loaded, launch environment built |
+| Current launcher readiness in that private Python | Ready — Hunter's Atlas Lite 2.0.0 verified; generated_ready=true |
+| Focused automated tests | 47 passed: bootstrap, UI bridge, preparation, asset storage, bundle and dependency template |
+| Cancellation process-tree fixtures, Windows PowerShell 5.1 | Passed; successful tree termination and safe handling of denied/missing taskkill |
+| Local test uninstall | Original launcher restored; 3,096 protected game/save/DLC files and ordinary launcher settings unchanged |
 
-- The launcher add-on was installed and removed through its own installer. Removal restored the exact stock launcher and retained the rollback copy.
-- A fresh extraction of the complete package and two install, launcher, and uninstall cycles succeeded on an isolated test profile. The extracted archive kept its empty `maps` folder and had no nested package directory.
-- A fresh player-archive install under Restricted PowerShell policy generated all 16 maps and the font automatically. It took 8 minutes 45 seconds on the test PC, displayed percentage progress through completion, selected the extracted Atlas folder in the launcher profile, and wrote detailed diagnostics to the rollback folder's `atlas-install.log`.
-- The final player archive also passed an isolated reinstall with already prepared maps: it reused the maps, selected the extracted folder, and restored the exact stock launcher on uninstall. No real game, save, launcher or profile files changed during that final test.
-- After the first user uninstall attempt selected the Atlas package instead of the launcher, the uninstall entry point was updated to remember the launcher selected during installation. The rebuilt player archive passed an isolated `Install.cmd`/`Uninstall.cmd` cycle without an uninstall path argument under Restricted PowerShell policy, plus a second cycle that removed the saved location and verified same-parent receipt discovery. Both cycles restored the stock launcher; no real files changed.
-- The launcher map-preparation UI now displays concise percentage/status messages and writes detailed generator output to an AppData log instead of printing raw JSON in the UI.
-- Normal Play loaded a copied save in Cathedral Ward. Left and right navigation included the Map tile, Confirm and Back worked, and mouse hover/click/back worked.
-- Atlas selection and confirmation decoded the supported game's local cursor sounds. Runtime checks used a silent audio backend; the fully muted path remained silent.
-- The map was captured in the game at Great Bridge, Clinic, Hunter's Dream and Hunter's Nightmare. Those captures are examples, not human visual approval.
-- Original launcher settings, game executable and saves were checked unchanged during the isolated package tests.
+The prepared asset pack is 21,870,216 bytes with SHA-256 `b889555f3aae436a3a59c05c14f863e8e8e56ac7ab70b45a78fd63c394efda19`. It is generated locally and is not included in the player download. The player ZIP starts with owned art and a licensed fallback font only.
 
-## Known limits
+The complete preparation used the unchanged frozen generator. The final source refresh renamed the former internal edition identifier to Lite and verified that identifier, source hashes, contract, environment and readiness in the stock interpreter. The installer cancellation fallback was tested separately; its successful preparation path is unchanged. A separate hidden-window smoke attempt was inconclusive and is not claimed as a pass.
 
-- The clean download and installation on the owner's everyday profile still needs the owner's review before publication.
-- Physical gamepad-device behavior, focus loss and controller disconnect have not been certified. The input checks used the game's logical input path and injected mouse events.
-- An idle title-screen attract movie can cause a guest read fault; whether Atlas contributes is unresolved.
-- Atlas cursor sounds follow the main output volume and full mute. A separate sound-effects slider inside the game's FMOD mixer may not affect these added clips.
-- Chalice maps, live quest or gate state, every route in all 16 maps, universal launcher compatibility and a complete playthrough are not claimed.
-- Visual examples are provided for review. Human visual approval has not been claimed.
+## Scope and limits
 
-If the launcher reports that Bloodborne: The Old Hunters is missing, stop there and report the message. Do not change game files or saves while diagnosing it.
+The native map host is the owner-approved runtime with debug sections removed; retained executable sections and RVAs are byte-identical. Owner play approval and these technical checks do not certify every route, floor, controller, graphics device or full playthrough. Chalice Dungeons, live quest/gate tracking and unlisted game regions are unsupported. Only the exact game and launcher fingerprints in [Compatibility](COMPATIBILITY.md) are supported.

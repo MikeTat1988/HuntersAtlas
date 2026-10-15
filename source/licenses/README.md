@@ -1,33 +1,21 @@
-# Hunter's Atlas launcher and generator license/source receipts
+# Licenses, notices, and source receipts
 
-This scoped supplement contains two related receipts assembled on 2026-10-14. It does not alter the installed runtime, launcher, AppData settings, game files, or saves.
+Hunter’s Atlas Lite combines project code with the native Bloodborne port and third-party components. Each component remains under its own license. Read the license and notice files shipped in the corresponding source tree; the root `LICENSE` does not replace those component notices.
 
-## Full runtime DLL owner and notice index
+## Native host and Atlas source
 
-`runtime-owners-index.json` covers all 150 runtime dependencies inventoried by the root audit: 147 third-party DLLs are mapped to 81 distinct exact-version MSYS2 package owners, and all 147 are recorded as hash-matching the installed package binaries. The three unmapped files are separately identified in the root audit as the custom probe, custom MIT DLSS bridge, and NVIDIA SDK binary; this index does not claim their source or notice coverage.
+The native host is based on the GPL-licensed `bloodborne_pc` project. The corresponding source release retains the complete modified native source, required vendored source, shader inputs, and patches. Keep those files together when redistributing the corresponding source. License texts and component notices are retained alongside the native and vendor trees and in `notices/`.
 
-`notices/installed/` preserves all 92 notice files declared by mapped owners' installed `share/licenses` records. Files are copied byte-for-byte and kept under package/version directories with their installed relative paths. Each file and owner-to-DLL association has a SHA-256 or root-audit exact-binary-match field in the index. Packages whose installed owner record has no notice file are left without a guessed replacement in this directory; the separate exact-source audit below supplies license texts where the original notices were absent.
+## Windows runtime records
 
-## GPL/LGPL runtime corresponding source
+`runtime-owners-index.json` records the indexed launcher/runtime DLLs, their package owners, binary hashes, and notice-copy status. `runtime-source-index.json` records source-recipe and archive evidence for the runtime packages in its scope. `notices/` retains the copied license and notice files. Use each index’s file list and status fields to determine what a particular binary is covered by; an inventory entry is not a claim that every executable or vendor file has the same license.
 
-`runtime-source-index.json` covers all 33 distinct GPL/LGPL-declared MSYS2 owners represented by 44 of the mapped runtime DLLs. For each owner it records the installed version, local package archive hash/build metadata where available, official MSYS2 package record, exact-version MSYS2 source-only tarball URL and SHA-256, exact extracted `PKGBUILD` and `.SRCINFO` hashes, and every source identifier/checksum from that recipe.
+The corresponding source release includes optional runtime dependency source material, identified by the release’s source receipt. That material supports source availability and rebuild work; it is not part of the player package and does not replace the native compiler and development libraries required by a source build. Some custom or separately licensed components may have distinct provenance and are identified in their own receipts.
 
-The 33 indexed source-only tarballs include the recipe and patch set and all 33 package entries resolve every declared source input. Exact pinned VCS inputs are also preserved as source archives under `source/upstream-archives/`: libsoxr commit `945b592b70470e29f917f4de89b4281fbbd540c0`, RTMPDump tag `v2.6` commit `138fdb258d9fc26f1843fd1b891180416c9dc575`, and zvbi tag `v0.2.45` commit `d3a5ee9f2b047bf16cd1ee5ccf6ec05ee75409d0`. The index lists the repository, exact revision, and archive hash for each VCS tree. Recipe-declared archive inputs are present in their source-only tarballs and listed with the recipe checksum and matching archive member; every non-SKIP recipe checksum was verified against the bundled bytes, while SKIP entries are covered by the outer source-only archive hash.
+## Generator dependencies
 
-`source/` retains the 33 source archives referenced by that receipt, the previously recovered 16-package missing-notice archive set, exact extracted recipes, and the 3 pinned VCS source archives. Some legacy-named source archives remain because the earlier 16-package receipt references them; they have not been removed or rewritten. `license-audit.json` remains the original 16-package focused receipt, with its 40 notice texts and verification contract intact.
-
-## Soulstruct 2.3.2 in the local generator
-
-`source/soulstruct-2.3.2.tar.gz` is the exact PyPI source distribution, verified against PyPI's published SHA-256. Its `PKG-INFO` declares `GPL-3.0-or-later`, but the exact sdist contains no license file and does not identify a repository commit. `notices/soulstruct/COPYING` contains the canonical GPL version 3 text from GNU; the exact metadata and `soulstruct-license-receipt.json` make that provenance explicit and do not claim that the text was copied from an upstream Soulstruct file or commit.
+The generator includes source and license records for its Python dependencies, including the reviewed Soulstruct source and its license receipt. `soulstruct-license-receipt.json` records the exact source-distribution metadata and the source of the accompanying GPL text. It does not claim that the text came from an upstream file when the distribution did not contain one.
 
 ## Verification
 
-Run both receipts from the repository root:
-
-```powershell
-& 'python' working/atlas-dev/licenses/verify_license_audit.py
-& 'python' working/atlas-dev/licenses/verify_runtime_license_receipts.py
-```
-
-The first verifies the original 16-package, 40-text receipt. The second rechecks the full DLL mapping, all copied installed notices, the 33 exact source-only archive hashes and recipes, cached installed package hashes, per-source recipe checksums, pinned Git-source archive hashes, compressed archive integrity, and Soulstruct's PyPI/GPL evidence. This is a source and notice inventory, not a general legal opinion or proof of source obligations for the separate custom/NVIDIA files.
-
+Machine-readable receipts are evidence scoped to their listed files, versions, hashes, and source archives. Use the verifier named by each release receipt when available, and review its exact scope and result. The records are not a general legal opinion and do not extend one component’s license or source coverage to unrelated binaries.

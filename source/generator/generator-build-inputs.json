@@ -1,0 +1,70 @@
+{
+  "algorithm_sources": {
+    "extract_native_map_font.py": "79d76cc9e6de9a339877f7e6c3647ee0de16c9cc57949453f466a1ca3a13cd6e",
+    "extract_subarea_names.py": "5779f99facaaba1705f43b3ab4c56982fd0b07670004bc340efc57dcd9a0ec9f",
+    "extract_verified_gates.py": "a26b887400373beca4080129c9786314a4b621b90c1feb80f82c0b0768dd267a",
+    "generate_atlas.py": "93467356e99fa2606891c43b72f8e818dc8bdf0d48be1158f2d2eae5c593b7c3",
+    "generate_floorplans_v12.py": "ddcbd578b93d045f8be5110ba817f1593167c112e25456f4f8df5b47875a1cbf",
+    "generate_map_v13.py": "4fdf8e0353c077d7aeec6e379fa11fa1420fb714c50cc5737011b5556532f0d4",
+    "generate_navigation_maps.py": "0bcdd74ba620164ef2a03f40955375bfde8fb235951253340aa677123b05c7e3",
+    "pipeline_context.py": "3c7d6bd0255a0342374d3cdeb1e7660ec3d618566817c481655a8100a546d748",
+    "probe_gates.py": "da176a776b0a736bf0ac6b5e24c48f70e4486c35a2af5aa9966298ebf8850feb",
+    "probe_location_names.py": "83f838bbae0f6f0ee31095de30700dd5c9dddd84c74ece0b66f97471b0eab1c3",
+    "probe_markers.py": "adfa30deffc8f1115d169128c70aff58f4f96952f7e12dfe3bdee26eceea2124",
+    "soulstruct_local_config.py": "b430c52c940872fb071a381e7d2ec77fe602c1acf69b65e2d6ca0a052dc88bb3",
+    "update_verified_markers.py": "f881825d4e20d4bbab2714f443e1a7c00ca1b797d25b8ca5c329225f6112cc7a"
+  },
+  "algorithm_sources_byte_identical_to_original": true,
+  "build_environment": {
+    "architecture": "win_amd64",
+    "implementation": "CPython",
+    "packages": {
+      "altgraph": "0.17.5",
+      "annotated-doc": "0.0.5",
+      "cffi": "2.1.1",
+      "charset-normalizer": "3.5.2",
+      "colorama": "0.4.6",
+      "constrata": "1.3.3",
+      "fonttools": "4.61.1",
+      "lxml": "6.1.1",
+      "markdown-it-py": "4.2.0",
+      "mdurl": "0.1.2",
+      "numpy": "2.5.4",
+      "packaging": "26.3",
+      "pefile": "2023.2.7",
+      "pillow": "12.3.0",
+      "pycparser": "3.0",
+      "Pygments": "2.21.0",
+      "pyinstaller": "6.16.0",
+      "pyinstaller-hooks-contrib": "2026.8",
+      "pywin32-ctypes": "0.2.3",
+      "rich": "15.0.0",
+      "scipy": "1.16.3",
+      "setuptools": "84.0.0",
+      "shapely": "2.1.2",
+      "shellingham": "1.5.4",
+      "soulstruct": "2.3.2",
+      "typer": "0.27.3",
+      "typing_extensions": "4.16.0",
+      "wheel": "0.48.0",
+      "zstandard": "0.25.0"
+    },
+    "python": "3.12.14"
+  },
+  "build_spec": "generate_atlas.spec",
+  "build_spec_sha256": "367cab6ae314082d2837ae63a361dd19410e67466705e7d61d3f57a8963d95ef",
+  "bundle": {
+    "bytes": 42584212,
+    "expanded_bytes": 134963536,
+    "package_relative_path": "tools/generator.atlaslite",
+    "payload_files": 210,
+    "sha256": "621300c2660025db454b45e6152e14b5c18f6b93e24867e9cc1e661c68c2af36"
+  },
+  "entrypoint": "src/generate_atlas_lite.py",
+  "entrypoint_sha256": "4ac2533295edfecf0e2c2fc29a89931aeadb79d53697cbce613632d31108472b",
+  "requirements_sha256": {
+    "requirements-build.txt": "06faaa5b4468144e08859c48652e3e6ef60a70bfa7143827c35f4923f7c8d2bb",
+    "requirements-frozen.txt": "a317ef922205b693248ca1ef1befa5d5e9b51d15c34c7a410ee82295c08c190c",
+    "requirements-runtime.txt": "d856c599e330353471e9059850aeeb2df30f0beb44f089bcbd0056348ce4bb59"
+  }
+}

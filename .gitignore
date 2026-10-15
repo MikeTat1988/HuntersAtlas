@@ -7,8 +7,5 @@
 /source/generator/.builddeps/
 /source/generator/build/
 /source/generator/dist/
-/source/launcher/.builddeps/
-/source/launcher/build/*
-!/source/launcher/build/*.json
 /source/native/out/
 **/.pytest_cache/

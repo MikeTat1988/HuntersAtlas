@@ -1,13 +1,8 @@
-# Changelog
+# Hunter’s Atlas Lite 2.0.0
 
-## 1.0 — first release
-
-- Adds an optional fourth Map tile to the quick menu, with controller navigation, Confirm/Back support and mouse activation.
-- Includes a full-screen map with position tracking, pan, zoom, elevation shading, recentering and fade/context for other floors.
-- Uses scratched shading for enclosed interiors and preserves the painted side art with soft map edges.
-- Integrates with the matching Windows launcher: choose the Atlas folder, enable it, and press normal Play.
-- Includes a standalone installer, compatibility checks, rollback and local map/font preparation from the user's own game files.
-- Installation shows percentage progress, prepares maps automatically, and sets the extracted Atlas folder in the launcher. Detailed diagnostics are saved in the rollback log.
-- Provides separate player and complete source archives; the player download excludes bundled source dependencies.
-- The uninstall command finds the launcher selected at installation, so it does not ask players to locate the receipt.
-- Plays the game's existing cursor sounds for Atlas selection and confirmation. No game or save files are included.
+- Adds an isolated Lite launcher integration for the verified official Windows launcher.
+- Generates the 16 supported maps and required font locally from the user’s compatible game files; neither maps nor game files are included in the player package.
+- Uses the verified stock launcher’s private runtime and selected launcher dependencies without requiring a separately installed Python runtime or compiler for players.
+- Checks the launcher and CUSA00207 1.09 game fingerprints before installation or launch.
+- Keeps Lite configuration, generated assets, and runtime state within its package and profile, and provides an installer/uninstaller that backs up and restores the original launcher.
+- Includes corresponding source, native GPL source and vendored inputs, source-build instructions, and third-party notices in the source release.

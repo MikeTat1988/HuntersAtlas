@@ -1,21 +1,63 @@
-# Generator completion receipt
+# Generator and preparation QA
 
-The 1.0 progress build is `dist/generate_atlas/generate_atlas.exe`, SHA-256 `3353e7c3bfad9962ff538ddce8d125f42348933cbd8514f569034eafeb335ab5`. The folder contains 266 files, 213,849,479 bytes; retain `_internal`. It was rebuilt on 2026-10-15 from the pinned CPython 3.12/PyInstaller 6.16.0 requirements after adding stable JSON progress events. Frozen `--version` and `--help` passed. `generator-tools-sha256.json` lists every file using final package `tools/` paths, and `generator-source-sha256.json` records the current source/spec/dependency pins. A full source/frozen map regeneration was not repeated for this progress-only change; the complete-run evidence below belongs to the preceding generator build.
+## Frozen generator
 
-Two complete independent fresh-output runs passed:
-- Source pipeline: 617.53 seconds; `logs/source-generation.log`, `empty-output-source/`.
-- Final frozen executable: 620.34 seconds; `logs/frozen-complete-generation.log`, `portable complete בדיקה/`. PATH was restricted to Windows System32; PYTHONPATH was absent; `PYTHONIOENCODING=cp1251` exercised explicit UTF-8 output; both selected output path spaces/Unicode and external empty staging were used. CLI included `--replace`.
+The shipped `generator.atlaslite` was independently run against a fresh output
+directory using the supported Bloodborne 1.09 input. It generated all 16
+supported maps in 542.52 seconds. The generated map JSON files, atlas, catalog,
+native font, geometry layers, bounds, and marker semantics matched the retained
+reference outputs; generated-file hashes passed. The artifact receipt records
+the 42,584,212-byte ZIP_LZMA archive, 134,963,536-byte expanded runtime, 210
+payload files, version probe `1.0.0`, import self-test pass, and expanded-runtime
+cleanup pass. The algorithm scripts also match their original source hashes.
 
-All 19 generated payload files are byte-identical between source and frozen runs, including deterministic native font. `logs/source-frozen-byte-comparison.json` records this. Both generated manifests validate every output SHA-256; protected original `eboot.bin` and `sce_sys/param.sfo` hashes are unchanged after extraction.
+The import self-test covers the shipped NumPy, SciPy spatial cKDTree, SciPy
+special, Shapely/GEOS, and Pillow/FreeType components. The build spec removes
+only unused Pillow extensions and verified-unloaded duplicate OpenBLAS files;
+it retains the numerical and geometry dependencies used by generation.
 
-All 16 maps match the installed v1.3 geometry-layer arrays, bounds, semantic lamp names/coordinates and ladder/NPC/gate identity/coordinates exactly. No installed Atlas files were overwritten. `logs/comparison-portable_complete_בדיקה.json` records per-map checks plus the complete runtime catalog indices. Catalog paths are portable; game-native internal binder entry paths are reduced to entry basenames while enclosing binder paths remain relative.
+## Headless preparation
 
-Counts: 16 maps; 602 layers; 742,315 floor triangles with matching finite original vertex heights; 442,011 wall segments; 44 verified lamps; 48 registered ladders; 66 static NPC sites; 85 verified openable gates/doors; 320 named collision footprint regions. Source-provenance omissions remain explicit (including unsupported collision-tree entries in Dream/Upper Cathedral Ward/Yahar'gul). No quest/gate-state or complete walk-through coverage is claimed.
+The package preparation entry point accepts:
 
-`test_transaction.py` passed injected commit-failure rollback and successful replacement. Commit touches only newly generated fixed owned targets plus final manifest; it backs existing targets up in external staging and restores changed originals on failure. It never trusts path names from an older manifest. Existing output symlinks/junctions are checked for containment. `test_reader_adapter.py` passed real MSB/FMG reads through the in-memory Soulstruct config; no editor config/log file is created by the final binary. Its immutable folder remains 263 files after the complete run.
+```text
+--game-dir <Image0-or-parent> --output-dir <Lite-package-root> --headless [--cancel-file <path>]
+```
 
-The initial source-baseline import used the installed library's existing editor logger and touched `tools/map-build/appdata/soulstruct/soulstruct.log` (0-byte diagnostic file). Its configuration retained the previous day's timestamp. The final adapter prevents this incidental outside-generator diagnostic write. Original scripts and all game/save files were preserved.
+It loads the package's verified bootstrap contract, requires the output
+directory to be the package root, and calls the unchanged frozen generator.
+The generated maps and fresh native font are combined with release-owned art;
+existing maps and fonts are ignored. The new asset pack and manifest are
+committed together, with byte-for-byte rollback if validation fails or
+cancellation arrives during commit. The expanded generator and work files are
+kept under package-owned staging and cleaned after the run.
 
-Public package inputs are limited to final tools, `src/`, relative spec/requirements, and reviewed source/license documentation. Do not ship this workspace's empty-output test packages, extracted native font/maps/catalogs, stages, reports containing game-derived evidence, logs, copied save data or unused helper resources. Soulstruct's general editor config and bundled Oodle/Lua/Havok/texture executable/DLL resources were excluded from the freeze.
+Run the focused headless preparation tests with the supported test Python:
 
-Dependency/source audit: `requirements-frozen.txt` and `frozen-dependency-inventory.json` identify actual modules/distributions in the binary. `dependency-notices.json` identifies versions, declarations and recovered notice paths; `licenses/` contains copied notices. Exact Soulstruct 2.3.2 PyPI sdist is privately retained at `dependency-sources/soulstruct-2.3.2.tar.gz` with SHA in the inventory; it contains no LICENSE/COPYING. That notice remains a release audit item. This receipt establishes local technical generation, not public redistribution approval or clean-machine/runtime visual acceptance.
+```powershell
+python -m unittest discover -s source/lite/generator/tests -p test_prepare.py -v
+```
+
+Current result: **7 passed**. The tests cover successful refresh, removal of
+stale maps and fonts, generator failure, cancellation during generation,
+cancellation between pack/manifest replacement, post-commit validation
+rollback, output-root rejection, and cancellation of a child process with log
+draining. They use disposable fixtures and do not alter an installed package
+or a game directory.
+
+The full frozen map-generation run is separate from the preparation-wrapper
+tests. A full installer first run also passed in a fresh disposable package and an
+independently extracted official launcher under Windows PowerShell 5.1. The
+frozen generator completed in 567.91 seconds at BelowNormal priority, producing
+16 maps, 602 layers, 742,315 triangles, 442,011 walls, 44 lamps, 48 ladders,
+66 NPCs, 85 gates and 320 catalog regions. The installer exited with code 0.
+The committed prepared pack is 21,870,216 bytes with SHA-256
+`b889555f3aae436a3a59c05c14f863e8e8e56ac7ab70b45a78fd63c394efda19`.
+This integration check is separate from the seven preparation unit tests.
+
+## Scope
+
+These checks establish deterministic output parity for the tested Bloodborne
+1.09 input and the preparation transaction behavior. They do not establish
+visual map approval, compatibility with other game builds, quest-state or
+walk-through completeness, or clean-machine Windows installer acceptance.

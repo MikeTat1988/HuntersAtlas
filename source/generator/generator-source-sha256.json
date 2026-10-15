@@ -1,5 +1,5 @@
 {
-  "generate_atlas.spec": "0f97a0e98969fa65e9c41b4c23b34ec28cfbc622b0249aceb0a02ccdaf3145a3",
+  "generate_atlas.spec": "367cab6ae314082d2837ae63a361dd19410e67466705e7d61d3f57a8963d95ef",
   "requirements-build.txt": "06faaa5b4468144e08859c48652e3e6ef60a70bfa7143827c35f4923f7c8d2bb",
   "requirements-frozen.txt": "a317ef922205b693248ca1ef1befa5d5e9b51d15c34c7a410ee82295c08c190c",
   "requirements-runtime.txt": "d856c599e330353471e9059850aeeb2df30f0beb44f089bcbd0056348ce4bb59",
@@ -7,6 +7,7 @@
   "src/extract_subarea_names.py": "5779f99facaaba1705f43b3ab4c56982fd0b07670004bc340efc57dcd9a0ec9f",
   "src/extract_verified_gates.py": "a26b887400373beca4080129c9786314a4b621b90c1feb80f82c0b0768dd267a",
   "src/generate_atlas.py": "93467356e99fa2606891c43b72f8e818dc8bdf0d48be1158f2d2eae5c593b7c3",
+  "src/generate_atlas_lite.py": "4ac2533295edfecf0e2c2fc29a89931aeadb79d53697cbce613632d31108472b",
   "src/generate_floorplans_v12.py": "ddcbd578b93d045f8be5110ba817f1593167c112e25456f4f8df5b47875a1cbf",
   "src/generate_map_v13.py": "4fdf8e0353c077d7aeec6e379fa11fa1420fb714c50cc5737011b5556532f0d4",
   "src/generate_navigation_maps.py": "0bcdd74ba620164ef2a03f40955375bfde8fb235951253340aa677123b05c7e3",

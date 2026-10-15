@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "scope": "Current original Atlas art. PNG pixels losslessly encode the approved native RGBA resources. No game-derived font or maps.",
+  "files": {
+    "background.png": "c7a4516cfa1234c33284b90077f6012e6d687e159f4da47fc66db1ead872e479",
+    "fallback.ttf": "58568c88a01b80dfc056daca3eeafd434a0380df1a48dda53f0de0d716109bbd",
+    "icons.png": "3255db2f23d323cc6755fc02059d410c9b18b1d452ab0500305fd6ba855454e8",
+    "LICENSE-DejaVu.txt": "3f1a11bc99a21ddb62d0eb9f3ed2e1b530ed13230fc79e5aa68be2a0a1a8082f",
+    "menu-master.png": "766f43e5694c0458392a18b8d9694599fdccc3e2fab247dac5336c58c73370b0",
+    "menu.png": "a86070b98baf862acc4cb99cf74ba0aa72fa944c0d48649b7f3e369c9a94fe39",
+    "parchment.png": "79d42a7abc284221fa52232f7245ece61b65cb1a4cd411402ffb6a8d3f8bfb5f"
+  }
+}

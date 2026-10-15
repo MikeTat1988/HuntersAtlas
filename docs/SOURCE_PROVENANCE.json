@@ -1,8 +1,51 @@
 {
-  "version": "1.0",
-  "native": "782f6b4f3bb6b22a0545e9d292fde022f7cf90a4f5c6ecf05e7e4acd6e91c022",
-  "launcher": "50998226ef2751957e21181ad8bb5f3e6a12c59e35d6e2fb198f858ea71537a1",
-  "installer": "a319a8e45504009293814284f0ca26862dbaff2c8e49fcdb3eb774d444864020",
-  "source_files": 4414,
-  "scope": "Hunter\u2019s Atlas 1.0 release source. The launcher and installer use the matching 1.0 runtime compatibility identity."
+  "schema": 2,
+  "version": "2.0.0",
+  "product": "Hunters Atlas Lite",
+  "scope": "Sole supported release implementation. Complete native corresponding source and required dependency sources accompany the player download.",
+  "upstream_launcher": {
+    "tag": "windows-v1.7.2",
+    "url": "https://github.com/Supermedo/bloodborne_pc/releases/tag/windows-v1.7.2",
+    "download_sha256": "0e47412530079e41c4b3d0b7ac07081a58f68e6b05f82732196abdb3ad7840fe"
+  },
+  "supported_game": {
+    "title_id": "CUSA00207",
+    "version": "1.09",
+    "eboot_sha256": "d65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9"
+  },
+  "binary_inputs": {
+    "AtlasLiteLauncher.exe": "25c4fa780affb462f88895b4c98e616d9614f28fd5dc64d4d1c796c810939d4b",
+    "generator.atlaslite": "621300c2660025db454b45e6152e14b5c18f6b93e24867e9cc1e661c68c2af36",
+    "runtime-dependency-source.zip": "db2868569edbef2518fbe36f3a47398fd129190349c2f5b8e013e0cdbbff0306",
+    "runtime/bb-probe.exe": "37e18517405cf023a32dad5826f0657ef372e9da11655c3c6ff0c9862299c525",
+    "runtime/libaom.dll": "2787972c16b3ea074677bd26afa845b34a8cb1e9c3409c702282b1f3efb59cb9",
+    "runtime/libc++.dll": "61948629d7c7e3274d4a242e62cbd5ce88919915fde347d256e1286a105a4afa",
+    "runtime/libexpat-1.dll": "5eddb2f5a0d0a60caf1f36eefaae7b5bc428c39b4d0631b25ea300964d9ad78f",
+    "runtime/libgdk_pixbuf-2.0-0.dll": "292f1d4b51df6111e848b47e7b5828ace707813f16a49f322e05babf0cfb512e",
+    "runtime/libgio-2.0-0.dll": "689dbc6fcb92db4c2667c438d6876b16a0dfd44a06e562002f654c51f5878937",
+    "runtime/libglib-2.0-0.dll": "33e098b6ee34a397e314eda078b8ff8c3a0f3b344d2e1afe5d7f9e98b6fed970",
+    "runtime/libgmodule-2.0-0.dll": "6cab76efc49bfb6fa366a39514845b06a352879cc5e22aa2577248b2238b0e99",
+    "runtime/libgobject-2.0-0.dll": "fa59cbda5c918f0ae2aeb8c8387873b334194470709a5dd94b9ff4ba22932f3a",
+    "runtime/libharfbuzz-0.dll": "5240304163492ac591732a8ddfbad6f687ae645a6a30e0466d56be2ef255d8d4",
+    "runtime/libomp.dll": "bc3880baa3d7770c3b598dd709a01fb54540a99139a526cb503764e6d6520a06",
+    "runtime/libsoxr.dll": "b694e58e04c0e1668173c4ecc1fa6c14d8f14a0c575777d04be2ce00dc5e2ab0",
+    "runtime/libunwind.dll": "3f2e409cdfb426bd380044ae60a865355634c60bba7ea87aa37a13b06b70bfe5",
+    "runtime/vulkan-1.dll": "fa5939ec9e78fe3ff15aababd9462b28d9969ea2809faca35314f9a7e9d8c0e4"
+  },
+  "native_runtime": {
+    "source": "source/native",
+    "stripping": "Only PE debug sections removed; retained executable sections and RVAs verified identical.",
+    "unstripped_sha256": "782f6b4f3bb6b22a0545e9d292fde022f7cf90a4f5c6ecf05e7e4acd6e91c022"
+  },
+  "source_paths": {
+    "launcher": "source/lite/integration",
+    "bootstrap": "source/lite/bootstrap",
+    "preparation": "source/lite/generator",
+    "map_algorithms": "source/generator/src",
+    "native": "source/native",
+    "runtime_dependency_sources": "runtime-dependencies/ in the corresponding source ZIP"
+  },
+  "contains_game_maps_or_font": false,
+  "requires_previous_atlas": false,
+  "reproducibility": "Source and exact binary-input hashes are supplied. Byte-identical executable rebuilds are not claimed."
 }
