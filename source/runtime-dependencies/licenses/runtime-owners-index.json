@@ -1,0 +1,4006 @@
+{
+  "schema": 1,
+  "source": "working/atlas-root-audit/dependency-license-owners.json",
+  "source_sha256": "e89effe214f8b29023734b009161d9a5ac35a120a3f00ba8f7f5a3d51f8d1275",
+  "dll_count": 150,
+  "mapped_dll_count": 147,
+  "owner_count": 81,
+  "owners": [
+    {
+      "package": "mingw-w64-clang-x86_64-abseil-cpp",
+      "version": "20260526.0-1",
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "upstream_urls": [
+        "https://abseil.io"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/abseil-cpp/LICENSE",
+          "path": "notices/installed/abseil-cpp-20260526.0-1/share/licenses/abseil-cpp/LICENSE",
+          "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+          "size": 11361
+        }
+      ],
+      "dlls": [
+        "libabsl_base-2605.0.0.dll",
+        "libabsl_city-2605.0.0.dll",
+        "libabsl_cord-2605.0.0.dll",
+        "libabsl_cord_internal-2605.0.0.dll",
+        "libabsl_cordz_handle-2605.0.0.dll",
+        "libabsl_cordz_info-2605.0.0.dll",
+        "libabsl_crc32c-2605.0.0.dll",
+        "libabsl_crc_cord_state-2605.0.0.dll",
+        "libabsl_crc_internal-2605.0.0.dll",
+        "libabsl_die_if_null-2605.0.0.dll",
+        "libabsl_examine_stack-2605.0.0.dll",
+        "libabsl_hash-2605.0.0.dll",
+        "libabsl_hashtablez_sampler-2605.0.0.dll",
+        "libabsl_int128-2605.0.0.dll",
+        "libabsl_kernel_timeout_internal-2605.0.0.dll",
+        "libabsl_leak_check-2605.0.0.dll",
+        "libabsl_log_globals-2605.0.0.dll",
+        "libabsl_log_internal_check_op-2605.0.0.dll",
+        "libabsl_log_internal_conditions-2605.0.0.dll",
+        "libabsl_log_internal_format-2605.0.0.dll",
+        "libabsl_log_internal_globals-2605.0.0.dll",
+        "libabsl_log_internal_log_sink_set-2605.0.0.dll",
+        "libabsl_log_internal_message-2605.0.0.dll",
+        "libabsl_log_internal_nullguard-2605.0.0.dll",
+        "libabsl_log_internal_proto-2605.0.0.dll",
+        "libabsl_log_internal_structured_proto-2605.0.0.dll",
+        "libabsl_log_sink-2605.0.0.dll",
+        "libabsl_malloc_internal-2605.0.0.dll",
+        "libabsl_raw_hash_set-2605.0.0.dll",
+        "libabsl_raw_logging_internal-2605.0.0.dll",
+        "libabsl_spinlock_wait-2605.0.0.dll",
+        "libabsl_stacktrace-2605.0.0.dll",
+        "libabsl_status-2605.0.0.dll",
+        "libabsl_statusor-2605.0.0.dll",
+        "libabsl_str_format_internal-2605.0.0.dll",
+        "libabsl_strerror-2605.0.0.dll",
+        "libabsl_strings-2605.0.0.dll",
+        "libabsl_strings_internal-2605.0.0.dll",
+        "libabsl_symbolize-2605.0.0.dll",
+        "libabsl_synchronization-2605.0.0.dll",
+        "libabsl_throw_delegate-2605.0.0.dll",
+        "libabsl_time-2605.0.0.dll",
+        "libabsl_time_zone-2605.0.0.dll",
+        "libabsl_tracing_internal-2605.0.0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-aom",
+      "version": "3.15.2-1",
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "upstream_urls": [
+        "https://aomedia.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/aom/LICENSE",
+          "path": "notices/installed/aom-3.15.2-1/share/licenses/aom/LICENSE",
+          "sha256": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
+          "size": 1316
+        },
+        {
+          "installed_path": "clang64/share/licenses/aom/PATENTS",
+          "path": "notices/installed/aom-3.15.2-1/share/licenses/aom/PATENTS",
+          "sha256": "661fb8e504744e95587b556b94a58343448300606a41bea8c7a9b97125696e61",
+          "size": 5701
+        }
+      ],
+      "dlls": [
+        "libaom.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-brotli",
+      "version": "1.2.0-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://github.com/google/brotli"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/brotli/LICENSE",
+          "path": "notices/installed/brotli-1.2.0-1/share/licenses/brotli/LICENSE",
+          "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94",
+          "size": 1084
+        }
+      ],
+      "dlls": [
+        "libbrotlicommon.dll",
+        "libbrotlidec.dll",
+        "libbrotlienc.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-bzip2",
+      "version": "1.0.8-4",
+      "license_tags": [
+        "custom"
+      ],
+      "upstream_urls": [
+        "https://sourceware.org/bzip2/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/bzip2/LICENSE",
+          "path": "notices/installed/bzip2-1.0.8-4/share/licenses/bzip2/LICENSE",
+          "sha256": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3",
+          "size": 1896
+        }
+      ],
+      "dlls": [
+        "libbz2-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-cairo",
+      "version": "1.18.6-2",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later OR MPL-1.1"
+      ],
+      "upstream_urls": [
+        "https://cairographics.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/cairo/COPYING",
+          "path": "notices/installed/cairo-1.18.6-2/share/licenses/cairo/COPYING",
+          "sha256": "67228a9f7c5f9b67c58f556f1be178f62da4d9e2e6285318d8c74d567255abdf",
+          "size": 1576
+        },
+        {
+          "installed_path": "clang64/share/licenses/cairo/COPYING-LGPL-2.1",
+          "path": "notices/installed/cairo-1.18.6-2/share/licenses/cairo/COPYING-LGPL-2.1",
+          "sha256": "9e9e8608c4cdda51a78cc3a385f4ec9a2e4c96d5ecad74ac8bca5fca3e563b7d",
+          "size": 26533
+        },
+        {
+          "installed_path": "clang64/share/licenses/cairo/COPYING-MPL-1.1",
+          "path": "notices/installed/cairo-1.18.6-2/share/licenses/cairo/COPYING-MPL-1.1",
+          "sha256": "53692a2ed6c6a2c6ec9b32dd0b820dfae91e0a1fcdf625ca9ed0bdf8705fcc4f",
+          "size": 25755
+        }
+      ],
+      "dlls": [
+        "libcairo-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-dav1d",
+      "version": "1.5.4-1",
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "upstream_urls": [
+        "https://code.videolan.org/videolan/dav1d"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/dav1d/COPYING",
+          "path": "notices/installed/dav1d-1.5.4-1/share/licenses/dav1d/COPYING",
+          "sha256": "dd92c3c2247c5651606fc23a5e2d6a1ebc5ace9a3e49cbde0e12f05ad1cb1ee5",
+          "size": 1317
+        },
+        {
+          "installed_path": "clang64/share/licenses/dav1d/PATENTS",
+          "path": "notices/installed/dav1d-1.5.4-1/share/licenses/dav1d/PATENTS",
+          "sha256": "335eca574598bf4ca181b12f708d6669e5a5e78c8e1513e5b35fa1f03901484b",
+          "size": 5730
+        }
+      ],
+      "dlls": [
+        "libdav1d-7.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-expat",
+      "version": "2.9.0-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://libexpat.github.io/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/expat/COPYING",
+          "path": "notices/installed/expat-2.9.0-1/share/licenses/expat/COPYING",
+          "sha256": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+          "size": 1144
+        }
+      ],
+      "dlls": [
+        "libexpat-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-ffmpeg",
+      "version": "9.0.2-1",
+      "license_tags": [
+        "spdx:GPL-3.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://ffmpeg.org/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "avcodec-63.dll",
+        "avformat-63.dll",
+        "avutil-61.dll",
+        "swresample-7.dll",
+        "swscale-10.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-fontconfig",
+      "version": "2.18.3-1",
+      "license_tags": [
+        "custom"
+      ],
+      "upstream_urls": [
+        "https://wiki.freedesktop.org/www/Software/fontconfig/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/fontconfig/COPYING",
+          "path": "notices/installed/fontconfig-2.18.3-1/share/licenses/fontconfig/COPYING",
+          "sha256": "51a51aa9823704fd90bccc616cdd17ebabb5b2b3e9cbde886ca02c7002288067",
+          "size": 8616
+        }
+      ],
+      "dlls": [
+        "libfontconfig-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-freetype",
+      "version": "2.14.3-1",
+      "license_tags": [
+        "spdx:GPL-2.0-or-later OR FTL"
+      ],
+      "upstream_urls": [
+        "https://www.freetype.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/freetype/FTL.TXT",
+          "path": "notices/installed/freetype-2.14.3-1/share/licenses/freetype/FTL.TXT",
+          "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+          "size": 6743
+        },
+        {
+          "installed_path": "clang64/share/licenses/freetype/GPLv2.TXT",
+          "path": "notices/installed/freetype-2.14.3-1/share/licenses/freetype/GPLv2.TXT",
+          "sha256": "c4120c6752c910c299e3bd9cb3a46ff262c268303ca2069b61f92f10a5656c18",
+          "size": 17994
+        }
+      ],
+      "dlls": [
+        "libfreetype-6.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-fribidi",
+      "version": "1.0.17-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://github.com/fribidi/fribidi"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/fribidi/COPYING",
+          "path": "notices/installed/fribidi-1.0.17-1/share/licenses/fribidi/COPYING",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        }
+      ],
+      "dlls": [
+        "libfribidi-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-gdk-pixbuf2",
+      "version": "2.44.8-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://gitlab.gnome.org/GNOME/gdk-pixbuf"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/gdk-pixbuf2/COPYING",
+          "path": "notices/installed/gdk-pixbuf2-2.44.8-1/share/licenses/gdk-pixbuf2/COPYING",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "size": 26530
+        }
+      ],
+      "dlls": [
+        "libgdk_pixbuf-2.0-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-gettext-runtime",
+      "version": "1.0-1",
+      "license_tags": [
+        "spdx:GPL-3.0-or-later AND LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.gnu.org/software/gettext/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/gettext-runtime/COPYING",
+          "path": "notices/installed/gettext-runtime-1.0-1/share/licenses/gettext-runtime/COPYING",
+          "sha256": "7ef2cdfe58e0c0460657b6598b49af29d4e03c1e41cbaf0e1da1eb8ad74b95d0",
+          "size": 495
+        },
+        {
+          "installed_path": "clang64/share/licenses/gettext-runtime/intl/COPYING.LIB",
+          "path": "notices/installed/gettext-runtime-1.0-1/share/licenses/gettext-runtime/intl/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        },
+        {
+          "installed_path": "clang64/share/licenses/gettext-runtime/libasprintf/COPYING",
+          "path": "notices/installed/gettext-runtime-1.0-1/share/licenses/gettext-runtime/libasprintf/COPYING",
+          "sha256": "03133addae5b99a6148c538300e6d97074453089be1423b741bd081f18e2b298",
+          "size": 65
+        },
+        {
+          "installed_path": "clang64/share/licenses/gettext-runtime/libasprintf/COPYING.LIB",
+          "path": "notices/installed/gettext-runtime-1.0-1/share/licenses/gettext-runtime/libasprintf/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        }
+      ],
+      "dlls": [
+        "libintl-8.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-glib2",
+      "version": "2.90.1-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://gitlab.gnome.org/GNOME/glib"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/glib2/COPYING",
+          "path": "notices/installed/glib2-2.90.1-1/share/licenses/glib2/COPYING",
+          "sha256": "fa6f36630bb1e0c571d34b2bbdf188d08495c9dbf58f28cac112f303fc1f58fb",
+          "size": 25967
+        }
+      ],
+      "dlls": [
+        "libgio-2.0-0.dll",
+        "libglib-2.0-0.dll",
+        "libgmodule-2.0-0.dll",
+        "libgobject-2.0-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-gmp",
+      "version": "6.3.0-2",
+      "license_tags": [
+        "GPL",
+        "LGPL3"
+      ],
+      "upstream_urls": [
+        "https://gmplib.org/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libgmp-10.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-gnutls",
+      "version": "3.8.13-3",
+      "license_tags": [
+        "spdx:GPL-3.0-or-later",
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.gnutls.org/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libgnutls-30.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-graphite2",
+      "version": "1.3.15-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://github.com/silnrsi/graphite"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/graphite2/COPYING",
+          "path": "notices/installed/graphite2-1.3.15-1/share/licenses/graphite2/COPYING",
+          "sha256": "2c272829ff23f182c8bf7ea12fedea69b0ae148663123ed5240c117cb129c9c1",
+          "size": 1235
+        },
+        {
+          "installed_path": "clang64/share/licenses/graphite2/LICENSE",
+          "path": "notices/installed/graphite2-1.3.15-1/share/licenses/graphite2/LICENSE",
+          "sha256": "cab46cd45adbfea4b1d0f14b033c70062c73074fa0b56532c2f351576ddf455e",
+          "size": 29228
+        }
+      ],
+      "dlls": [
+        "libgraphite2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-gsm",
+      "version": "1.0.24-1",
+      "license_tags": [
+        "custom"
+      ],
+      "upstream_urls": [
+        "https://www.quut.com/gsm/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/gsm/license.txt",
+          "path": "notices/installed/gsm-1.0.24-1/share/licenses/gsm/license.txt",
+          "sha256": "81c68a3374937ed9b5e4929c709e81a2c4b35b5d1f450ecf8c473e2daea46ff6",
+          "size": 1450
+        }
+      ],
+      "dlls": [
+        "libgsm.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-harfbuzz",
+      "version": "14.6.0-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://harfbuzz.github.io/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/harfbuzz/COPYING",
+          "path": "notices/installed/harfbuzz-14.6.0-1/share/licenses/harfbuzz/COPYING",
+          "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+          "size": 1971
+        }
+      ],
+      "dlls": [
+        "libharfbuzz-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-highway",
+      "version": "1.4.0-3",
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "upstream_urls": [
+        "https://github.com/google/highway"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/highway/LICENSE",
+          "path": "notices/installed/highway-1.4.0-3/share/licenses/highway/LICENSE",
+          "sha256": "e340270d4f64384569a91d546acb5b094d69ce47f0c015db77abb74dc6f815af",
+          "size": 20785
+        }
+      ],
+      "dlls": [
+        "libhwy.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-jbigkit",
+      "version": "2.1-6",
+      "license_tags": [
+        "spdx:GPL-2.0"
+      ],
+      "upstream_urls": [
+        "https://www.cl.cam.ac.uk/~mgk25/jbigkit/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/jbigkit/COPYING",
+          "path": "notices/installed/jbigkit-2.1-6/share/licenses/jbigkit/COPYING",
+          "sha256": "91df39d1816bfb17a4dda2d3d2c83b1f6f2d38d53e53e41e8f97ad5ac46a0cad",
+          "size": 17982
+        }
+      ],
+      "dlls": [
+        "libjbig-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-lame",
+      "version": "3.100-3",
+      "license_tags": [
+        "LGPL"
+      ],
+      "upstream_urls": [
+        "https://lame.sourceforge.io/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libmp3lame-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-lcms2",
+      "version": "2.19.1-1",
+      "license_tags": [
+        "spdx:MIT AND GPL-3.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.littlecms.com/color-engine/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/lcms2/LICENSE",
+          "path": "notices/installed/lcms2-2.19.1-1/share/licenses/lcms2/LICENSE",
+          "sha256": "6dbd60437f8ef91d8de1f08ad75882547fd4931bfcc3566a0735f28db1484d31",
+          "size": 1080
+        },
+        {
+          "installed_path": "clang64/share/licenses/lcms2/LICENSE-fast_float",
+          "path": "notices/installed/lcms2-2.19.1-1/share/licenses/lcms2/LICENSE-fast_float",
+          "sha256": "c53a65c2fd561c87eaabf1072ef5dcab8653042bc15308465f52413585eb6271",
+          "size": 35146
+        }
+      ],
+      "dlls": [
+        "liblcms2-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-lerc",
+      "version": "4.1.1-1",
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "upstream_urls": [
+        "https://github.com/Esri/lerc"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/lerc/LICENSE",
+          "path": "notices/installed/lerc-4.1.1-1/share/licenses/lerc/LICENSE",
+          "sha256": "77a8b761727c75e2167b15bfdf61b2c0bcf8792271228bebe80779106ad00671",
+          "size": 9198
+        }
+      ],
+      "dlls": [
+        "liblerc.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libbluray",
+      "version": "1.5.0-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.videolan.org/developers/libbluray.html"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libbluray/COPYING",
+          "path": "notices/installed/libbluray-1.5.0-1/share/licenses/libbluray/COPYING",
+          "sha256": "b3aa400aca6d2ba1f0bd03bd98d03d1fe7489a3bbb26969d72016360af8a5c9d",
+          "size": 24478
+        }
+      ],
+      "dlls": [
+        "libbluray-4.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libc++",
+      "version": "23.1.3-1",
+      "license_tags": [
+        "spdx:Apache-2.0 WITH LLVM-exception"
+      ],
+      "upstream_urls": [
+        "https://libcxx.llvm.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libc++/LICENSE",
+          "path": "notices/installed/libc++-23.1.3-1/share/licenses/libc++/LICENSE",
+          "sha256": "539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b",
+          "size": 16703
+        }
+      ],
+      "dlls": [
+        "libc++.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libdatrie",
+      "version": "0.2.14-1",
+      "license_tags": [
+        "LGPL"
+      ],
+      "upstream_urls": [
+        "https://linux.thai.net/projects/datrie"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libdatrie/COPYING",
+          "path": "notices/installed/libdatrie-0.2.14-1/share/licenses/libdatrie/COPYING",
+          "sha256": "a9bdde5616ecdd1e980b44f360600ee8783b1f99b8cc83a2beb163a0a390e861",
+          "size": 26527
+        }
+      ],
+      "dlls": [
+        "libdatrie-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libdeflate",
+      "version": "1.26-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://github.com/ebiggers/libdeflate"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libdeflate/COPYING",
+          "path": "notices/installed/libdeflate-1.26-1/share/licenses/libdeflate/COPYING",
+          "sha256": "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a",
+          "size": 1078
+        }
+      ],
+      "dlls": [
+        "libdeflate.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libffi",
+      "version": "3.8.0-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://sourceware.org/libffi"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libffi/LICENSE",
+          "path": "notices/installed/libffi-3.8.0-1/share/licenses/libffi/LICENSE",
+          "sha256": "17b64dc60f3b6897a60f971e288b973f655c2edcdf08b25f3c3dd5549857881c",
+          "size": 1132
+        }
+      ],
+      "dlls": [
+        "libffi-8.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libgme",
+      "version": "0.6.5-2",
+      "license_tags": [
+        "LGPL"
+      ],
+      "upstream_urls": [
+        "https://github.com/libgme/game-music-emu"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libgme/license.txt",
+          "path": "notices/installed/libgme-0.6.5-2/share/licenses/libgme/license.txt",
+          "sha256": "d2efc89fbb7533572a472d34e07964951810a3a4f8d3159ecc2dcaa1452c5c26",
+          "size": 26938
+        }
+      ],
+      "dlls": [
+        "libgme.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libiconv",
+      "version": "1.19-1",
+      "license_tags": [
+        "documentation:spdx:GPL-3.0-or-later",
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.gnu.org/software/libiconv/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libiconv/COPYING",
+          "path": "notices/installed/libiconv-1.19-1/share/licenses/libiconv/COPYING",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+          "size": 35147
+        },
+        {
+          "installed_path": "clang64/share/licenses/libiconv/COPYING.LIB",
+          "path": "notices/installed/libiconv-1.19-1/share/licenses/libiconv/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        },
+        {
+          "installed_path": "clang64/share/licenses/libiconv/README",
+          "path": "notices/installed/libiconv-1.19-1/share/licenses/libiconv/README",
+          "sha256": "4ae66e61d1c6593c84c47105b368d579bcee1af566dbb959ec63a0c48425dcf4",
+          "size": 5741
+        },
+        {
+          "installed_path": "clang64/share/licenses/libiconv/libcharset/COPYING.LIB",
+          "path": "notices/installed/libiconv-1.19-1/share/licenses/libiconv/libcharset/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        }
+      ],
+      "dlls": [
+        "libiconv-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libidn2",
+      "version": "2.3.8-4",
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-3.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.gnu.org/software/libidn/#libidn2"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libidn2-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libjpeg-turbo",
+      "version": "3.2.0-1",
+      "license_tags": [
+        "custom:BSD-like"
+      ],
+      "upstream_urls": [
+        "https://libjpeg-turbo.virtualgl.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libjpeg-turbo/LICENSE.md",
+          "path": "notices/installed/libjpeg-turbo-3.2.0-1/share/licenses/libjpeg-turbo/LICENSE.md",
+          "sha256": "ba6bceebcba0fdd35488477c2cca8c4632ce82c74dbfbc87d886ce6fc4433579",
+          "size": 6077
+        },
+        {
+          "installed_path": "clang64/share/licenses/libjpeg-turbo/README.ijg",
+          "path": "notices/installed/libjpeg-turbo-3.2.0-1/share/licenses/libjpeg-turbo/README.ijg",
+          "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+          "size": 12799
+        },
+        {
+          "installed_path": "clang64/share/licenses/libjpeg-turbo/README.md",
+          "path": "notices/installed/libjpeg-turbo-3.2.0-1/share/licenses/libjpeg-turbo/README.md",
+          "sha256": "a44ba17ac66c57edaf0ea7c6e4b31358f08322c780e4e6af092082abb3e20793",
+          "size": 17722
+        },
+        {
+          "installed_path": "clang64/share/licenses/libjpeg-turbo/simd/jsimdext.inc",
+          "path": "notices/installed/libjpeg-turbo-3.2.0-1/share/licenses/libjpeg-turbo/simd/jsimdext.inc",
+          "sha256": "68c5d236785edf75344cebe8b9bec36568bd35c96eb72cc67ffecd66c17dbd74",
+          "size": 15563
+        }
+      ],
+      "dlls": [
+        "libjpeg-8.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libjxl",
+      "version": "0.12.0-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://jpeg.org/jpegxl/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libjxl/LICENSE",
+          "path": "notices/installed/libjxl-0.12.0-1/share/licenses/libjxl/LICENSE",
+          "sha256": "8405932022a556380c2d8c272eff154a923feb197233f348ce5f7334fb0a5ede",
+          "size": 1508
+        }
+      ],
+      "dlls": [
+        "libjxl.dll",
+        "libjxl_cms.dll",
+        "libjxl_threads.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-liblc3",
+      "version": "1.1.3-1",
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "upstream_urls": [
+        "https://github.com/google/liblc3"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/liblc3/LICENSE",
+          "path": "notices/installed/liblc3-1.1.3-1/share/licenses/liblc3/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "size": 11358
+        }
+      ],
+      "dlls": [
+        "liblc3-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libmodplug",
+      "version": "0.8.9.0-5",
+      "license_tags": [
+        "PublicDomain"
+      ],
+      "upstream_urls": [
+        "https://modplug-xmms.sourceforge.io/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libmodplug/LICENSE",
+          "path": "notices/installed/libmodplug-0.8.9.0-5/share/licenses/libmodplug/LICENSE",
+          "sha256": "49942e7b3b175f549e751feb08b5270ca6f6c5fb7a1be9f9517db275ec32c92e",
+          "size": 57
+        }
+      ],
+      "dlls": [
+        "libmodplug-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libogg",
+      "version": "1.3.6-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://xiph.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libogg/COPYING",
+          "path": "notices/installed/libogg-1.3.6-1/share/licenses/libogg/COPYING",
+          "sha256": "d2ab5758336489da61c12cc5bb757da5339c4ae9001f9bb0562b4370249af814",
+          "size": 1466
+        }
+      ],
+      "dlls": [
+        "libogg-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libpng",
+      "version": "1.6.59-1",
+      "license_tags": [
+        "custom"
+      ],
+      "upstream_urls": [
+        "http://www.libpng.org/pub/png/libpng.html"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libpng/LICENSE",
+          "path": "notices/installed/libpng-1.6.59-1/share/licenses/libpng/LICENSE",
+          "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+          "size": 5345
+        }
+      ],
+      "dlls": [
+        "libpng16-16.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-librsvg",
+      "version": "2.63.2-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://wiki.gnome.org/Projects/LibRsvg"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/librsvg/COPYING.LIB",
+          "path": "notices/installed/librsvg-2.63.2-1/share/licenses/librsvg/COPYING.LIB",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "size": 26530
+        }
+      ],
+      "dlls": [
+        "librsvg-2-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libsoxr",
+      "version": "0.1.3-6",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://sourceforge.net/p/soxr/wiki/Home/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libsoxr/COPYING.LGPL",
+          "path": "notices/installed/libsoxr-0.1.3-6/share/licenses/libsoxr/COPYING.LGPL",
+          "sha256": "f2f118b9029ec1871b953639ecc46651b2fc7b62e295e6cf3ef2ac4c9a058b33",
+          "size": 26432
+        },
+        {
+          "installed_path": "clang64/share/licenses/libsoxr/LICENSE",
+          "path": "notices/installed/libsoxr-0.1.3-6/share/licenses/libsoxr/LICENSE",
+          "sha256": "dc98676341fdcd29d9f279c9679d6a75288785b174ded8d1b2e316c366166135",
+          "size": 1024
+        },
+        {
+          "installed_path": "clang64/share/licenses/libsoxr/LICENSE-PFFFT",
+          "path": "notices/installed/libsoxr-0.1.3-6/share/licenses/libsoxr/LICENSE-PFFFT",
+          "sha256": "a9f3d236f3c14a41a1293f176d4c7c46d85404403417fcb8df6d6c9707104e42",
+          "size": 2122
+        }
+      ],
+      "dlls": [
+        "libsoxr.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libssh",
+      "version": "0.12.2-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.libssh.org/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libssh.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libtasn1",
+      "version": "4.21.0-1",
+      "license_tags": [
+        "GPL3, LGPL"
+      ],
+      "upstream_urls": [
+        "https://www.gnu.org/software/libtasn1/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libtasn1/COPYING",
+          "path": "notices/installed/libtasn1-4.21.0-1/share/licenses/libtasn1/COPYING",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "size": 35149
+        },
+        {
+          "installed_path": "clang64/share/licenses/libtasn1/COPYING.LESSERv2",
+          "path": "notices/installed/libtasn1-4.21.0-1/share/licenses/libtasn1/COPYING.LESSERv2",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        }
+      ],
+      "dlls": [
+        "libtasn1-6.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libthai",
+      "version": "0.1.30-1",
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://linux.thai.net/projects/libthai"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libthai/COPYING",
+          "path": "notices/installed/libthai-0.1.30-1/share/licenses/libthai/COPYING",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        }
+      ],
+      "dlls": [
+        "libthai-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libtheora",
+      "version": "1.2.0-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://www.theora.org"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libtheoradec-2.dll",
+        "libtheoraenc-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libtiff",
+      "version": "4.7.2-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://libtiff.gitlab.io/libtiff/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libtiff/LICENSE.md",
+          "path": "notices/installed/libtiff-4.7.2-1/share/licenses/libtiff/LICENSE.md",
+          "sha256": "0e27c2382d7b8147972bbb746e04059a1152c8d0fda9d03ef1399d1a433c4ade",
+          "size": 2416
+        }
+      ],
+      "dlls": [
+        "libtiff-6.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libunistring",
+      "version": "1.4.2-1",
+      "license_tags": [
+        "spdx:LGPL-3.0-or-later OR GPL-3.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.gnu.org/software/libunistring"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libunistring/LICENSE",
+          "path": "notices/installed/libunistring-1.4.2-1/share/licenses/libunistring/LICENSE",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "size": 35149
+        },
+        {
+          "installed_path": "clang64/share/licenses/libunistring/LICENSE.LIB",
+          "path": "notices/installed/libunistring-1.4.2-1/share/licenses/libunistring/LICENSE.LIB",
+          "sha256": "a853c2ffec17057872340eee242ae4d96cbf2b520ae27d903e1b2fef1a5f9d1c",
+          "size": 7639
+        }
+      ],
+      "dlls": [
+        "libunistring-5.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libunwind",
+      "version": "23.1.3-1",
+      "license_tags": [
+        "spdx:Apache-2.0 WITH LLVM-exception"
+      ],
+      "upstream_urls": [
+        "https://llvm.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libunwind/LICENSE",
+          "path": "notices/installed/libunwind-23.1.3-1/share/licenses/libunwind/LICENSE",
+          "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d",
+          "size": 16706
+        }
+      ],
+      "dlls": [
+        "libunwind.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libva",
+      "version": "2.24.1-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://intel.github.io/libva/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libva/COPYING",
+          "path": "notices/installed/libva-2.24.1-1/share/licenses/libva/COPYING",
+          "sha256": "c86a782ee845b52472dae9b9d79fb915d333628ac0efe49cdce63644814931de",
+          "size": 1130
+        }
+      ],
+      "dlls": [
+        "libva.dll",
+        "libva_win32.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libvorbis",
+      "version": "1.3.7-3",
+      "license_tags": [
+        "custom"
+      ],
+      "upstream_urls": [
+        "https://xiph.org/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libvorbis-0.dll",
+        "libvorbisenc-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libvpl",
+      "version": "2.17.0-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://intel.github.io/libvpl"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libvpl/LICENSE",
+          "path": "notices/installed/libvpl-2.17.0-1/share/licenses/libvpl/LICENSE",
+          "sha256": "bf1cfac2e2792b6e1e995ce103d70796aecaf2ec7e4c5fe5474f7acec7b4a677",
+          "size": 1074
+        }
+      ],
+      "dlls": [
+        "libvpl-2.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libvpx",
+      "version": "1.17.0-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://www.webmproject.org/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libvpx-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libwebp",
+      "version": "1.6.0-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://developers.google.com/speed/webp/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libwebp/COPYING",
+          "path": "notices/installed/libwebp-1.6.0-1/share/licenses/libwebp/COPYING",
+          "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+          "size": 1496
+        }
+      ],
+      "dlls": [
+        "libsharpyuv-0.dll",
+        "libwebp-7.dll",
+        "libwebpmux-3.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libwinpthread",
+      "version": "14.0.0.r426.g4564ee4b5-1",
+      "license_tags": [
+        "spdx:MIT AND BSD-3-Clause-Clear"
+      ],
+      "upstream_urls": [
+        "https://www.mingw-w64.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libwinpthread/COPYING",
+          "path": "notices/installed/libwinpthread-14.0.0.r426.g4564ee4b5-1/share/licenses/libwinpthread/COPYING",
+          "sha256": "63263614cdd29f2f93cba85e992f041b31f9fc7b4033692f31269489a8a1b177",
+          "size": 2883
+        }
+      ],
+      "dlls": [
+        "libwinpthread-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libx264",
+      "version": "0.165.r3222.b35605a-3",
+      "license_tags": [
+        "custom"
+      ],
+      "upstream_urls": [
+        "https://www.videolan.org/developers/x264.html"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libx264-165.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-libxml2",
+      "version": "2.15.4-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://gitlab.gnome.org/GNOME/libxml2/-/wikis/home"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/libxml2/COPYING",
+          "path": "notices/installed/libxml2-2.15.4-1/share/licenses/libxml2/COPYING",
+          "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626",
+          "size": 1314
+        }
+      ],
+      "dlls": [
+        "libxml2-16.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-llvm-openmp",
+      "version": "23.1.3-2",
+      "license_tags": [
+        "spdx:Apache-2.0 WITH LLVM-exception"
+      ],
+      "upstream_urls": [
+        "https://openmp.llvm.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/openmp/LICENSE",
+          "path": "notices/installed/llvm-openmp-23.1.3-2/share/licenses/openmp/LICENSE",
+          "sha256": "fdad1758a9e1f9d5a81e18879b3406772115edc92c24bfa36b70c654f325e8e4",
+          "size": 19741
+        }
+      ],
+      "dlls": [
+        "libomp.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-nettle",
+      "version": "4.0-1",
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-3.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://www.lysator.liu.se/~nisse/nettle"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libhogweed-7.dll",
+        "libnettle-9.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-opencore-amr",
+      "version": "0.1.6-1",
+      "license_tags": [
+        "Apache"
+      ],
+      "upstream_urls": [
+        "https://opencore-amr.sourceforge.io/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libopencore-amrnb-0.dll",
+        "libopencore-amrwb-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-openjpeg2",
+      "version": "2.5.4-2",
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "upstream_urls": [
+        "https://www.openjpeg.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/openjpeg/LICENSE",
+          "path": "notices/installed/openjpeg2-2.5.4-2/share/licenses/openjpeg/LICENSE",
+          "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6",
+          "size": 2112
+        }
+      ],
+      "dlls": [
+        "libopenjp2-7.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-openssl",
+      "version": "3.6.5-1",
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "upstream_urls": [
+        "https://openssl-library.org"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/openssl/LICENSE",
+          "path": "notices/installed/openssl-3.6.5-1/share/licenses/openssl/LICENSE",
+          "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+          "size": 10175
+        }
+      ],
+      "dlls": [
+        "libcrypto-3-x64.dll",
+        "libssl-3-x64.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-opus",
+      "version": "1.6.1-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://www.opus-codec.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/opus/COPYING",
+          "path": "notices/installed/opus-1.6.1-1/share/licenses/opus/COPYING",
+          "sha256": "01e1167d54a096d123cf6dfbbeb19587278845c6481d2d66d545669846079551",
+          "size": 1945
+        }
+      ],
+      "dlls": [
+        "libopus-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-p11-kit",
+      "version": "0.26.5-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://p11-glue.freedesktop.org/p11-kit.html"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libp11-kit-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-pango",
+      "version": "1.58.2-1",
+      "license_tags": [
+        "spdx:LGPL-2.1"
+      ],
+      "upstream_urls": [
+        "https://www.pango.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/pango/COPYING",
+          "path": "notices/installed/pango-1.58.2-1/share/licenses/pango/COPYING",
+          "sha256": "d245807f90032872d1438d741ed21e2490e1175dc8aa3afa5ddb6c8e529b58e5",
+          "size": 25292
+        }
+      ],
+      "dlls": [
+        "libpango-1.0-0.dll",
+        "libpangocairo-1.0-0.dll",
+        "libpangoft2-1.0-0.dll",
+        "libpangowin32-1.0-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-pcre2",
+      "version": "10.49-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://pcre.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/pcre2/COPYING",
+          "path": "notices/installed/pcre2-10.49-1/share/licenses/pcre2/COPYING",
+          "sha256": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+          "size": 97
+        },
+        {
+          "installed_path": "clang64/share/licenses/pcre2/LICENCE.md",
+          "path": "notices/installed/pcre2-10.49-1/share/licenses/pcre2/LICENCE.md",
+          "sha256": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+          "size": 4011
+        }
+      ],
+      "dlls": [
+        "libpcre2-8-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-pixman",
+      "version": "0.46.4-3",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://gitlab.freedesktop.org/pixman/pixman"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/pixman/COPYING",
+          "path": "notices/installed/pixman-0.46.4-3/share/licenses/pixman/COPYING",
+          "sha256": "fac9270f0987b96ff4533fca3548c633e02083cbba4a0172a3b149b2e4019793",
+          "size": 2087
+        }
+      ],
+      "dlls": [
+        "libpixman-1-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-protobuf",
+      "version": "36.2-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "upstream_urls": [
+        "https://developers.google.com/protocol-buffers/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/protobuf/LICENSE",
+          "path": "notices/installed/protobuf-36.2-1/share/licenses/protobuf/LICENSE",
+          "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+          "size": 1732
+        }
+      ],
+      "dlls": [
+        "libprotobuf.dll",
+        "libutf8_validity.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-rav1e",
+      "version": "0.8.1-1",
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "upstream_urls": [
+        "https://github.com/xiph/rav1e/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/rav1e/LICENSE",
+          "path": "notices/installed/rav1e-0.8.1-1/share/licenses/rav1e/LICENSE",
+          "sha256": "2dd0a109751e939dec3f80ddcfbc1ba91553f18c574399e85c159632182a2c0a",
+          "size": 1332
+        },
+        {
+          "installed_path": "clang64/share/licenses/rav1e/PATENTS",
+          "path": "notices/installed/rav1e-0.8.1-1/share/licenses/rav1e/PATENTS",
+          "sha256": "7b14a70c194b19dbd0625e7eac839a63200f67484521ce5e8d8244b127e8907a",
+          "size": 5702
+        }
+      ],
+      "dlls": [
+        "librav1e.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-rtmpdump",
+      "version": "2.6-2",
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "upstream_urls": [
+        "https://rtmpdump.mplayerhq.hu/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "librtmp-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-sdl3",
+      "version": "3.4.18-1",
+      "license_tags": [
+        "spdx:Zlib"
+      ],
+      "upstream_urls": [
+        "https://libsdl.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/SDL3/LICENSE.txt",
+          "path": "notices/installed/sdl3-3.4.18-1/share/licenses/SDL3/LICENSE.txt",
+          "sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd",
+          "size": 884
+        }
+      ],
+      "dlls": [
+        "sdl3.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-speex",
+      "version": "1.2.1-1",
+      "license_tags": [
+        "BSD"
+      ],
+      "upstream_urls": [
+        "https://speex.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/speex/LICENSE",
+          "path": "notices/installed/speex-1.2.1-1/share/licenses/speex/LICENSE",
+          "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+          "size": 1773
+        }
+      ],
+      "dlls": [
+        "libspeex-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-srt",
+      "version": "1.5.7-1",
+      "license_tags": [
+        "spdx:MPL-2.0"
+      ],
+      "upstream_urls": [
+        "https://www.srtalliance.org/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/srt/LICENSE",
+          "path": "notices/installed/srt-1.5.7-1/share/licenses/srt/LICENSE",
+          "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
+          "size": 16726
+        }
+      ],
+      "dlls": [
+        "libsrt.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-svt-av1",
+      "version": "4.2.0-1",
+      "license_tags": [
+        "spdx:BSD-3-Clause-Clear"
+      ],
+      "upstream_urls": [
+        "https://gitlab.com/AOMediaCodec/SVT-AV1"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/svt-av1/LICENSE",
+          "path": "notices/installed/svt-av1-4.2.0-1/share/licenses/svt-av1/LICENSE",
+          "sha256": "0acc2fcb27472bdc9aaf8b71f37055bbdac4f54671b7d922f241bd7fcd0dd3e6",
+          "size": 1709
+        },
+        {
+          "installed_path": "clang64/share/licenses/svt-av1/PATENTS.md",
+          "path": "notices/installed/svt-av1-4.2.0-1/share/licenses/svt-av1/PATENTS.md",
+          "sha256": "20678ab10402659106dc4c147c97b2a6e94b5c0695415e15a8f195ebc3547922",
+          "size": 5767
+        }
+      ],
+      "dlls": [
+        "libsvtav1enc-4.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-vulkan-loader",
+      "version": "1~1.4.363.0-1",
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "upstream_urls": [
+        "https://www.khronos.org/vulkan/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/vulkan-loader/LICENSE",
+          "path": "notices/installed/vulkan-loader-1~1.4.363.0-1/share/licenses/vulkan-loader/LICENSE",
+          "sha256": "43c0a37e6a0fa7ff3c843b3ec5a4fac84b712558ddac103fbd4c1649662a9ece",
+          "size": 11661
+        }
+      ],
+      "dlls": [
+        "vulkan-1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-x265",
+      "version": "4.3-1",
+      "license_tags": [
+        "GPL"
+      ],
+      "upstream_urls": [
+        "https://www.x265.org"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "libx265-217.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-xvidcore",
+      "version": "1.3.7-5",
+      "license_tags": [
+        "GPL"
+      ],
+      "upstream_urls": [
+        "https://www.xvid.com/"
+      ],
+      "notice_files": [],
+      "dlls": [
+        "xvidcore.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-xxhash",
+      "version": "0.8.4-1",
+      "license_tags": [
+        "spdx:BSD-2-Clause AND GPL-2.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://xxhash.com/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/xxhash/LICENSE",
+          "path": "notices/installed/xxhash-0.8.4-1/share/licenses/xxhash/LICENSE",
+          "sha256": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a",
+          "size": 1389
+        }
+      ],
+      "dlls": [
+        "libxxhash.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-xz",
+      "version": "5.8.4-1",
+      "license_tags": [
+        "spdx:0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://tukaani.org/xz"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/xz/COPYING",
+          "path": "notices/installed/xz-5.8.4-1/share/licenses/xz/COPYING",
+          "sha256": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+          "size": 3119
+        },
+        {
+          "installed_path": "clang64/share/licenses/xz/COPYING.0BSD",
+          "path": "notices/installed/xz-5.8.4-1/share/licenses/xz/COPYING.0BSD",
+          "sha256": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1",
+          "size": 607
+        },
+        {
+          "installed_path": "clang64/share/licenses/xz/COPYING.GPLv2",
+          "path": "notices/installed/xz-5.8.4-1/share/licenses/xz/COPYING.GPLv2",
+          "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+          "size": 17984
+        },
+        {
+          "installed_path": "clang64/share/licenses/xz/COPYING.GPLv3",
+          "path": "notices/installed/xz-5.8.4-1/share/licenses/xz/COPYING.GPLv3",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "size": 35149
+        },
+        {
+          "installed_path": "clang64/share/licenses/xz/COPYING.LGPLv2.1",
+          "path": "notices/installed/xz-5.8.4-1/share/licenses/xz/COPYING.LGPLv2.1",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "size": 26419
+        }
+      ],
+      "dlls": [
+        "liblzma-5.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-zlib",
+      "version": "1.3.2-2",
+      "license_tags": [
+        "spdx:Zlib"
+      ],
+      "upstream_urls": [
+        "https://www.zlib.net/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/zlib/LICENSE",
+          "path": "notices/installed/zlib-1.3.2-2/share/licenses/zlib/LICENSE",
+          "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+          "size": 1002
+        }
+      ],
+      "dlls": [
+        "zlib1.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-zstd",
+      "version": "1.5.7-2",
+      "license_tags": [
+        "spdx:BSD-3-Clause OR GPL-2.0-or-later"
+      ],
+      "upstream_urls": [
+        "https://facebook.github.io/zstd/"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/zstd/LICENSE",
+          "path": "notices/installed/zstd-1.5.7-2/share/licenses/zstd/LICENSE",
+          "sha256": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
+          "size": 1549
+        }
+      ],
+      "dlls": [
+        "libzstd.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-zvbi",
+      "version": "0.2.45-1",
+      "license_tags": [
+        "spdx: GPL-2.0-or-later AND BSD-2-Clause AND LGPL-2.1-or-later AND MIT"
+      ],
+      "upstream_urls": [
+        "http://zapping.sourceforge.net/cgi-bin/view/ZVBI/WebHome"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/zvbi/COPYING.md",
+          "path": "notices/installed/zvbi-0.2.45-1/share/licenses/zvbi/COPYING.md",
+          "sha256": "6d679539253897582d38fcd1eabfa670c01c0ece73d8cd3dc97869fcf723f106",
+          "size": 78695
+        }
+      ],
+      "dlls": [
+        "libzvbi-0.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    },
+    {
+      "package": "mingw-w64-clang-x86_64-zydis",
+      "version": "4.1.1-1",
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "upstream_urls": [
+        "https://github.com/zyantific/zydis"
+      ],
+      "notice_files": [
+        {
+          "installed_path": "clang64/share/licenses/zydis/LICENSE",
+          "path": "notices/installed/zydis-4.1.1-1/share/licenses/zydis/LICENSE",
+          "sha256": "e5e99718209e94baaf3e9cbf6f64aa3329c9e73c63b1ab47e10f29d81974e6f3",
+          "size": 1122
+        }
+      ],
+      "dlls": [
+        "libzydis.dll"
+      ],
+      "exact_hash_matches_local_package": true
+    }
+  ],
+  "dlls": [
+    {
+      "file": "avcodec-63.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-ffmpeg"
+      ],
+      "versions": [
+        "9.0.2-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\avcodec-63.dll"
+    },
+    {
+      "file": "avformat-63.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-ffmpeg"
+      ],
+      "versions": [
+        "9.0.2-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\avformat-63.dll"
+    },
+    {
+      "file": "avutil-61.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-ffmpeg"
+      ],
+      "versions": [
+        "9.0.2-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\avutil-61.dll"
+    },
+    {
+      "file": "bb-probe.exe",
+      "packages": [],
+      "versions": [],
+      "license_tags": [],
+      "exact_hash_matches_local_package": false,
+      "msys_path": null
+    },
+    {
+      "file": "bbport_dlss.dll",
+      "packages": [],
+      "versions": [],
+      "license_tags": [],
+      "exact_hash_matches_local_package": false,
+      "msys_path": null
+    },
+    {
+      "file": "libabsl_base-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_base-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_city-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_city-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_cord-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_cord-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_cord_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_cord_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_cordz_handle-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_cordz_handle-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_cordz_info-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_cordz_info-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_crc32c-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_crc32c-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_crc_cord_state-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_crc_cord_state-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_crc_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_crc_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_die_if_null-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_die_if_null-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_examine_stack-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_examine_stack-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_hash-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_hash-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_hashtablez_sampler-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_hashtablez_sampler-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_int128-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_int128-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_kernel_timeout_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_kernel_timeout_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_leak_check-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_leak_check-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_globals-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_globals-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_check_op-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_check_op-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_conditions-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_conditions-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_format-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_format-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_globals-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_globals-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_log_sink_set-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_log_sink_set-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_message-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_message-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_nullguard-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_nullguard-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_proto-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_proto-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_internal_structured_proto-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_internal_structured_proto-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_log_sink-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_log_sink-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_malloc_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_malloc_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_raw_hash_set-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_raw_hash_set-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_raw_logging_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_raw_logging_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_spinlock_wait-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_spinlock_wait-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_stacktrace-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_stacktrace-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_status-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_status-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_statusor-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_statusor-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_str_format_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_str_format_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_strerror-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_strerror-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_strings-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_strings-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_strings_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_strings_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_symbolize-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_symbolize-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_synchronization-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_synchronization-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_throw_delegate-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_throw_delegate-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_time-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_time-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_time_zone-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_time_zone-2605.0.0.dll"
+    },
+    {
+      "file": "libabsl_tracing_internal-2605.0.0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-abseil-cpp"
+      ],
+      "versions": [
+        "20260526.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libabsl_tracing_internal-2605.0.0.dll"
+    },
+    {
+      "file": "libaom.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-aom"
+      ],
+      "versions": [
+        "3.15.2-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libaom.dll"
+    },
+    {
+      "file": "libbluray-4.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libbluray"
+      ],
+      "versions": [
+        "1.5.0-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libbluray-4.dll"
+    },
+    {
+      "file": "libbrotlicommon.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-brotli"
+      ],
+      "versions": [
+        "1.2.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libbrotlicommon.dll"
+    },
+    {
+      "file": "libbrotlidec.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-brotli"
+      ],
+      "versions": [
+        "1.2.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libbrotlidec.dll"
+    },
+    {
+      "file": "libbrotlienc.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-brotli"
+      ],
+      "versions": [
+        "1.2.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libbrotlienc.dll"
+    },
+    {
+      "file": "libbz2-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-bzip2"
+      ],
+      "versions": [
+        "1.0.8-4"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libbz2-1.dll"
+    },
+    {
+      "file": "libc++.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libc++"
+      ],
+      "versions": [
+        "23.1.3-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0 WITH LLVM-exception"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libc++.dll"
+    },
+    {
+      "file": "libcairo-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-cairo"
+      ],
+      "versions": [
+        "1.18.6-2"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later OR MPL-1.1"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libcairo-2.dll"
+    },
+    {
+      "file": "libcrypto-3-x64.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-openssl"
+      ],
+      "versions": [
+        "3.6.5-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libcrypto-3-x64.dll"
+    },
+    {
+      "file": "libdatrie-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libdatrie"
+      ],
+      "versions": [
+        "0.2.14-1"
+      ],
+      "license_tags": [
+        "LGPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libdatrie-1.dll"
+    },
+    {
+      "file": "libdav1d-7.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-dav1d"
+      ],
+      "versions": [
+        "1.5.4-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libdav1d-7.dll"
+    },
+    {
+      "file": "libdeflate.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libdeflate"
+      ],
+      "versions": [
+        "1.26-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libdeflate.dll"
+    },
+    {
+      "file": "libexpat-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-expat"
+      ],
+      "versions": [
+        "2.9.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libexpat-1.dll"
+    },
+    {
+      "file": "libffi-8.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libffi"
+      ],
+      "versions": [
+        "3.8.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libffi-8.dll"
+    },
+    {
+      "file": "libfontconfig-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-fontconfig"
+      ],
+      "versions": [
+        "2.18.3-1"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libfontconfig-1.dll"
+    },
+    {
+      "file": "libfreetype-6.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-freetype"
+      ],
+      "versions": [
+        "2.14.3-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-2.0-or-later OR FTL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libfreetype-6.dll"
+    },
+    {
+      "file": "libfribidi-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-fribidi"
+      ],
+      "versions": [
+        "1.0.17-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libfribidi-0.dll"
+    },
+    {
+      "file": "libgdk_pixbuf-2.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-gdk-pixbuf2"
+      ],
+      "versions": [
+        "2.44.8-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgdk_pixbuf-2.0-0.dll"
+    },
+    {
+      "file": "libgio-2.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-glib2"
+      ],
+      "versions": [
+        "2.90.1-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgio-2.0-0.dll"
+    },
+    {
+      "file": "libglib-2.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-glib2"
+      ],
+      "versions": [
+        "2.90.1-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libglib-2.0-0.dll"
+    },
+    {
+      "file": "libgme.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libgme"
+      ],
+      "versions": [
+        "0.6.5-2"
+      ],
+      "license_tags": [
+        "LGPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgme.dll"
+    },
+    {
+      "file": "libgmodule-2.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-glib2"
+      ],
+      "versions": [
+        "2.90.1-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgmodule-2.0-0.dll"
+    },
+    {
+      "file": "libgmp-10.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-gmp"
+      ],
+      "versions": [
+        "6.3.0-2"
+      ],
+      "license_tags": [
+        "LGPL3",
+        "GPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgmp-10.dll"
+    },
+    {
+      "file": "libgnutls-30.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-gnutls"
+      ],
+      "versions": [
+        "3.8.13-3"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later",
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgnutls-30.dll"
+    },
+    {
+      "file": "libgobject-2.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-glib2"
+      ],
+      "versions": [
+        "2.90.1-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgobject-2.0-0.dll"
+    },
+    {
+      "file": "libgraphite2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-graphite2"
+      ],
+      "versions": [
+        "1.3.15-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgraphite2.dll"
+    },
+    {
+      "file": "libgsm.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-gsm"
+      ],
+      "versions": [
+        "1.0.24-1"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libgsm.dll"
+    },
+    {
+      "file": "libharfbuzz-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-harfbuzz"
+      ],
+      "versions": [
+        "14.6.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libharfbuzz-0.dll"
+    },
+    {
+      "file": "libhogweed-7.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-nettle"
+      ],
+      "versions": [
+        "4.0-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libhogweed-7.dll"
+    },
+    {
+      "file": "libhwy.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-highway"
+      ],
+      "versions": [
+        "1.4.0-3"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libhwy.dll"
+    },
+    {
+      "file": "libiconv-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libiconv"
+      ],
+      "versions": [
+        "1.19-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later",
+        "documentation:spdx:GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libiconv-2.dll"
+    },
+    {
+      "file": "libidn2-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libidn2"
+      ],
+      "versions": [
+        "2.3.8-4"
+      ],
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libidn2-0.dll"
+    },
+    {
+      "file": "libintl-8.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-gettext-runtime"
+      ],
+      "versions": [
+        "1.0-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later AND LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libintl-8.dll"
+    },
+    {
+      "file": "libjbig-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-jbigkit"
+      ],
+      "versions": [
+        "2.1-6"
+      ],
+      "license_tags": [
+        "spdx:GPL-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libjbig-0.dll"
+    },
+    {
+      "file": "libjpeg-8.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libjpeg-turbo"
+      ],
+      "versions": [
+        "3.2.0-1"
+      ],
+      "license_tags": [
+        "custom:BSD-like"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libjpeg-8.dll"
+    },
+    {
+      "file": "libjxl.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libjxl"
+      ],
+      "versions": [
+        "0.12.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libjxl.dll"
+    },
+    {
+      "file": "libjxl_cms.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libjxl"
+      ],
+      "versions": [
+        "0.12.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libjxl_cms.dll"
+    },
+    {
+      "file": "libjxl_threads.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libjxl"
+      ],
+      "versions": [
+        "0.12.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libjxl_threads.dll"
+    },
+    {
+      "file": "liblc3-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-liblc3"
+      ],
+      "versions": [
+        "1.1.3-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\liblc3-1.dll"
+    },
+    {
+      "file": "liblcms2-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-lcms2"
+      ],
+      "versions": [
+        "2.19.1-1"
+      ],
+      "license_tags": [
+        "spdx:MIT AND GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\liblcms2-2.dll"
+    },
+    {
+      "file": "liblerc.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-lerc"
+      ],
+      "versions": [
+        "4.1.1-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libLerc.dll"
+    },
+    {
+      "file": "liblzma-5.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-xz"
+      ],
+      "versions": [
+        "5.8.4-1"
+      ],
+      "license_tags": [
+        "spdx:0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\liblzma-5.dll"
+    },
+    {
+      "file": "libmodplug-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libmodplug"
+      ],
+      "versions": [
+        "0.8.9.0-5"
+      ],
+      "license_tags": [
+        "PublicDomain"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libmodplug-1.dll"
+    },
+    {
+      "file": "libmp3lame-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-lame"
+      ],
+      "versions": [
+        "3.100-3"
+      ],
+      "license_tags": [
+        "LGPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libmp3lame-0.dll"
+    },
+    {
+      "file": "libnettle-9.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-nettle"
+      ],
+      "versions": [
+        "4.0-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libnettle-9.dll"
+    },
+    {
+      "file": "libogg-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libogg"
+      ],
+      "versions": [
+        "1.3.6-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libogg-0.dll"
+    },
+    {
+      "file": "libomp.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-llvm-openmp"
+      ],
+      "versions": [
+        "23.1.3-2"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0 WITH LLVM-exception"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libomp.dll"
+    },
+    {
+      "file": "libopencore-amrnb-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-opencore-amr"
+      ],
+      "versions": [
+        "0.1.6-1"
+      ],
+      "license_tags": [
+        "Apache"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libopencore-amrnb-0.dll"
+    },
+    {
+      "file": "libopencore-amrwb-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-opencore-amr"
+      ],
+      "versions": [
+        "0.1.6-1"
+      ],
+      "license_tags": [
+        "Apache"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libopencore-amrwb-0.dll"
+    },
+    {
+      "file": "libopenjp2-7.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-openjpeg2"
+      ],
+      "versions": [
+        "2.5.4-2"
+      ],
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libopenjp2-7.dll"
+    },
+    {
+      "file": "libopus-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-opus"
+      ],
+      "versions": [
+        "1.6.1-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libopus-0.dll"
+    },
+    {
+      "file": "libp11-kit-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-p11-kit"
+      ],
+      "versions": [
+        "0.26.5-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libp11-kit-0.dll"
+    },
+    {
+      "file": "libpango-1.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-pango"
+      ],
+      "versions": [
+        "1.58.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpango-1.0-0.dll"
+    },
+    {
+      "file": "libpangocairo-1.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-pango"
+      ],
+      "versions": [
+        "1.58.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpangocairo-1.0-0.dll"
+    },
+    {
+      "file": "libpangoft2-1.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-pango"
+      ],
+      "versions": [
+        "1.58.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpangoft2-1.0-0.dll"
+    },
+    {
+      "file": "libpangowin32-1.0-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-pango"
+      ],
+      "versions": [
+        "1.58.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpangowin32-1.0-0.dll"
+    },
+    {
+      "file": "libpcre2-8-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-pcre2"
+      ],
+      "versions": [
+        "10.49-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpcre2-8-0.dll"
+    },
+    {
+      "file": "libpixman-1-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-pixman"
+      ],
+      "versions": [
+        "0.46.4-3"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpixman-1-0.dll"
+    },
+    {
+      "file": "libpng16-16.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libpng"
+      ],
+      "versions": [
+        "1.6.59-1"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libpng16-16.dll"
+    },
+    {
+      "file": "libprotobuf.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-protobuf"
+      ],
+      "versions": [
+        "36.2-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libprotobuf.dll"
+    },
+    {
+      "file": "librav1e.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-rav1e"
+      ],
+      "versions": [
+        "0.8.1-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-2-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\librav1e.dll"
+    },
+    {
+      "file": "librsvg-2-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-librsvg"
+      ],
+      "versions": [
+        "2.63.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\librsvg-2-2.dll"
+    },
+    {
+      "file": "librtmp-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-rtmpdump"
+      ],
+      "versions": [
+        "2.6-2"
+      ],
+      "license_tags": [
+        "spdx:GPL-2.0-or-later",
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\librtmp-1.dll"
+    },
+    {
+      "file": "libsharpyuv-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libwebp"
+      ],
+      "versions": [
+        "1.6.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libsharpyuv-0.dll"
+    },
+    {
+      "file": "libsoxr.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libsoxr"
+      ],
+      "versions": [
+        "0.1.3-6"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libsoxr.dll"
+    },
+    {
+      "file": "libspeex-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-speex"
+      ],
+      "versions": [
+        "1.2.1-1"
+      ],
+      "license_tags": [
+        "BSD"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libspeex-1.dll"
+    },
+    {
+      "file": "libsrt.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-srt"
+      ],
+      "versions": [
+        "1.5.7-1"
+      ],
+      "license_tags": [
+        "spdx:MPL-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libsrt.dll"
+    },
+    {
+      "file": "libssh.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libssh"
+      ],
+      "versions": [
+        "0.12.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libssh.dll"
+    },
+    {
+      "file": "libssl-3-x64.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-openssl"
+      ],
+      "versions": [
+        "3.6.5-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libssl-3-x64.dll"
+    },
+    {
+      "file": "libsvtav1enc-4.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-svt-av1"
+      ],
+      "versions": [
+        "4.2.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause-Clear"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libSvtAv1Enc-4.dll"
+    },
+    {
+      "file": "libtasn1-6.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libtasn1"
+      ],
+      "versions": [
+        "4.21.0-1"
+      ],
+      "license_tags": [
+        "GPL3, LGPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libtasn1-6.dll"
+    },
+    {
+      "file": "libthai-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libthai"
+      ],
+      "versions": [
+        "0.1.30-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-2.1-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libthai-0.dll"
+    },
+    {
+      "file": "libtheoradec-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libtheora"
+      ],
+      "versions": [
+        "1.2.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libtheoradec-2.dll"
+    },
+    {
+      "file": "libtheoraenc-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libtheora"
+      ],
+      "versions": [
+        "1.2.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libtheoraenc-2.dll"
+    },
+    {
+      "file": "libtiff-6.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libtiff"
+      ],
+      "versions": [
+        "4.7.2-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libtiff-6.dll"
+    },
+    {
+      "file": "libunistring-5.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libunistring"
+      ],
+      "versions": [
+        "1.4.2-1"
+      ],
+      "license_tags": [
+        "spdx:LGPL-3.0-or-later OR GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libunistring-5.dll"
+    },
+    {
+      "file": "libunwind.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libunwind"
+      ],
+      "versions": [
+        "23.1.3-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0 WITH LLVM-exception"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libunwind.dll"
+    },
+    {
+      "file": "libutf8_validity.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-protobuf"
+      ],
+      "versions": [
+        "36.2-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libutf8_validity.dll"
+    },
+    {
+      "file": "libva.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libva"
+      ],
+      "versions": [
+        "2.24.1-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libva.dll"
+    },
+    {
+      "file": "libva_win32.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libva"
+      ],
+      "versions": [
+        "2.24.1-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libva_win32.dll"
+    },
+    {
+      "file": "libvorbis-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libvorbis"
+      ],
+      "versions": [
+        "1.3.7-3"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libvorbis-0.dll"
+    },
+    {
+      "file": "libvorbisenc-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libvorbis"
+      ],
+      "versions": [
+        "1.3.7-3"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libvorbisenc-2.dll"
+    },
+    {
+      "file": "libvpl-2.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libvpl"
+      ],
+      "versions": [
+        "2.17.0-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libvpl-2.dll"
+    },
+    {
+      "file": "libvpx-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libvpx"
+      ],
+      "versions": [
+        "1.17.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libvpx-1.dll"
+    },
+    {
+      "file": "libwebp-7.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libwebp"
+      ],
+      "versions": [
+        "1.6.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libwebp-7.dll"
+    },
+    {
+      "file": "libwebpmux-3.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libwebp"
+      ],
+      "versions": [
+        "1.6.0-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libwebpmux-3.dll"
+    },
+    {
+      "file": "libwinpthread-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libwinpthread"
+      ],
+      "versions": [
+        "14.0.0.r426.g4564ee4b5-1"
+      ],
+      "license_tags": [
+        "spdx:MIT AND BSD-3-Clause-Clear"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libwinpthread-1.dll"
+    },
+    {
+      "file": "libx264-165.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libx264"
+      ],
+      "versions": [
+        "0.165.r3222.b35605a-3"
+      ],
+      "license_tags": [
+        "custom"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libx264-165.dll"
+    },
+    {
+      "file": "libx265-217.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-x265"
+      ],
+      "versions": [
+        "4.3-1"
+      ],
+      "license_tags": [
+        "GPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libx265-217.dll"
+    },
+    {
+      "file": "libxml2-16.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-libxml2"
+      ],
+      "versions": [
+        "2.15.4-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libxml2-16.dll"
+    },
+    {
+      "file": "libxxhash.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-xxhash"
+      ],
+      "versions": [
+        "0.8.4-1"
+      ],
+      "license_tags": [
+        "spdx:BSD-2-Clause AND GPL-2.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libxxhash.dll"
+    },
+    {
+      "file": "libzstd.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-zstd"
+      ],
+      "versions": [
+        "1.5.7-2"
+      ],
+      "license_tags": [
+        "spdx:BSD-3-Clause OR GPL-2.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libzstd.dll"
+    },
+    {
+      "file": "libzvbi-0.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-zvbi"
+      ],
+      "versions": [
+        "0.2.45-1"
+      ],
+      "license_tags": [
+        "spdx: GPL-2.0-or-later AND BSD-2-Clause AND LGPL-2.1-or-later AND MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libzvbi-0.dll"
+    },
+    {
+      "file": "libzydis.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-zydis"
+      ],
+      "versions": [
+        "4.1.1-1"
+      ],
+      "license_tags": [
+        "spdx:MIT"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\libZydis.dll"
+    },
+    {
+      "file": "nvngx_dlss.dll",
+      "packages": [],
+      "versions": [],
+      "license_tags": [],
+      "exact_hash_matches_local_package": false,
+      "msys_path": null
+    },
+    {
+      "file": "sdl3.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-sdl3"
+      ],
+      "versions": [
+        "3.4.18-1"
+      ],
+      "license_tags": [
+        "spdx:Zlib"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\SDL3.dll"
+    },
+    {
+      "file": "swresample-7.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-ffmpeg"
+      ],
+      "versions": [
+        "9.0.2-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\swresample-7.dll"
+    },
+    {
+      "file": "swscale-10.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-ffmpeg"
+      ],
+      "versions": [
+        "9.0.2-1"
+      ],
+      "license_tags": [
+        "spdx:GPL-3.0-or-later"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\swscale-10.dll"
+    },
+    {
+      "file": "vulkan-1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-vulkan-loader"
+      ],
+      "versions": [
+        "1~1.4.363.0-1"
+      ],
+      "license_tags": [
+        "spdx:Apache-2.0"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\vulkan-1.dll"
+    },
+    {
+      "file": "xvidcore.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-xvidcore"
+      ],
+      "versions": [
+        "1.3.7-5"
+      ],
+      "license_tags": [
+        "GPL"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\xvidcore.dll"
+    },
+    {
+      "file": "zlib1.dll",
+      "packages": [
+        "mingw-w64-clang-x86_64-zlib"
+      ],
+      "versions": [
+        "1.3.2-2"
+      ],
+      "license_tags": [
+        "spdx:Zlib"
+      ],
+      "exact_hash_matches_local_package": true,
+      "msys_path": "D:\\Bloodborne\\tools\\map-build\\msys64\\clang64\\bin\\zlib1.dll"
+    }
+  ],
+  "notice_copy_policy": "Byte-for-byte copies of installed notice_files; basenames retained within per-package directories. Missing files are recorded, not inferred."
+}

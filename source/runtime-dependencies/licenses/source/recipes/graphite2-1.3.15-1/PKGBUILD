@@ -1,0 +1,110 @@
+# Maintainer: J. Peter Mugaas <jpmugaas@suddenlink.net>
+
+_realname=graphite2
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.3.15
+pkgrel=1
+pkgdesc="Font rendering capabilities for complex non-Roman writing systems (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
+msys2_references=(
+  'archlinux: graphite'
+  "cpe: cpe:/a:sil:graphite2"
+)
+url="https://github.com/silnrsi/graphite"
+msys2_repository_url='https://github.com/silnrsi/graphite'
+license=('spdx:LGPL-2.1-or-later')
+depends=("${MINGW_PACKAGE_PREFIX}-cc-libs")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-python"
+             "${MINGW_PACKAGE_PREFIX}-cc")
+source=("${msys2_repository_url}/releases/download/${pkgver}/${_realname}-${pkgver}.tgz"
+        "001-graphite2-1.3.12-win64.patch"
+        "002-graphite2-1.2.1-pkgconfig.patch"
+        "003-graphite2-1.3.12-staticbuild.patch"
+        "004-graphite2-1.3.12-dllimport-fix.patch"
+        "005-remove-unknown-dep.patch"
+)
+sha256sums=('c6bc8b4252724665297f7cad0c55897285c673f9b8e6db3522ace833593fe0b1'
+            'a77a3e21099454b0732da2ec37067c871c267e9443a9c6c56ca44245e6a64c4f'
+            '5ca68f1d7418c5d159c3eebb9f1ad31e71ebfe3b9492d3fe78db360bcf626ffe'
+            '7cfc9f8bcb786b89713cfd043bc471ef61441360fa6b45b5fc2e93cd69e79e93'
+            'cc33eab2ac0e335963d678ce7af15ccfef4cbc94e6722ffeb99b200f14a5003d'
+            '026e1bf900610d4f01d9f191aa75dfc9e0398737653589f1b42f41659d21a828')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+del_file_exists() {
+  for _fname in "$@"
+  do
+    if [ -f $_fname ]; then
+      rm -rf $_fname
+    fi
+  done
+}
+# =========================================== #
+
+prepare() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+  apply_patch_with_msg 001-graphite2-1.3.12-win64.patch \
+    002-graphite2-1.2.1-pkgconfig.patch \
+    003-graphite2-1.3.12-staticbuild.patch \
+    004-graphite2-1.3.12-dllimport-fix.patch \
+    005-remove-unknown-dep.patch
+}
+
+check() {
+  cd "${srcdir}"/build-${MSYSTEM}
+  # we also want to use mingw-w64-x86_64 and mingw-w64-i686 versions of python
+  mkdir -p "${srcdir}"/${_realname}-${pkgver}/tests/backup
+  cp "${srcdir}"/${_realname}-${pkgver}/tests/{corrupt.py,defuzz,fnttxtrender,hbspeeds,jsoncmp,trace2svg} \
+   "${srcdir}""/${_realname}-${pkgver}/tests/backup"
+  sed -i "s:\/usr\/bin\/python:${MINGW_PREFIX}\/bin\/python:" \
+   "${srcdir}"/${_realname}-${pkgver}/tests/{corrupt.py,defuzz,fnttxtrender,hbspeeds,jsoncmp,trace2svg}
+  ctest || true
+  rm "${srcdir}"/${_realname}-${pkgver}/tests/{corrupt.py,defuzz,fnttxtrender,hbspeeds,jsoncmp,trace2svg}
+  cp "${srcdir}"/${_realname}-${pkgver}/tests/backup/* "${srcdir}"/${_realname}-${pkgver}/tests
+  rm -rf "${srcdir}"/${_realname}-${pkgver}/tests/backup
+}
+
+build() {
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  # C++17 is needed
+  CXXFLAGS="${CXXFLAGS} -std=gnu++17" \
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -G'Ninja' \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      "${extra_config[@]}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DPython3_FIND_REGISTRY=NEVER \
+      -DGRAPHITE2_COMPARE_RENDERER=ON \
+      -S "${_realname}-${pkgver}" \
+      -B "build-${MSYSTEM}"
+
+  cmake --build "build-${MSYSTEM}"
+}
+
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install "build-${MSYSTEM}"
+
+  # License
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "project": "PyInstaller",
+  "purpose": "corresponding source for the frozen Atlas map generator and matching Atlas launcher build tools",
+  "source_distributions": [
+    {
+      "project": "PyInstaller",
+      "version": "6.16.0",
+      "license": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+      "pypi_json_url": "https://pypi.org/pypi/pyinstaller/6.16.0/json",
+      "pypi_json_sha256": "e23854101f3f308e5278a9d83cab07e65124737afc0d9e64189358fc36cfcd21",
+      "sdist_filename": "pyinstaller-6.16.0.tar.gz",
+      "sdist_url": "https://files.pythonhosted.org/packages/94/94/1f62e95e4a28b64cfbb5b922ef3046f968b47170d37a1e1a029f56ac9cb4/pyinstaller-6.16.0.tar.gz",
+      "sdist_bytes": 4008473,
+      "sdist_sha256": "53559fe1e041a234f2b4dcc3288ea8bdd57f7cad8a6644e422c27bb407f3edef",
+      "upload_time_iso_8601": "2025-09-13T20:07:01.733613Z",
+      "yanked": false,
+      "source_status": "exact PyPI source distribution; archive hash matches PyPI JSON digest"
+    },
+    {
+      "project": "PyInstaller",
+      "version": "6.22.3",
+      "license": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+      "pypi_json_url": "https://pypi.org/pypi/pyinstaller/6.22.3/json",
+      "pypi_json_sha256": "f31cd317e95e6fd2490694eed5e34437968260789dc704745cd16cdde60de4a7",
+      "sdist_filename": "pyinstaller-6.22.3.tar.gz",
+      "sdist_url": "https://files.pythonhosted.org/packages/63/41/f90302845945abd4ed647933ff5ee7c6ac93983187be67f897b6cb613331/pyinstaller-6.22.3.tar.gz",
+      "sdist_bytes": 4437180,
+      "sdist_sha256": "05eb2f5615503e72939a7224d68b4aff572c6b0438ee4a17d0a4b481f399362d",
+      "upload_time_iso_8601": "2026-09-12T21:54:09.669439Z",
+      "yanked": false,
+      "source_status": "exact PyPI source distribution; archive hash matches PyPI JSON digest"
+    }
+  ]
+}

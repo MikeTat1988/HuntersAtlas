@@ -63,4 +63,4 @@ Markers are static and do not track live quest or gate states. Chalice Dungeons 
 
 ## Source and licenses
 
-The corresponding source archive includes Atlas’s bootstrap, launcher integration and wrapper source, generator packaging and preparation code, the original map-generation algorithms, the native host, vendored sources, notices, and the build guide. See [source/SOURCE-BUILD.md](source/SOURCE-BUILD.md), [source/licenses/README.md](source/licenses/README.md), and the included license files. Hunter’s Atlas is an independent community project and is not affiliated with FromSoftware or Sony Interactive Entertainment.
+The repository includes Atlas’s bootstrap, launcher integration and wrapper source, generator packaging and preparation code, the original map-generation algorithms, the native host, vendored sources, notices, and the build guide. See [source/SOURCE-BUILD.md](source/SOURCE-BUILD.md), [source/licenses/README.md](source/licenses/README.md), and the included license files. Hunter’s Atlas is an independent community project and is not affiliated with FromSoftware or Sony Interactive Entertainment.

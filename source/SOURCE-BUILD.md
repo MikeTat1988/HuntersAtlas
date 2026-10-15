@@ -1,6 +1,6 @@
 # Hunter’s Atlas 1.0 source and build guide
 
-This guide describes the corresponding source release. Players use the prepared Atlas ZIP and do not need Python, a compiler, or the developer dependencies below. A rebuild is not guaranteed to produce byte-identical executables.
+This guide describes the source available in this repository. Players use the prepared Atlas ZIP and do not need Python, a compiler, or the developer dependencies below. A rebuild is not guaranteed to produce byte-identical executables.
 
 ## Source layout
 
@@ -8,7 +8,7 @@ This guide describes the corresponding source release. Players use the prepared 
 - `generator/src/` contains the original map-generation algorithms. The Atlas generator code under `lite/generator/` wraps, packages, and prepares that source for the first-install workflow; it does not replace the original algorithms.
 - `lite/bootstrap/` contains the isolated package and launch checks.
 - `lite/integration/ui/` and `lite/integration/` contain the launcher integration and its C wrapper source.
-- `licenses/` contains project and third-party notices and source receipts. Runtime dependency source is supplied under `runtime-dependencies/` in the corresponding source release, not the player package.
+- `licenses/` contains project and third-party notices and source receipts. Runtime dependency source is supplied in this repository under `source/runtime-dependencies/`, not the player package.
 
 Keep `native/gpu/third_party/`, `native/third_party/`, and the shader inputs in `native/gpu/shadps4/video_core/host_shaders/`. They include required host shaders, FSR-Vulkan source and patches, LibAtrac9, and other vendored code used by the build. Generated headers, object files, caches, and output directories are build products, not corresponding source.
 
@@ -23,12 +23,12 @@ python source/lite/build_release.py `
   --launcher-root <pristine-windows-v1.7.2-tree> `
   --wrapper <AtlasLauncher.exe> `
   --dependency-source <runtime-dependency-source.zip> `
-  --output <new-output-directory>
+  --output <new-output-directory> --player-only
 ```
 
 Build the wrapper from `lite/integration/launcher_wrapper.c` with `lite/integration/Build-Wrapper.ps1`. This source build requires Visual Studio C++ Build Tools and the Windows SDK; players do not need them. Build the native runtime and frozen generator from their corresponding source before running the release assembler. `--launcher-root` must be an extracted, pristine copy of the supported official Windows v1.7.2 launcher. The assembler records and checks its declared inputs; use `python source/lite/build_release.py --help` for the exact options supported by the source archive.
 
-The source release includes runtime dependency source under `runtime-dependencies/`. To rebuild the release archive, ZIP that directory as `runtime-dependency-source.zip` and pass it to `--dependency-source`. It is not required by the player, and the player package does not install a global Python runtime or compiler. Map generation for a release test requires the user’s own supported game copy; game files, generated maps, and the game font are not source-build inputs or player downloads.
+The repository includes runtime dependency source under `source/runtime-dependencies/`. To rebuild the release archive, ZIP that directory as `runtime-dependency-source.zip` and pass it to `--dependency-source`. It is not required by the player, and the player package does not install a global Python runtime or compiler. Map generation for a release test requires the user’s own supported game copy; game files, generated maps, and the game font are not source-build inputs or player downloads.
 
 ## Build the native host
 

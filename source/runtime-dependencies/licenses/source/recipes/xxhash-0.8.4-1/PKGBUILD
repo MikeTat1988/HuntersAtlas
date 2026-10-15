@@ -1,0 +1,61 @@
+# Maintainer: Diego Sogari <diego.sogari@falker.com.br>
+
+_realname=xxhash
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.8.4
+pkgrel=1
+pkgdesc="Extremely fast non-cryptographic hash algorithm (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url="https://xxhash.com/"
+msys2_repository_url='https://github.com/Cyan4973/xxHash'
+license=('spdx:BSD-2-Clause AND GPL-2.0-or-later')
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-cc"
+  "${MINGW_PACKAGE_PREFIX}-cmake"
+  "${MINGW_PACKAGE_PREFIX}-ninja"
+)
+source=("https://github.com/Cyan4973/xxHash/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('5738270935e7c3d38a79b3adf7c9692566ce7895a25f67de43ad52ab504acd32')
+
+build() {
+  declare -a _cmake_opts=(
+    -GNinja
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX}
+    -S "${_realname}-${pkgver}/build/cmake"
+  )
+  if check_option "debug" "n"; then
+    _cmake_opts+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _cmake_opts+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  if [[ ${CARCH} == x86_64 ]]; then
+    _cmake_opts+=("-DDISPATCH=ON")
+  fi
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    cmake \
+      -DBUILD_SHARED_LIBS=OFF \
+      "${_cmake_opts[@]}" \
+      -B build-static-${MSYSTEM}
+
+  cmake --build build-static-${MSYSTEM}
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    cmake \
+      "${_cmake_opts[@]}" \
+      -B build-shared-${MSYSTEM}
+
+  cmake --build build-shared-${MSYSTEM}
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build-static-${MSYSTEM}
+
+  DESTDIR="${pkgdir}" cmake --install build-shared-${MSYSTEM}
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}

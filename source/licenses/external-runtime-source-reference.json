@@ -1,7 +1,6 @@
 {
   "schema": 1,
-  "status": "CURRENT_LITE_DEPENDENCY_SOURCE_INDEX",
-  "runtime_dependency_source_archive": "runtime-dependency-source.zip",
+  "status": "CURRENT_ATLAS_DEPENDENCY_SOURCE_INDEX",
   "runtime_dependency_source_archive_sha256": "db2868569edbef2518fbe36f3a47398fd129190349c2f5b8e013e0cdbbff0306",
   "exact_index": "licenses/runtime-source-index.json",
   "soulstruct_source": "generator/licenses/soulstruct-source",
@@ -10,7 +9,7 @@
     "version": "3.13.1",
     "shapely_version": "2.1.2",
     "license": "LGPL-2.1",
-    "source_status": "Exact GEOS 3.13.1 source and its hash receipt are included under runtime-dependencies/ in the corresponding source ZIP."
+    "source_status": "Exact GEOS 3.13.1 source and its hash receipt are included under source/runtime-dependencies/ in the repository."
   },
   "pyinstaller_build_sources": [
     {
@@ -26,5 +25,6 @@
       "pypi_json_url": "https://pypi.org/pypi/pyinstaller/6.22.3/json"
     }
   ],
-  "source_release_location": "runtime-dependencies/ in Hunters-Atlas-Source-1.0.zip"
+  "source_release_location": "source/runtime-dependencies/ in the repository and GitHub Code download",
+  "runtime_dependency_source_directory": "source/runtime-dependencies"
 }

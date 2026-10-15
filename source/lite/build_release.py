@@ -29,6 +29,8 @@ def source_zip(destination,dependency_source):
         for name in sorted(names):
             p=REPO/name
             if p.is_file() and '.local' not in p.parts and p.suffix!='.pyc':z.write(p,name)
+        if (REPO/'source/runtime-dependencies').is_dir():
+            return
         with zipfile.ZipFile(dependency_source) as deps:
             prefixed=any(i.filename.startswith('runtime-dependencies/') for i in deps.infolist())
             selected=0

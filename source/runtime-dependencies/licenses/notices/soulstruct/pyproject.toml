@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soulstruct"
+description = "Inspect and modify files in FromSoftware games."
+readme = "README.md"
+version = "2.3.2"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"  # maximum allowed for Blender 4.5-5.0 support
+keywords = ["modding", "FromSoftware", "Dark Souls", "Bloodborne", "Elden Ring", "Sekiro", "Demon's Souls"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+authors = [
+    { name = "Scott Mooney (Grimrukh)", email = "grimrukh@gmail.com" }
+]
+
+dependencies = [
+    "constrata>=1.3.1",     # required for binary read/write (my package)
+    "numpy",                # required for math classes/operations
+    "rich>=13",             # required for nice printing/logging
+    "typer",                # required for CLI
+    "zstandard",            # required for ZSTD compression (Elden Ring regulation DCX)
+]
+
+[tool.setuptools.package-data]
+"*" = ["*.dll", "*.exe"]  # include embedded DLLs and EXEs in all subpackages
+
+[project.optional-dependencies]
+runtime       = ["psutil"]
+graphs        = ["matplotlib"]
+sound         = ["pydub"]
+
+[project.scripts]
+soulstruct = "soulstruct.__main__:app"
+
+[project.urls]
+homepage      = "https://github.com/Grimrukh/soulstruct"
+repository    = "https://github.com/Grimrukh/soulstruct"
+"Issues"      = "https://github.com/Grimrukh/soulstruct/issues"

@@ -43,7 +43,7 @@
     "preparation": "source/lite/generator",
     "map_algorithms": "source/generator/src",
     "native": "source/native",
-    "runtime_dependency_sources": "runtime-dependencies/ in the corresponding source ZIP"
+    "runtime_dependency_sources": "source/runtime-dependencies/ in the repository and GitHub Code download"
   },
   "contains_game_maps_or_font": false,
   "requires_previous_atlas": false,

@@ -1,0 +1,9 @@
+{
+  "version": "3.13.1",
+  "source_url": "https://download.osgeo.org/geos/geos-3.13.1.tar.bz2",
+  "upstream_download_page": "https://libgeos.org/usage/download/",
+  "sha256": "df2c50503295f325e7c8d7b783aca8ba4773919cde984193850cf9e361dfd28c",
+  "size": 6839955,
+  "identification": "Shapely 2.1.2 frozen build geos_version_string",
+  "archive_members": 1790
+}
