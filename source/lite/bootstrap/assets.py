@@ -93,6 +93,10 @@ def materialize(contract):
     with tempfile.TemporaryDirectory(prefix='session-assets-',dir=state) as temp:
         root=Path(temp);manifest=unpack(pack,root)
         if not manifest['prepared']:raise ValueError('Maps are not prepared yet. Open Settings.cmd and choose Prepare maps.')
+        if contract.get('manifest',{}).get('feature_schema')==1:
+            receipt=json.loads((root/'maps/generated-assets.json').read_text(encoding='utf-8'))
+            if receipt.get('feature_schema')!=1 or not (root/'maps/features.json').is_file():
+                raise ValueError('Prepare Atlas maps for the current feature schema.')
         paths=dict(maps=root/'maps',catalog=root/'maps/catalog.json',
                    art=root/'art',font=root/'art/native-font.ttf')
         if not paths['font'].is_file():paths['font']=root/'art/fallback.ttf'

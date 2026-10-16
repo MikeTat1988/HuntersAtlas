@@ -125,6 +125,8 @@ def load_contract(root: Path) -> dict[str, Any]:
         raise BootstrapError("bootstrap/config.json must declare schema 1 and edition Atlas.")
     manifest_path = _inside(root, config.get("manifest", "manifest.json"), "manifest", file=True)
     manifest = _json_object(manifest_path, "Atlas manifest")
+    if manifest.get('runtime_pending'):
+        raise BootstrapError('Atlas runtime rebuild is pending; the launcher can run the stock game.')
     if manifest.get("schema") != 1 or manifest.get("id") != MANIFEST_ID:
         raise BootstrapError("Unsupported Atlas manifest identity or schema.")
     own_files = _hash_table(root, manifest.get("files"), "manifest.files")
@@ -134,6 +136,14 @@ def load_contract(root: Path) -> dict[str, Any]:
     deps = _json_object(deps_path, "dependencies manifest")
     if deps.get("schema") != 1 or deps.get("id") != DEPENDENCIES_ID:
         raise BootstrapError("Unsupported Atlas dependencies identity or schema.")
+    if manifest.get('compatibility'):
+        import importlib.util
+        adapter_path=Path(__file__).with_name('atlas_adapter.py')
+        if not adapter_path.exists():adapter_path=Path(__file__).parents[1]/'integration/ui/atlas_adapter.py'
+        spec=importlib.util.spec_from_file_location('atlas_adapter',adapter_path)
+        adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(adapter)
+        try:adapter.validate_profile(manifest,deps,root)
+        except (ValueError,OSError,KeyError) as error:raise BootstrapError(str(error)) from error
     ordinary = deps.get("ordinary_port")
     if not isinstance(ordinary, dict):
         raise BootstrapError("dependencies.ordinary_port must be an object.")
@@ -141,6 +151,11 @@ def load_contract(root: Path) -> dict[str, Any]:
         base_root = Path(ordinary["root"]).expanduser().resolve(strict=True)
     except (KeyError, OSError, RuntimeError, TypeError) as error:
         raise BootstrapError("The verified ordinary-port root is missing.") from error
+    maintenance=base_root.parent/('.'+base_root.name+'.atlas-maintenance.lock')
+    if maintenance.exists():
+        held=_json_object(maintenance,'Atlas maintenance lock')
+        if held.get('pid')!=os.getpid() and held.get('token')!=os.environ.get('BB_ATLAS_MAINTENANCE_TOKEN'):
+            raise BootstrapError('Atlas maintenance or recovery is pending. Finish the update before starting the game.')
     base_files = _hash_table(base_root, ordinary.get("files"), "dependencies.ordinary_port.files")
     pinned_base_dlls = {path.resolve() for path in base_files.values()
                         if path.suffix.casefold() == ".dll" and path.parent.name.casefold() == "bin"}
@@ -409,12 +424,20 @@ def game_environment(contract: dict[str, Any], profile: dict[str, Any],
                      qa_control_dir: str | os.PathLike[str] | None = None) -> dict[str, str]:
     """Translate standard launcher preferences to a child-only, Atlas-isolated environment."""
     env = dict(os.environ if inherited is None else inherited)
+    import importlib.util
+    feature_path = Path(__file__).with_name('atlas_feature_config.py')
+    if not feature_path.exists():
+        feature_path = Path(__file__).parents[1] / 'integration/ui/atlas_feature_config.py'
+    feature_spec = importlib.util.spec_from_file_location('atlas_feature_config', feature_path)
+    feature_config = importlib.util.module_from_spec(feature_spec)
+    feature_spec.loader.exec_module(feature_config)
     for key in tuple(env):
         canonical = key.upper()
         if (canonical.startswith("BB_MAP_") or canonical.startswith("BB_ATLAS") or canonical == "BB_PROBE"
                 or canonical in {"BB_PAD_FILE", "BB_DUMP_DIR", "BB_LITE_QA_CONTROL_DIR"}):
             env.pop(key, None)
 
+    env.update(feature_config.environment(profile))
     state, root, paths = contract["state_root"], contract["root"], contract["paths"]
     data_dir = state
     user_dir = state / "user"
@@ -526,6 +549,15 @@ def game_environment(contract: dict[str, Any], profile: dict[str, Any],
                     "BB_BRIDGE_LIVE_MAP"):
             env.pop(key, None)
 
+    compatibility=contract.get('manifest',{}).get('compatibility')
+    if compatibility:
+        adapter_path=Path(__file__).with_name('atlas_adapter.py')
+        if not adapter_path.exists():adapter_path=Path(__file__).parents[1]/'integration/ui/atlas_adapter.py'
+        adapter_spec=importlib.util.spec_from_file_location('atlas_launcher_adapter',adapter_path)
+        adapter=importlib.util.module_from_spec(adapter_spec);adapter_spec.loader.exec_module(adapter)
+        env=adapter.configure_network(env,profile,compatibility['upstream_release'].removeprefix('windows-v'))
+        env['BB_ATLAS_ADAPTER_PROTOCOL']=str(compatibility['adapter_protocol'])
+        env['BB_ATLAS_RUNTIME_ID']=compatibility['upstream_commit']
     system_root = Path(env.get("SystemRoot", r"C:\Windows"))
     system32 = system_root / "System32"
     private_bin = root / "bin"

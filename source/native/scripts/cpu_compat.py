@@ -133,6 +133,23 @@ def _count_span_tail(site, original, body, image, main, locations, mapped, reloc
     return original[4:], {key: evidence[key] for key in ('reference', 'sha256', 'method', 'global_indirect_proof')}
 
 
+def replace_patiently(source, target, seconds=10.0):
+    """os.replace, retried while Windows refuses it (WinError 5/32): an antivirus scanning the
+    fresh file holds it for a moment."""
+    import time
+    deadline = time.monotonic() + seconds
+    delay = 0.05
+    while True:
+        try:
+            os.replace(source, target)
+            return
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(delay)
+            delay = min(delay * 2, 0.5)
+
+
 @contextmanager
 def atomic_output(path):
     """Publish a complete generated artifact, preserving any older file on error."""
@@ -145,7 +162,7 @@ def atomic_output(path):
             yield stream
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        replace_patiently(temporary, path)
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)

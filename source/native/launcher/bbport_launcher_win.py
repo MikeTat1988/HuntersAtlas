@@ -40,7 +40,7 @@ PATCH_VERSION = '01.09'
 MAX_LOG_LINES = 6000
 NO_WINDOW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 # This build; GitHub release tags are windows-v<VERSION>.
-VERSION = '1.7'
+VERSION = '1.8.1'
 # Co-op: the community server that answers the game's own server requests.
 COMMUNITY_SERVER = 'https://thehuntersdream.com'
 RELEASES_API = 'https://api.github.com/repos/Supermedo/bloodborne_pc/releases/latest'
@@ -128,7 +128,7 @@ import bbport_lang  # noqa: E402
 import bbport_trophies as trophies  # noqa: E402
 from bbport_input_config import (KEYBOARD_OUTPUTS, BUTTON_OUTPUTS, STICK_OUTPUTS, OUTPUT_LABELS, keysym_to_name,
                                   button_num_to_name, input_ini_path, load_input_ini, reserved_keys,
-                                  save_input_ini, save_mouse_settings)  # noqa: E402
+                                  save_input_ini, save_mouse_settings, wheel_to_name)  # noqa: E402
 
 LANG = 'en'
 
@@ -189,11 +189,13 @@ TWEAKS = [
                        'Физика тел как в Dark Souls (тела отлетают дальше)'), False),
     ('tweak_circle_confirm', ('Japanese/Asian buttons: Circle confirms and interacts, Cross dodges',
                               'Японская раскладка: Круг — подтверждение и действие, Крест — уклонение'), False),
+    ('quit_to_desktop', ('Quit to Desktop in the title menu and in the System menu',
+                         'Пункт «Выйти на рабочий стол» в главном меню и в меню «Система»'), True),
 ]
 INI_FLAGS = {'sharpen', 'object_motion', 'show_fps', *(k for k, _t, _o in EFFECTS + EXTRAS + CHEATS + TWEAKS)}
 INI_DEFAULTS = {'upscaler': 'fsr4', 'preset': '1', 'sharpen': '1', 'sharpness': '0.50',
                 'object_motion': '1', 'show_fps': '1', 'output_res': '1920x1080', 'model_lod': '0',
-                'live_resolution': 'auto',
+                'live_resolution': 'auto', 'hud_position': '100',
                 **{key: '1' if on else '0' for key, _t, on in EFFECTS + EXTRAS + CHEATS + TWEAKS}}
 APP_DEFAULTS = {'ui_language': '', 'game_dir': str(PORT_DIR.parent / 'CUSA03173'), 'user_dir': '', 'dlc_dir': '',
                 'mods_dir': '', 'mods_enabled': True, 'patches_dir': '', 'language': '1',
@@ -204,7 +206,9 @@ APP_DEFAULTS = {'ui_language': '', 'game_dir': str(PORT_DIR.parent / 'CUSA03173'
                 'vk_validation': False, 'extra_env': '', 'close_on_play': False,
                 'check_updates': True, 'online': False, 'online_server': 'srv.shadps4.net:31313',
                 'online_webapi': '', 'online_npid': '', 'online_password': '', 'online_upnp': True,
-                'online_community': COMMUNITY_SERVER}
+                'online_community': COMMUNITY_SERVER, 'online_pool': 'shadnet', 'bridge_live_map': False,
+                'supermedo_user': '', 'supermedo_password': '', 'thd_online_id': '', 'thd_token': ''}
+# bbbridge's own app reads and writes the online_* keys above: keep their names.
 
 UPSCALERS = [('dlss', ('DLSS (NVIDIA GeForce RTX)',)),
              ('fsr4', ('FSR 4 (best quality)', 'FSR 4 (лучшее качество)')),
@@ -215,7 +219,12 @@ UPSCALERS = [('dlss', ('DLSS (NVIDIA GeForce RTX)',)),
 PRESETS = [('0', ('Native AA (×1.0)',)), ('1', ('Quality (×1.5)',)), ('2', ('Balanced (×1.7)',)),
            ('3', ('Performance (×2)',)), ('4', ('Ultra Performance (×3)',))]
 OUTPUTS = [('1280x720', ('1280 × 720 (Steam Deck)',)), ('1920x1080', ('1920 × 1080',)),
-           ('2560x1440', ('2560 × 1440',)), ('3840x2160', ('3840 × 2160 (4K)',))]
+           ('2560x1440', ('2560 × 1440',)), ('3840x2160', ('3840 × 2160 (4K)',)),
+           ('2560x1080', ('2560 × 1080 (21:9)',)), ('3440x1440', ('3440 × 1440 (21:9)',)),
+           ('3840x1600', ('3840 × 1600 (21:9)',)), ('5120x2160', ('5120 × 2160 (21:9)',)),
+           ('3840x1080', ('3840 × 1080 (32:9)',)), ('5120x1440', ('5120 × 1440 (32:9)',))]
+HUD_POSITIONS = [('100', ('Screen edges', 'У краёв экрана')), ('75', ('75%',)), ('50', ('Halfway', 'Посередине')),
+                 ('25', ('25%',)), ('0', ('Centred (16:9)', 'По центру (16:9)'))]
 LIVE = [('auto', ('Auto (by graphics card)', 'Авто (по видеокарте)')), ('0', ('Off (faster)', 'Выключена (быстрее)')),
         ('1', ('On (change without restarting)', 'Включена (без перезапуска)'))]
 LODS = [('0', ('As in the game', 'Как в игре')), ('-2', ('Highest (−2)', 'Максимальная (−2)')),
@@ -369,6 +378,80 @@ def server_check(server, webapi, community):
     return '\n'.join(lines)
 
 
+# The Hunter's Dream pool: the engine's own backend for it (BB_NET_BACKEND=thd, bbhost's
+# protocol, from Awaken's port). BB_HUNTERS_DREAM=0 hides it.
+HUNTERS_DREAM_POOL = os.environ.get('BB_HUNTERS_DREAM', '1') != '0'
+
+
+def thd_call(url, body):
+    """A call to The Hunter's Dream's account service (bbhost's): its reply, or ValueError with
+    the server's reason."""
+    request = urllib.request.Request(url, data=json.dumps(body).encode(), method='POST',
+                                     headers={'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            text = response.read()
+    except urllib.error.HTTPError as error:
+        text = error.read()
+    try:
+        reply = json.loads(text)
+    except ValueError:
+        reply = None
+    if not isinstance(reply, dict) or 'ResKind' not in reply:
+        raise ValueError(f'{url} has no account service')
+    if reply['ResKind'] != 0:
+        raise ValueError(reply.get('Message') or 'refused')
+    return reply
+
+
+def thd_sign_in(game_server, on_code):
+    """Discord sign-in the way bbhost does it: a code to approve on the website. on_code(page,
+    code) shows it. Returns (online id, token); raises ValueError."""
+    auth = community_address(game_server)
+    start = thd_call(auth + '/auth/device/start', {'DeviceName': f'bbport on {os.environ.get("COMPUTERNAME", "PC")}'})
+    device, user_code = start.get('DeviceCode', ''), start.get('UserCode', '')
+    if not device or not user_code:
+        raise ValueError('no code in the reply')
+    interval = max(1, int(start.get('Interval') or 5))
+    deadline = time.monotonic() + int(start.get('ExpiresIn') or 600)
+    on_code(start.get('VerificationUri') or auth + '/link', user_code)
+    while time.monotonic() < deadline:
+        time.sleep(interval)
+        poll = thd_call(auth + '/auth/device/poll', {'DeviceCode': device})
+        status = poll.get('Status')
+        if status == 'approved':
+            if not poll.get('OnlineId') or not poll.get('Token'):
+                raise ValueError('no token in the reply')
+            return poll['OnlineId'], poll['Token']
+        if status == 'slow_down':
+            interval += 5
+        elif status == 'denied':
+            raise ValueError('the sign-in was denied')
+        elif status == 'expired':
+            break
+    raise ValueError('the code expired; try again')
+# The SuperMedo Server co-op pool: a public shadNet server. Accounts are made at
+# SUPERMEDO_SIGNUP. The launcher shows the pool's name, not its address.
+SUPERMEDO_SERVER = 'www.supermedo.com:31313'
+SUPERMEDO_SIGNUP = 'https://www.supermedo.com'
+
+
+def server_check_hunters_dream():
+    """Whether The Hunter's Dream's game server and bbhost service answer (off the Tk thread)."""
+    lines = []
+    for title, url in ((_('Game server {0}'), COMMUNITY_SERVER + ':20443/bb-eu/ss.info'),
+                       (_('Co-op service {0}'), COMMUNITY_SERVER + ':18671/')):
+        name = title.format(url.split('://', 1)[1].split('/')[0])
+        try:
+            urllib.request.urlopen(url, timeout=6).close()
+            lines.append(_('{0}: reachable').format(name))
+        except urllib.error.HTTPError:
+            lines.append(_('{0}: reachable').format(name))   # it answered
+        except (OSError, ValueError) as error:
+            lines.append(_('{0}: not reachable ({1})').format(name, error))
+    return '\n'.join(lines)
+
+
 def game_environment(s):
     env = dict(os.environ)
     env['BB_GAME_DIR'] = s['game_dir']
@@ -412,6 +495,23 @@ def game_environment(s):
         env['BB_SHADNET_PASSWORD'] = str(s['online_password'])
         env['BB_UPNP'] = '1' if s['online_upnp'] else '0'
         env['BB_COMMUNITY_SERVER'] = community_address(s['online_community'])
+        if s.get('online_pool') == 'supermedo':
+            env['BB_SHADNET_SERVER'] = SUPERMEDO_SERVER
+            env['BB_SHADNET_WEBAPI'] = webapi_address(SUPERMEDO_SERVER)
+            env['BB_POOL_NAME'] = 'SuperMedo Server'
+            env['BB_SHADNET_NPID'] = str(s.get('supermedo_user', '')).strip()
+            env['BB_SHADNET_PASSWORD'] = str(s.get('supermedo_password', ''))
+        if s.get('online_pool') == 'huntersdream' and HUNTERS_DREAM_POOL:
+            # The engine's Hunter's Dream backend with the Discord-linked account (run.py sets
+            # the game server and the backend's addresses).
+            env['BB_NET_BACKEND'] = 'thd'
+            env['BB_THD_ONLINE_ID'] = str(s.get('thd_online_id', ''))
+            env['BB_THD_TOKEN'] = str(s.get('thd_token', ''))
+            env['BB_BRIDGE_LIVE_MAP'] = '1' if s.get('bridge_live_map') else '0'
+            for key in ('BB_SHADNET_SERVER', 'BB_SHADNET_WEBAPI', 'BB_SHADNET_NPID', 'BB_SHADNET_PASSWORD'):
+                env.pop(key, None)
+    # Which build a server sees (shadNet's client version, The Hunter's Dream's client field).
+    env.setdefault('BB_CLIENT_VERSION', f'bbport {VERSION}')
     env['PYTHONUNBUFFERED'] = '1'
     env['PYTHONIOENCODING'] = 'utf-8'
     return env
@@ -536,6 +636,7 @@ class Launcher:
         s.configure('TLabel', background=PANEL, foreground=TEXT)
         s.configure('Muted.TLabel', background=PANEL, foreground=MUTED, font=('Segoe UI', 9))
         s.configure('Section.TLabel', background=PANEL, foreground=GOLD, font=('Georgia', 13))
+        s.configure('Code.TLabel', background=PANEL, foreground=GOLD, font=('Consolas', 22, 'bold'))
         s.configure('TCheckbutton', background=PANEL, foreground=TEXT, padding=(0, 3))
         s.map('TCheckbutton', background=[('active', PANEL)], foreground=[('disabled', MUTED)])
         s.configure('Warning.TLabel', background='#2a1d12', foreground='#e3b25a', padding=(10, 6))
@@ -840,6 +941,12 @@ class Launcher:
         self.row(f, _('Output resolution', 'Разрешение вывода'), self.choice(f, 'output_res', 'ini', OUTPUTS),
                  _('What the upscaler produces; the HUD is drawn at this size too.',
                    'Что выдаёт апскейлер; интерфейс рисуется в этом же размере.'))
+        self.row(f, _('HUD position (ultrawide)', 'Положение интерфейса (21:9)'),
+                 self.choice(f, 'hud_position', 'ini', HUD_POSITIONS),
+                 _('21:9 outputs: health, items and Blood Echoes at the screen edges, or in the centred '
+                   '16:9 area as on a 16:9 screen.',
+                   'Для 21:9: здоровье, предметы и Отголоски крови у краёв экрана или в центральной '
+                   'области 16:9, как на обычном экране.'))
         self.row(f, _('Live resolution changes', 'Смена разрешения на лету'), self.choice(f, 'live_resolution', 'ini', LIVE),
                  _('Off: outputs other than 1080p are set by a patch at start (fastest; changing them in the '
                    'game restarts it). On: change output and preset in the game without a restart, at a cost.',
@@ -959,6 +1066,101 @@ class Launcher:
         self.check(f, 'online', 'app', _('Play online'),
                    _('Off: the game stays offline, as before.'))
         self.var('online', 'app').trace_add('write', lambda *_a: self.refresh_status())
+        self.section(f, _('Co-op pool'))
+        pool = self.var('online_pool', 'app')
+        pool.trace_add('write', lambda *_a: self.refresh_status())
+        pools = ttk.Frame(f)
+        ttk.Radiobutton(pools, text=_('shadNet server'), variable=pool, value='shadnet').pack(side='left')
+        ttk.Radiobutton(pools, text=_('SuperMedo Server'), variable=pool,
+                        value='supermedo').pack(side='left', padx=(16, 0))
+        if HUNTERS_DREAM_POOL:
+            ttk.Radiobutton(pools, text=_("The Hunter's Dream (with bbhost players)"), variable=pool,
+                            value='huntersdream').pack(side='left', padx=(16, 0))
+        elif pool.get() == 'huntersdream':
+            pool.set('shadnet')
+        self.row(f, _('Play with'), pools,
+                 _("shadNet: a shadNet server and its account. SuperMedo Server uses an account from "
+                   "supermedo.com."))
+        # Each pool shows only its own settings (show_pool below).
+        groups = {}
+        before = set(f.grid_slaves())
+
+        def group(name):
+            nonlocal before
+            now = set(f.grid_slaves())
+            groups[name] = groups.get(name, []) + list(now - before)
+            before = now
+
+        self.section(f, _('SuperMedo Server account'))
+        self.row(f, '', ttk.Button(f, text=_('Sign up for SuperMedo Server'),
+                                   command=lambda: webbrowser.open(SUPERMEDO_SIGNUP)))
+        self.row(f, _('Username'), ttk.Entry(f, textvariable=self.var('supermedo_user', 'app'), width=40),
+                 _('The account you made at supermedo.com.'))
+        self.row(f, _('Password'), ttk.Entry(f, textvariable=self.var('supermedo_password', 'app'), width=40,
+                                             show='•'),
+                 _('Saved on this PC with the other launcher settings.'))
+        group('supermedo')
+        self.section(f, _("The Hunter's Dream account"))
+        account = ttk.Label(f, text='', justify='left')
+        user_dir = self.var('user_dir', 'app')
+
+        thd_id, thd_token = self.var('thd_online_id', 'app'), self.var('thd_token', 'app')
+
+        def show_accounts():
+            name = thd_id.get() if thd_token.get() else ''
+            account.configure(text=_('Signed in as {}').format(name) if name else _('Not signed in'))
+        show_accounts()
+        self.row(f, _('Account'), account)
+        signing = ttk.Label(f, text='', style='Muted.TLabel', justify='left', wraplength=self.px(560))
+        # The code to type on the website, large, with a button that copies it.
+        code_box = ttk.Frame(f)
+        code_label = ttk.Label(code_box, text='', style='Code.TLabel')
+        code_label.pack(side='left')
+
+        def copy_code():
+            self.root.clipboard_clear()
+            self.root.clipboard_append(code_label.cget('text'))
+        ttk.Button(code_box, text=_('Copy'), command=copy_code).pack(side='left', padx=(14, 0))
+
+        def show_code(code=''):
+            code_label.configure(text=code)
+            if code:
+                code_box.grid()
+            else:
+                code_box.grid_remove()
+
+        def sign_in():
+            signing.configure(text=_('Starting the sign-in…'))
+            show_code()
+            game = self.var('online_community', 'app').get()
+
+            def on_code(page, code):
+                text = _('In the page that opened ({0}), sign in with Discord and enter this code:').format(page)
+                self.ui_calls.put(lambda: (signing.configure(text=text), show_code(code)))
+                webbrowser.open(page)
+
+            def work():
+                try:
+                    name, token = thd_sign_in(game, on_code)
+                except (OSError, ValueError) as error:
+                    self.ui_calls.put(lambda e=error: (signing.configure(text=_('Sign-in failed: {}').format(e)),
+                                                       show_code()))
+                    return
+                self.ui_calls.put(lambda: (thd_id.set(name), thd_token.set(token), signing.configure(text=''),
+                                           show_code(), show_accounts(), self.collect()))
+            threading.Thread(target=work, daemon=True).start()
+        self.row(f, '', ttk.Button(f, text=_('Sign in with Discord'), command=sign_in))
+        signing.grid(row=self.next_row(f), column=1, sticky='w', pady=(6, 0))
+        code_box.grid(row=self.next_row(f), column=1, sticky='w', pady=(4, 0))
+        self.check(f, 'bridge_live_map', 'app', _('Show me on the live map'),
+                   _("thehuntersdream.com/map shows where players are and which bells ring: the game sends "
+                     "your position more often while you play."))
+        credit = ttk.Label(f, text=_("The connection to The Hunter's Dream is Awaken's port of bbhost's network "
+                                     "code; bbhost and The Hunter's Dream are by droogie."),
+                           style='Muted.TLabel', cursor='hand2')
+        credit.grid(row=self.next_row(f), column=0, columnspan=2, sticky='w', pady=(8, 0))
+        credit.bind('<Button-1>', lambda _e: webbrowser.open('https://github.com/Awakenchan/BloodBorneButPc'))
+        group('huntersdream')
         self.section(f, _('Game server (messages, bloodstains, ghosts)'))
         community = self.var('online_community', 'app')
         self.row(f, _('Game server'), ttk.Entry(f, textvariable=community, width=40),
@@ -977,9 +1179,11 @@ class Launcher:
                    'owner of a private server.'))
         self.row(f, _('Password'), ttk.Entry(f, textvariable=self.var('online_password', 'app'), width=40, show='•'),
                  _('Saved on this PC with the other launcher settings.'))
+        group('shadnet')
         self.section(f, _('Connection'))
         self.check(f, 'online_upnp', 'app', _('UPnP (open a port on the router automatically)'),
                    _('Turn it off on Tailscale or another VPN.'))
+        group('upnp')
         result = ttk.Label(f, text='', style='Muted.TLabel', justify='left')
 
         def check():
@@ -988,11 +1192,27 @@ class Launcher:
             address = values['online_server'].strip() or APP_DEFAULTS['online_server']
             webapi, game = webapi_setting(values), community_address(values['online_community'])
             online_on = self.var('online', 'app').get()
+            pool_name = pool.get()
+            hunters_dream, supermedo = pool_name == 'huntersdream', pool_name == 'supermedo'
+            signed_in = thd_id.get() if thd_token.get() else ''
             result.configure(text=_('Checking…'))
 
             def work():
-                text = server_check(address, webapi, game)
-                if values['online_webapi'].strip() and values['online_webapi'].strip() != webapi:
+                if hunters_dream:
+                    text = server_check_hunters_dream()
+                    text += '\n' + (_('Signed in as {}').format(signed_in) if signed_in else
+                                    _('Not signed in: use "Sign in with Discord" above.'))
+                elif supermedo:
+                    # The pool's name instead of its address.
+                    text = server_check(SUPERMEDO_SERVER, webapi_address(SUPERMEDO_SERVER), game)
+                    text = text.replace('http://' + SUPERMEDO_SERVER.split(':')[0] + ':31315', 'SuperMedo Server')
+                    text = text.replace(SUPERMEDO_SERVER, 'SuperMedo Server')
+                    text = text.replace(SUPERMEDO_SERVER.split(':')[0], 'SuperMedo Server')
+                    if 'SuperMedo Server: not reachable' in text:
+                        text += '\n' + _('SuperMedo Server could not be reached. Check your internet connection and try again.')
+                else:
+                    text = server_check(address, webapi, game)
+                if pool_name == 'shadnet' and values['online_webapi'].strip() and values['online_webapi'].strip() != webapi:
                     text += '\n' + _('The WebAPI box holds the game server address; it is ignored.')
                 if not online_on:
                     text += '\n' + _('"Play online" is off: the game starts offline.')
@@ -1002,6 +1222,25 @@ class Launcher:
         result.grid(row=self.next_row(f), column=1, sticky='w', pady=(6, 0))
         self.note(f, _('Everyone in a session needs the same game version (1.09) and the same server. '
                        'Cheats change the game for the other players too: turn them off when you play together.'))
+        show_code()  # hidden until a sign-in shows one; its row stays reserved (rows are counted above)
+        shown = {'shadnet': {'shadnet', 'upnp'}, 'supermedo': {'supermedo', 'upnp'},
+                 'huntersdream': {'huntersdream', 'upnp'}}
+
+        def show_pool(*_args):
+            if pool.get() == 'huntersdream' and not HUNTERS_DREAM_POOL:
+                pool.set('shadnet')  # runs show_pool again
+                return
+            want = shown.get(pool.get(), shown['shadnet'])
+            for name, widgets in groups.items():
+                for widget in widgets:
+                    if widget is not code_box:
+                        widget.grid() if name in want else widget.grid_remove()
+            if 'huntersdream' in want:
+                show_code(code_label.cget('text'))
+            else:
+                code_box.grid_remove()
+        pool.trace_add('write', show_pool)
+        show_pool()
 
     def build_mods(self):
         f = self.scrolled_page('mods', _('Mods & patches', 'Моды и патчи'),
@@ -1303,10 +1542,12 @@ class Launcher:
                      'Добавляется поверх чувствительности; поднимает минимальную скорость для '
                      'медленных движений, почти не влияя на быстрые.'), 0.0, 1.0)
 
-        self.note(f, _('The scroll wheel is configured in input.ini directly (see docs/INPUT.md) '
-                       '— mouse buttons are bound from the Buttons section above.',
-                       'Колесо мыши настраивается напрямую в input.ini (см. docs/INPUT.md) — '
-                       'кнопки мыши назначаются в разделе «Кнопки» выше.'), top=10)
+        self.note(f, _('Mouse buttons and the scroll wheel are bound in the Buttons section above: '
+                       'press Set… and click or turn the wheel. They work while the mouse is captured '
+                       '(mouse look on).',
+                       'Кнопки мыши и колесо назначаются в разделе «Кнопки» выше: нажмите «Назначить…» '
+                       'и щёлкните или прокрутите колесо. Они работают, пока мышь захвачена '
+                       '(обзор мышью включён).'), top=10)
         self.note(f, _('Changes apply the next time the game starts, or press F8 in-game to '
                        'reload input.ini without restarting.',
                        'Изменения применяются при следующем запуске игры, либо нажмите F8 в '
@@ -1335,7 +1576,8 @@ class Launcher:
         leftbutton" the instant capture starts."""
         is_stick = output in STICK_OUTPUTS
         original_text = set_btn['text']
-        key_label.configure(text=_('Press a key or mouse button…', 'Нажмите клавишу или кнопку мыши…')
+        key_label.configure(text=_('Press a key, a mouse button or turn the wheel…',
+                                   'Нажмите клавишу, кнопку мыши или прокрутите колесо…')
                             if not is_stick else _('Press a key…', 'Нажмите клавишу…'))
         set_btn.configure(state='disabled')
         self.root.grab_set()
@@ -1343,6 +1585,8 @@ class Launcher:
         def finish():
             self.root.unbind_all('<KeyPress>')
             self.root.unbind_all('<ButtonPress>')
+            self.root.unbind_all('<Shift-MouseWheel>')
+            self.root.bind_all('<MouseWheel>', self.wheel)  # the pages scroll again
             self.root.grab_release()
             set_btn.configure(state='normal', text=original_text)
             self.refresh_remap_row(output)
@@ -1384,9 +1628,18 @@ class Launcher:
                 return
             apply(name)
 
+        def on_wheel(event, horizontal=False):
+            name = wheel_to_name(event.delta, horizontal)
+            if name:
+                apply(name)
+            return 'break'
+
         self.root.bind_all('<KeyPress>', on_key)
         if not is_stick:
             self.root.after_idle(lambda: self.root.bind_all('<ButtonPress>', on_click))
+            # While waiting, the wheel binds instead of scrolling the page.
+            self.root.bind_all('<MouseWheel>', on_wheel)
+            self.root.bind_all('<Shift-MouseWheel>', lambda e: on_wheel(e, True))
 
     def build_advanced(self):
         ttk = self.ttk
@@ -1504,6 +1757,10 @@ class Launcher:
         upscaler = dict(UPSCALERS).get(self.var('upscaler', 'ini').get(), ('?',))[0].split(' (')[0]
         output = self.var('output_res', 'ini').get().replace('x', ' × ')
         online = _('Online') if self.var('online', 'app').get() else _('Offline')
+        if self.var('online', 'app').get() and self.var('online_pool', 'app').get() == 'huntersdream':
+            online = _("Online (The Hunter's Dream)")
+        elif self.var('online', 'app').get() and self.var('online_pool', 'app').get() == 'supermedo':
+            online = _('Online (SuperMedo Server)')
         return f'{_(*fps)}   ·   {upscaler}   ·   {output}   ·   {online}'
 
     def detect_gpu(self):
@@ -1671,7 +1928,21 @@ class Launcher:
             if choice is None:
                 return
             online.set(bool(choice))
-        if online.get() and '@' in npid.get():
+        pool_name = self.var('online_pool', 'app').get()
+        hunters_dream = pool_name == 'huntersdream'
+        if online.get() and hunters_dream and not self.var('thd_token', 'app').get():
+            self.messagebox.showwarning(
+                'Bloodborne', _("To play online with The Hunter's Dream, sign in with Discord first."))
+            self.show('online')
+            return
+        if online.get() and pool_name == 'supermedo' and not (
+                self.var('supermedo_user', 'app').get().strip() and self.var('supermedo_password', 'app').get()):
+            self.messagebox.showwarning(
+                'Bloodborne', _('To play on SuperMedo Server, enter your supermedo.com username and password '
+                                'on the Online co-op page (Sign up there if you have no account).'))
+            self.show('online')
+            return
+        if online.get() and pool_name == 'shadnet' and '@' in npid.get():
             self.messagebox.showwarning(
                 'Bloodborne', _('The Online ID is the account name (NPID) you registered on the server, '
                                 'not your email address.'))
@@ -1710,9 +1981,17 @@ class Launcher:
             log = open(log_dir / 'last_run.log', 'w', encoding='utf-8', buffering=1)
         except OSError:
             pass
+        warned = False
         for raw in iter(process.stdout.readline, b''):
             text = raw.decode('utf-8', errors='replace')
             self.output.put(text)
+            if not warned and 'eboot.bin is not the 01.09 build' in text:
+                warned = True
+                self.ui_calls.put(lambda: self.messagebox.showwarning('Bloodborne', _(
+                    "Your eboot.bin is not the clean 1.09 one (modified, or from another dump). The port "
+                    "cannot patch it: the game runs at 30 FPS, the Game & effects options do nothing, and "
+                    "some scenes (like the cutscene after Rom) can freeze.\n\nReplace eboot.bin with the one "
+                    "from an unmodified 1.09 update.")))
             if log:
                 log.write(text.replace('\r\n', '\n'))
         if log:

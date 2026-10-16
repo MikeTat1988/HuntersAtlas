@@ -32,6 +32,10 @@ struct Layout {
     static constexpr float legend_x=1163,legend_y=524,legend_w=18,legend_h=104;
     static constexpr float key_x=1126,key_y=644,key_w=116,key_h=54;
     static constexpr float footer_x=152,footer_w=964,footer_slots=3;
+    Box TravelDialog()const{return Rect((width-350)*.5f,(height-168)*.5f,350,168);}
+    // Every enabled control uses the same row; disabling travel leaves no holes.
+    Box FooterSlot(int index,int count)const{return Rect(footer_x+footer_w*index/count,666,footer_w/count,35);}
+    static bool LampOnMap(bool same_area,bool discovered){return same_area&&discovered;}
 };
 inline float Cross(Point a,Point b){return a.x*b.z-a.z*b.x;}
 inline Point Sub(Point a,Point b){return {a.x-b.x,a.z-b.z};}

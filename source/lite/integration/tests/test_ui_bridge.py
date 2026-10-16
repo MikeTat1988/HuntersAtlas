@@ -196,16 +196,29 @@ def load_contract(root):
             "--game-dir", "game", "--output-dir", str(self.package.resolve()), "--headless",
         ])
 
-    def test_stock_update_is_blocked_while_lite_is_installed_even_when_disabled(self):
+    def test_installed_atlas_routes_update_to_coordinator_even_when_disabled(self):
         from types import SimpleNamespace
         launcher = load_ui_module()
         launcher.PORT_DIR = Path(self.temp.name)
         (launcher.PORT_DIR / 'atlas-lite-install.json').write_text('{}', encoding='utf-8')
-        window = SimpleNamespace(process=None, messagebox=mock.Mock(), var=mock.Mock())
+        window = SimpleNamespace(process=None, messagebox=mock.Mock(), var=mock.Mock(),install_atlas_update=mock.Mock())
         window.var.return_value.get.return_value = False
         launcher.Launcher.install_update(window, '9.9.9', 'https://example.invalid/update.zip', '')
-        window.messagebox.showwarning.assert_called_once()
-        self.assertIn('Uninstall', window.messagebox.showwarning.call_args.args[1])
+        window.install_atlas_update.assert_called_once_with('9.9.9')
+        window.messagebox.showwarning.assert_not_called()
+
+    def test_pending_rebuild_uses_stock_without_changing_enable_preference(self):
+        launcher=load_ui_module()
+        manifest_path=self.package/'manifest.json'
+        manifest=json.loads(manifest_path.read_text());manifest['runtime_pending']=True
+        manifest_path.write_text(json.dumps(manifest))
+        settings=dict(launcher.APP_DEFAULTS,atlas_enabled=True,atlas_dir=str(self.package),game_dir=str(self.package),user_dir=str(self.package/'user'))
+        with mock.patch.object(atlas_addon,'inspect_package') as inspect_package:
+            environment=launcher.game_environment(settings)
+        inspect_package.assert_not_called()
+        self.assertEqual(environment['BB_ATLAS_ENABLED'],'0')
+        self.assertNotIn('BB_LITE_PACKAGE',environment)
+        self.assertTrue(settings['atlas_enabled'])
 
 
 if __name__ == "__main__":

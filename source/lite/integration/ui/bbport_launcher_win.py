@@ -42,7 +42,7 @@ PATCH_VERSION = '01.09'
 MAX_LOG_LINES = 6000
 NO_WINDOW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 # This build; GitHub release tags are windows-v<VERSION>.
-VERSION = '1.7.2'
+VERSION = json.loads((Path(__file__).resolve().parents[2] / 'adapter-release.json').read_text(encoding='utf-8'))['upstream_release'].removeprefix('windows-v') if (Path(__file__).resolve().parents[2] / 'adapter-release.json').is_file() else '1.8.1'
 # Co-op: the community server that answers the game's own server requests.
 COMMUNITY_SERVER = 'https://thehuntersdream.com'
 RELEASES_API = 'https://api.github.com/repos/Supermedo/bloodborne_pc/releases/latest'
@@ -141,6 +141,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bbport_lang  # noqa: E402
 import bbport_trophies as trophies  # noqa: E402
 import atlas_addon  # noqa: E402
+import atlas_adapter  # noqa: E402
 from bbport_input_config import (KEYBOARD_OUTPUTS, BUTTON_OUTPUTS, STICK_OUTPUTS, OUTPUT_LABELS, keysym_to_name,
                                   button_num_to_name, input_ini_path, load_input_ini, reserved_keys,
                                   save_input_ini, save_mouse_settings, wheel_to_name)  # noqa: E402
@@ -204,15 +205,20 @@ TWEAKS = [
                        'Физика тел как в Dark Souls (тела отлетают дальше)'), False),
     ('tweak_circle_confirm', ('Japanese/Asian buttons: Circle confirms and interacts, Cross dodges',
                               'Японская раскладка: Круг — подтверждение и действие, Крест — уклонение'), False),
+    ('quit_to_desktop', ('Quit to Desktop in the title menu and in the System menu',
+                         'Пункт «Выйти на рабочий стол» в главном меню и в меню «Система»'), True),
 ]
 INI_FLAGS = {'sharpen', 'object_motion', 'show_fps', *(k for k, _t, _o in EFFECTS + EXTRAS + CHEATS + TWEAKS)}
 INI_DEFAULTS = {'upscaler': 'fsr4', 'preset': '1', 'sharpen': '1', 'sharpness': '0.50',
                 'object_motion': '1', 'show_fps': '1', 'output_res': '1920x1080', 'model_lod': '0',
-                'live_resolution': 'auto',
+                'live_resolution': 'auto', 'hud_position': '100',
                 **{key: '1' if on else '0' for key, _t, on in EFFECTS + EXTRAS + CHEATS + TWEAKS}}
 APP_DEFAULTS = {'ui_language': '', 'game_dir': str(PORT_DIR.parent / 'CUSA03173'), 'user_dir': '', 'dlc_dir': '',
                 'mods_dir': '', 'mods_enabled': True, 'patches_dir': '',
-                'atlas_dir': '', 'atlas_enabled': False, 'language': '1',
+                'atlas_dir': '', 'atlas_enabled': False, 'atlas_npc_mode': 'all',
+                'atlas_items_enabled': False, 'atlas_item_healing': True, 'atlas_item_insight': True,
+                'atlas_item_equipment': True, 'atlas_item_echoes': True,
+                'atlas_travel_enabled': False, 'atlas_fog_enabled': False, 'language': '1',
                 'voice_language': 'auto',
                 'player_name': '', 'fullscreen': False, 'hdr': False, 'present_mode': 'Mailbox',
                 'fps_mode': 'uncap', 'frame_cap': '', 'draw_pipe': '', 'readbacks': '',
@@ -220,7 +226,8 @@ APP_DEFAULTS = {'ui_language': '', 'game_dir': str(PORT_DIR.parent / 'CUSA03173'
                 'vk_validation': False, 'extra_env': '', 'close_on_play': False,
                 'check_updates': True, 'online': False, 'online_server': 'srv.shadps4.net:31313',
                 'online_webapi': '', 'online_npid': '', 'online_password': '', 'online_upnp': True,
-                'online_community': COMMUNITY_SERVER, 'online_pool': 'shadnet', 'bridge_live_map': True}
+                'online_community': COMMUNITY_SERVER, 'online_pool': 'shadnet', 'bridge_live_map': False,
+                'supermedo_user': '', 'supermedo_password': '', 'thd_online_id': '', 'thd_token': ''}
 # bbbridge's own app reads and writes the online_* keys above: keep their names.
 
 UPSCALERS = [('dlss', ('DLSS (NVIDIA GeForce RTX)',)),
@@ -232,7 +239,12 @@ UPSCALERS = [('dlss', ('DLSS (NVIDIA GeForce RTX)',)),
 PRESETS = [('0', ('Native AA (×1.0)',)), ('1', ('Quality (×1.5)',)), ('2', ('Balanced (×1.7)',)),
            ('3', ('Performance (×2)',)), ('4', ('Ultra Performance (×3)',))]
 OUTPUTS = [('1280x720', ('1280 × 720 (Steam Deck)',)), ('1920x1080', ('1920 × 1080',)),
-           ('2560x1440', ('2560 × 1440',)), ('3840x2160', ('3840 × 2160 (4K)',))]
+           ('2560x1440', ('2560 × 1440',)), ('3840x2160', ('3840 × 2160 (4K)',)),
+           ('2560x1080', ('2560 × 1080 (21:9)',)), ('3440x1440', ('3440 × 1440 (21:9)',)),
+           ('3840x1600', ('3840 × 1600 (21:9)',)), ('5120x2160', ('5120 × 2160 (21:9)',)),
+           ('3840x1080', ('3840 × 1080 (32:9)',)), ('5120x1440', ('5120 × 1440 (32:9)',))]
+HUD_POSITIONS = [('100', ('Screen edges', 'У краёв экрана')), ('75', ('75%',)), ('50', ('Halfway', 'Посередине')),
+                 ('25', ('25%',)), ('0', ('Centred (16:9)', 'По центру (16:9)'))]
 LIVE = [('auto', ('Auto (by graphics card)', 'Авто (по видеокарте)')), ('0', ('Off (faster)', 'Выключена (быстрее)')),
         ('1', ('On (change without restarting)', 'Включена (без перезапуска)'))]
 LODS = [('0', ('As in the game', 'Как в игре')), ('-2', ('Highest (−2)', 'Максимальная (−2)')),
@@ -393,42 +405,62 @@ def server_check(server, webapi, community):
     return '\n'.join(lines)
 
 
-# The Hunter's Dream co-op pool (with bbhost players): bbbridge (bbbridge/, by MaskZeus), which
-# run.py starts with the game. Its account (Discord sign-in) stays in <saves>/bbbridge.
-BRIDGE_PAGE = 'https://github.com/MaskZeus/bbbridge-bbport-online-tool'
+# The Hunter's Dream pool: the engine's own backend for it (BB_NET_BACKEND=thd, bbhost's
+# protocol, from Awaken's port). BB_HUNTERS_DREAM=0 hides it.
+HUNTERS_DREAM_POOL = os.environ.get('BB_HUNTERS_DREAM', '1') != '0'
 
 
-def bridge_cli():
-    for folder in (PORT_DIR / 'bin', PORT_DIR / 'out'):
-        if (folder / 'bbbridge-cli.exe').is_file():
-            return folder / 'bbbridge-cli.exe'
-    return None
+def thd_call(url, body):
+    """A call to The Hunter's Dream's account service (bbhost's): its reply, or ValueError with
+    the server's reason."""
+    request = urllib.request.Request(url, data=json.dumps(body).encode(), method='POST',
+                                     headers={'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            text = response.read()
+    except urllib.error.HTTPError as error:
+        text = error.read()
+    try:
+        reply = json.loads(text)
+    except ValueError:
+        reply = None
+    if not isinstance(reply, dict) or 'ResKind' not in reply:
+        raise ValueError(f'{url} has no account service')
+    if reply['ResKind'] != 0:
+        raise ValueError(reply.get('Message') or 'refused')
+    return reply
 
 
-def bridge_folder(user_dir):
-    folder = Path(user_dir or DATA_DIR / 'user')
-    return (folder if folder.is_absolute() else PORT_DIR / folder) / 'bbbridge'
-
-
-def bridge_config(user_dir):
-    """<saves>/bbbridge and bbbridge's config there (the same files run.py uses)."""
-    folder = bridge_folder(user_dir)
-    folder.mkdir(parents=True, exist_ok=True)
-    config = folder / 'bbbridge_config.json'
-    data = load_json(config, {})
-    data = data if isinstance(data, dict) else {}
-    state = str(folder / 'bbbridge_state.json')
-    if data.get('state_file') != state:
-        data['state_file'] = state
-        config.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
-    return folder, config
-
-
-def bridge_accounts(user_dir):
-    """The Hunter's Dream ids signed in with Discord."""
-    state = load_json(bridge_folder(user_dir) / 'bbbridge_state.json', {})
-    accounts = state.get('accounts') if isinstance(state, dict) else None
-    return list(accounts) if isinstance(accounts, dict) else []
+def thd_sign_in(game_server, on_code):
+    """Discord sign-in the way bbhost does it: a code to approve on the website. on_code(page,
+    code) shows it. Returns (online id, token); raises ValueError."""
+    auth = community_address(game_server)
+    start = thd_call(auth + '/auth/device/start', {'DeviceName': f'bbport on {os.environ.get("COMPUTERNAME", "PC")}'})
+    device, user_code = start.get('DeviceCode', ''), start.get('UserCode', '')
+    if not device or not user_code:
+        raise ValueError('no code in the reply')
+    interval = max(1, int(start.get('Interval') or 5))
+    deadline = time.monotonic() + int(start.get('ExpiresIn') or 600)
+    on_code(start.get('VerificationUri') or auth + '/link', user_code)
+    while time.monotonic() < deadline:
+        time.sleep(interval)
+        poll = thd_call(auth + '/auth/device/poll', {'DeviceCode': device})
+        status = poll.get('Status')
+        if status == 'approved':
+            if not poll.get('OnlineId') or not poll.get('Token'):
+                raise ValueError('no token in the reply')
+            return poll['OnlineId'], poll['Token']
+        if status == 'slow_down':
+            interval += 5
+        elif status == 'denied':
+            raise ValueError('the sign-in was denied')
+        elif status == 'expired':
+            break
+    raise ValueError('the code expired; try again')
+# The SuperMedo Server co-op pool: a public shadNet server. Accounts are made at
+# SUPERMEDO_SIGNUP. The launcher shows the pool's name, not its address.
+SUPERMEDO_SERVER = 'www.supermedo.com:31313'
+SUPERMEDO_SIGNUP = 'https://www.supermedo.com'
 
 
 def server_check_hunters_dream():
@@ -490,17 +522,29 @@ def game_environment(s):
         env['BB_SHADNET_PASSWORD'] = str(s['online_password'])
         env['BB_UPNP'] = '1' if s['online_upnp'] else '0'
         env['BB_COMMUNITY_SERVER'] = community_address(s['online_community'])
-        if s.get('online_pool') == 'huntersdream':
-            # run.py starts bbbridge and signs the game in with the Hunter's Dream id.
-            env['BB_BRIDGE'] = '1'
+        if s.get('online_pool') == 'supermedo':
+            env['BB_SHADNET_SERVER'] = SUPERMEDO_SERVER
+            env['BB_SHADNET_WEBAPI'] = webapi_address(SUPERMEDO_SERVER)
+            env['BB_POOL_NAME'] = 'SuperMedo Server'
+            env['BB_SHADNET_NPID'] = str(s.get('supermedo_user', '')).strip()
+            env['BB_SHADNET_PASSWORD'] = str(s.get('supermedo_password', ''))
+        if s.get('online_pool') == 'huntersdream' and HUNTERS_DREAM_POOL:
+            # The engine's Hunter's Dream backend with the Discord-linked account (run.py sets
+            # the game server and the backend's addresses).
+            env['BB_NET_BACKEND'] = 'thd'
+            env['BB_THD_ONLINE_ID'] = str(s.get('thd_online_id', ''))
+            env['BB_THD_TOKEN'] = str(s.get('thd_token', ''))
             env['BB_BRIDGE_LIVE_MAP'] = '1' if s.get('bridge_live_map') else '0'
-            env['BB_SHADNET_NPID'] = ''
-            env['BB_SHADNET_PASSWORD'] = ''
+            for key in ('BB_SHADNET_SERVER', 'BB_SHADNET_WEBAPI', 'BB_SHADNET_NPID', 'BB_SHADNET_PASSWORD'):
+                env.pop(key, None)
+    env = atlas_adapter.configure_network(env, s, VERSION)
+    # Which build a server sees (shadNet's client version, The Hunter's Dream's client field).
+    env.setdefault('BB_CLIENT_VERSION', f'bbport {VERSION}')
     env['PYTHONUNBUFFERED'] = '1'
     env['PYTHONIOENCODING'] = 'utf-8'
     # Resolve Atlas only in the child process. The launcher profile stores its folder and
     # enable switch; its package settings remain owned by the Atlas package.
-    if s.get('atlas_enabled'):
+    if s.get('atlas_enabled') and not atlas_addon.rebuild_pending(s.get('atlas_dir','')):
         try:
             game_executable = Path(s['game_dir']) / 'eboot.bin'
             game_hash = atlas_addon.sha256_file(game_executable)
@@ -512,7 +556,7 @@ def game_environment(s):
         ini, _lines = load_ini()
         enter_button = '0' if ini.get('tweak_circle_confirm') == '1' else '1'
         env = atlas_addon.atlas_environment(env, enabled=True, package=package,
-                                            enter_button=enter_button)
+                                            enter_button=enter_button, features=s)
     else:
         env = atlas_addon.atlas_environment(env, enabled=False)
         stock = atlas_addon.stock_probe(PORT_DIR)
@@ -945,6 +989,12 @@ class Launcher:
         self.row(f, _('Output resolution', 'Разрешение вывода'), self.choice(f, 'output_res', 'ini', OUTPUTS),
                  _('What the upscaler produces; the HUD is drawn at this size too.',
                    'Что выдаёт апскейлер; интерфейс рисуется в этом же размере.'))
+        self.row(f, _('HUD position (ultrawide)', 'Положение интерфейса (21:9)'),
+                 self.choice(f, 'hud_position', 'ini', HUD_POSITIONS),
+                 _('21:9 outputs: health, items and Blood Echoes at the screen edges, or in the centred '
+                   '16:9 area as on a 16:9 screen.',
+                   'Для 21:9: здоровье, предметы и Отголоски крови у краёв экрана или в центральной '
+                   'области 16:9, как на обычном экране.'))
         self.row(f, _('Live resolution changes', 'Смена разрешения на лету'), self.choice(f, 'live_resolution', 'ini', LIVE),
                  _('Off: outputs other than 1080p are set by a patch at start (fastest; changing them in the '
                    'game restarts it). On: change output and preset in the game without a restart, at a cost.',
@@ -1069,18 +1119,44 @@ class Launcher:
         pool.trace_add('write', lambda *_a: self.refresh_status())
         pools = ttk.Frame(f)
         ttk.Radiobutton(pools, text=_('shadNet server'), variable=pool, value='shadnet').pack(side='left')
-        ttk.Radiobutton(pools, text=_("The Hunter's Dream (with bbhost players)"), variable=pool,
-                        value='huntersdream').pack(side='left', padx=(16, 0))
+        ttk.Radiobutton(pools, text=_('SuperMedo Server'), variable=pool,
+                        value='supermedo').pack(side='left', padx=(16, 0))
+        if HUNTERS_DREAM_POOL:
+            ttk.Radiobutton(pools, text=_("The Hunter's Dream (with bbhost players)"), variable=pool,
+                            value='huntersdream').pack(side='left', padx=(16, 0))
+        elif pool.get() == 'huntersdream':
+            pool.set('shadnet')
         self.row(f, _('Play with'), pools,
-                 _("shadNet: the server and account below. The Hunter's Dream: the players of bbhost, "
-                   "the PC port by The Hunter's Dream's team; sign in with Discord below."))
+                 _("shadNet: a shadNet server and its account. SuperMedo Server uses an account from "
+                   "supermedo.com."))
+        # Each pool shows only its own settings (show_pool below).
+        groups = {}
+        before = set(f.grid_slaves())
+
+        def group(name):
+            nonlocal before
+            now = set(f.grid_slaves())
+            groups[name] = groups.get(name, []) + list(now - before)
+            before = now
+
+        self.section(f, _('SuperMedo Server account'))
+        self.row(f, '', ttk.Button(f, text=_('Sign up for SuperMedo Server'),
+                                   command=lambda: webbrowser.open(SUPERMEDO_SIGNUP)))
+        self.row(f, _('Username'), ttk.Entry(f, textvariable=self.var('supermedo_user', 'app'), width=40),
+                 _('The account you made at supermedo.com.'))
+        self.row(f, _('Password'), ttk.Entry(f, textvariable=self.var('supermedo_password', 'app'), width=40,
+                                             show='•'),
+                 _('Saved on this PC with the other launcher settings.'))
+        group('supermedo')
         self.section(f, _("The Hunter's Dream account"))
         account = ttk.Label(f, text='', justify='left')
         user_dir = self.var('user_dir', 'app')
 
+        thd_id, thd_token = self.var('thd_online_id', 'app'), self.var('thd_token', 'app')
+
         def show_accounts():
-            ids = bridge_accounts(user_dir.get())
-            account.configure(text=_('Signed in as {}').format(', '.join(ids)) if ids else _('Not signed in'))
+            name = thd_id.get() if thd_token.get() else ''
+            account.configure(text=_('Signed in as {}').format(name) if name else _('Not signed in'))
         show_accounts()
         self.row(f, _('Account'), account)
         signing = ttk.Label(f, text='', style='Muted.TLabel', justify='left', wraplength=self.px(560))
@@ -1102,42 +1178,24 @@ class Launcher:
                 code_box.grid_remove()
 
         def sign_in():
-            cli = bridge_cli()
-            if not cli:
-                signing.configure(text=_('bbbridge-cli.exe is missing from this installation.'))
-                return
-            try:
-                folder, config = bridge_config(user_dir.get())
-            except OSError as error:
-                signing.configure(text=_('Sign-in failed: {}').format(error))
-                return
             signing.configure(text=_('Starting the sign-in…'))
             show_code()
+            game = self.var('online_community', 'app').get()
+
+            def on_code(page, code):
+                text = _('In the page that opened ({0}), sign in with Discord and enter this code:').format(page)
+                self.ui_calls.put(lambda: (signing.configure(text=text), show_code(code)))
+                webbrowser.open(page)
 
             def work():
                 try:
-                    process = subprocess.Popen([str(cli), '--config', str(config), '--link-discord'], cwd=folder,
-                                               stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                               stderr=subprocess.STDOUT, creationflags=NO_WINDOW,
-                                               text=True, encoding='utf-8', errors='replace')
-                except OSError as error:
-                    self.ui_calls.put(lambda e=error: signing.configure(text=_('Sign-in failed: {}').format(e)))
+                    name, token = thd_sign_in(game, on_code)
+                except (OSError, ValueError) as error:
+                    self.ui_calls.put(lambda e=error: (signing.configure(text=_('Sign-in failed: {}').format(e)),
+                                                       show_code()))
                     return
-                for line in process.stdout:
-                    line = line.strip()
-                    code = re.match(r'Open (\S+) and enter the code (\S+)', line)
-                    if code:
-                        text = _('In the page that opened ({0}), sign in with Discord and enter this code:').format(
-                            code.group(1))
-                        self.ui_calls.put(lambda t=text, c=code.group(2): (signing.configure(text=t), show_code(c)))
-                        webbrowser.open(code.group(1))
-                    elif line.startswith('signed in as '):
-                        self.ui_calls.put(lambda: (signing.configure(text=''), show_code(), show_accounts()))
-                    elif line.startswith('failed'):
-                        reason = line.split(':', 1)[-1].strip()
-                        self.ui_calls.put(lambda r=reason: (signing.configure(text=_('Sign-in failed: {}').format(r)),
-                                                            show_code()))
-                process.wait()
+                self.ui_calls.put(lambda: (thd_id.set(name), thd_token.set(token), signing.configure(text=''),
+                                           show_code(), show_accounts(), self.collect()))
             threading.Thread(target=work, daemon=True).start()
         self.row(f, '', ttk.Button(f, text=_('Sign in with Discord'), command=sign_in))
         signing.grid(row=self.next_row(f), column=1, sticky='w', pady=(6, 0))
@@ -1145,10 +1203,12 @@ class Launcher:
         self.check(f, 'bridge_live_map', 'app', _('Show me on the live map'),
                    _("thehuntersdream.com/map shows where players are and which bells ring: the game sends "
                      "your position more often while you play."))
-        credit = ttk.Label(f, text=_("The bridge to The Hunter's Dream is bbbridge by MaskZeus; bbhost and "
-                                     "The Hunter's Dream are by droogie."), style='Muted.TLabel', cursor='hand2')
+        credit = ttk.Label(f, text=_("The connection to The Hunter's Dream is Awaken's port of bbhost's network "
+                                     "code; bbhost and The Hunter's Dream are by droogie."),
+                           style='Muted.TLabel', cursor='hand2')
         credit.grid(row=self.next_row(f), column=0, columnspan=2, sticky='w', pady=(8, 0))
-        credit.bind('<Button-1>', lambda _e: webbrowser.open(BRIDGE_PAGE))
+        credit.bind('<Button-1>', lambda _e: webbrowser.open('https://github.com/Awakenchan/BloodBorneButPc'))
+        group('huntersdream')
         self.section(f, _('Game server (messages, bloodstains, ghosts)'))
         community = self.var('online_community', 'app')
         self.row(f, _('Game server'), ttk.Entry(f, textvariable=community, width=40),
@@ -1167,9 +1227,11 @@ class Launcher:
                    'owner of a private server.'))
         self.row(f, _('Password'), ttk.Entry(f, textvariable=self.var('online_password', 'app'), width=40, show='•'),
                  _('Saved on this PC with the other launcher settings.'))
+        group('shadnet')
         self.section(f, _('Connection'))
         self.check(f, 'online_upnp', 'app', _('UPnP (open a port on the router automatically)'),
                    _('Turn it off on Tailscale or another VPN.'))
+        group('upnp')
         result = ttk.Label(f, text='', style='Muted.TLabel', justify='left')
 
         def check():
@@ -1178,20 +1240,27 @@ class Launcher:
             address = values['online_server'].strip() or APP_DEFAULTS['online_server']
             webapi, game = webapi_setting(values), community_address(values['online_community'])
             online_on = self.var('online', 'app').get()
-            hunters_dream = pool.get() == 'huntersdream'
-            signed_in = bridge_accounts(user_dir.get())
+            pool_name = pool.get()
+            hunters_dream, supermedo = pool_name == 'huntersdream', pool_name == 'supermedo'
+            signed_in = thd_id.get() if thd_token.get() else ''
             result.configure(text=_('Checking…'))
 
             def work():
                 if hunters_dream:
                     text = server_check_hunters_dream()
-                    text += '\n' + (_('Signed in as {}').format(', '.join(signed_in)) if signed_in else
+                    text += '\n' + (_('Signed in as {}').format(signed_in) if signed_in else
                                     _('Not signed in: use "Sign in with Discord" above.'))
-                    if not bridge_cli():
-                        text += '\n' + _('bbbridge-cli.exe is missing from this installation.')
+                elif supermedo:
+                    # The pool's name instead of its address.
+                    text = server_check(SUPERMEDO_SERVER, webapi_address(SUPERMEDO_SERVER), game)
+                    text = text.replace('http://' + SUPERMEDO_SERVER.split(':')[0] + ':31315', 'SuperMedo Server')
+                    text = text.replace(SUPERMEDO_SERVER, 'SuperMedo Server')
+                    text = text.replace(SUPERMEDO_SERVER.split(':')[0], 'SuperMedo Server')
+                    if 'SuperMedo Server: not reachable' in text:
+                        text += '\n' + _('SuperMedo Server could not be reached. Check your internet connection and try again.')
                 else:
                     text = server_check(address, webapi, game)
-                if not hunters_dream and values['online_webapi'].strip() and values['online_webapi'].strip() != webapi:
+                if pool_name == 'shadnet' and values['online_webapi'].strip() and values['online_webapi'].strip() != webapi:
                     text += '\n' + _('The WebAPI box holds the game server address; it is ignored.')
                 if not online_on:
                     text += '\n' + _('"Play online" is off: the game starts offline.')
@@ -1202,6 +1271,24 @@ class Launcher:
         self.note(f, _('Everyone in a session needs the same game version (1.09) and the same server. '
                        'Cheats change the game for the other players too: turn them off when you play together.'))
         show_code()  # hidden until a sign-in shows one; its row stays reserved (rows are counted above)
+        shown = {'shadnet': {'shadnet', 'upnp'}, 'supermedo': {'supermedo', 'upnp'},
+                 'huntersdream': {'huntersdream', 'upnp'}}
+
+        def show_pool(*_args):
+            if pool.get() == 'huntersdream' and not HUNTERS_DREAM_POOL:
+                pool.set('shadnet')  # runs show_pool again
+                return
+            want = shown.get(pool.get(), shown['shadnet'])
+            for name, widgets in groups.items():
+                for widget in widgets:
+                    if widget is not code_box:
+                        widget.grid() if name in want else widget.grid_remove()
+            if 'huntersdream' in want:
+                show_code(code_label.cget('text'))
+            else:
+                code_box.grid_remove()
+        pool.trace_add('write', show_pool)
+        show_pool()
 
     def build_mods(self):
         f = self.scrolled_page('mods', _('Mods & patches', 'Моды и патчи'),
@@ -1228,6 +1315,39 @@ class Launcher:
         self.check(f, 'atlas_enabled', 'app', _('Enable Hunter\'s Atlas'),
                    _('The selected package is checked for file integrity and compatibility before play.'))
         self.var('atlas_enabled', 'app').trace_add('write', lambda *_a: self.schedule_atlas_status())
+        feature_before = set(f.winfo_children())
+        self.row(f, _('NPC markers', 'Метки NPC'), self.choice(f, 'atlas_npc_mode', 'app', [
+            ('all', ('All conversation sites', 'Все места разговоров')),
+            ('new_dialogue', ('New dialogue only', 'Только новые диалоги')),
+            ('hidden', ('Hidden', 'Скрыть'))]),
+            _('New dialogue filtering covers verified Gilbert and Eileen stages; other NPCs are hidden in this mode.',
+              'Фильтр новых диалогов охватывает проверенные этапы Гилберта и Айлин; остальные NPC скрыты.'))
+        self.check(f, 'atlas_items_enabled', 'app', _('Show remaining pickups', 'Показывать оставшиеся предметы'),
+                   _('Fixed world pickups only. Monster drops are excluded.', 'Только предметы в мире. Добыча с врагов исключена.'))
+        category_before = set(f.winfo_children())
+        for key, en, ru in [('healing', 'Blood Vials — red', 'Пузырьки крови — красный'),
+                            ('insight', 'Knowledge and Wisdom — purple', 'Знания и мудрость — фиолетовый'),
+                            ('equipment', 'Weapons and clothing — blue', 'Оружие и одежда — синий'),
+                            ('echoes', 'Coldblood — gold', 'Холодная кровь — золотой')]:
+            self.check(f, 'atlas_item_' + key, 'app', _(en, ru))
+        category_widgets = set(f.winfo_children()) - category_before
+        self.check(f, 'atlas_travel_enabled', 'app', _('Enable map fast travel', 'Быстрые перемещения с карты'),
+                   _('LB/RB (L1/R1) cycle available lamps. LT/RT (L2/R2) zoom. Travel requires confirmation.',
+                     'LB/RB (L1/R1) выбирают доступные фонари. LT/RT (L2/R2) меняют масштаб. Перемещение требует подтверждения.'))
+        self.check(f, 'atlas_fog_enabled', 'app', _('Reveal areas after defeating their boss', 'Открывать области после победы над боссом'),
+                   _('Unlocked lamps remain accessible. Turn this off to see the full map.',
+                     'Открытые фонари остаются доступны. Выключите, чтобы видеть всю карту.'))
+        feature_widgets = set(f.winfo_children()) - feature_before
+        def update_feature_controls(*_args):
+            atlas_on = bool(self.var('atlas_enabled', 'app').get())
+            items_on = bool(self.var('atlas_items_enabled', 'app').get())
+            for widget in feature_widgets:
+                if hasattr(widget, 'state'):
+                    disabled = not atlas_on or (widget in category_widgets and not items_on)
+                    widget.state(['disabled'] if disabled else ['!disabled'])
+        self.var('atlas_enabled', 'app').trace_add('write', update_feature_controls)
+        self.var('atlas_items_enabled', 'app').trace_add('write', update_feature_controls)
+        update_feature_controls()
         self.folder(f, 'atlas_dir', _('Atlas folder'), _('Choose the extracted Hunter\'s Atlas folder'),
                     _('Choose the folder containing manifest.json. Paths may be pasted directly.'),
                     on_change=self.schedule_atlas_status)
@@ -1237,6 +1357,9 @@ class Launcher:
         self.atlas_prepare_button = self.ttk.Button(
             f, text=_('Prepare Atlas maps'), command=self.prepare_atlas_maps, state='disabled')
         self.atlas_prepare_button.grid(row=self.next_row(f), column=0, sticky='w', pady=(6, 0))
+        self.ttk.Button(f,text=_('Check Atlas updates','Проверить обновления Atlas'),
+                        command=lambda:self.install_atlas_update(VERSION,manual_check=True)).grid(
+            row=self.next_row(f),column=0,sticky='w',pady=(6,0))
         self.atlas_progress = self.ttk.Progressbar(f, mode='indeterminate', length=self.px(360))
         self.atlas_progress.grid(row=self.next_row(f), column=0, columnspan=2, sticky='we', pady=(4, 0))
         self.atlas_progress.grid_remove()
@@ -1246,6 +1369,7 @@ class Launcher:
         self.atlas_status_job = None
         self.atlas_status_revision = 0
         self.atlas_generating = False
+        self.atlas_auto_attempts = set()
         self.atlas_generator_log = []
         self.atlas_log_path = None
         self.schedule_atlas_status(delay=0)
@@ -1276,7 +1400,17 @@ class Launcher:
         threading.Thread(target=validate, daemon=True).start()
 
     def apply_atlas_status(self, revision, package, error, enabled):
-        if revision != self.atlas_status_revision:
+        if revision != self.atlas_status_revision or self.atlas_generating or self.downloading:
+            return
+        if atlas_addon.rebuild_pending(self.var('atlas_dir','app').get()):
+            self.atlas_status.configure(text=_('Atlas rebuild pending. The launcher and game are available. Use Check Atlas updates to retry.',
+                'Atlas ожидает пересборки. Лаунчер и игра доступны. Для повтора нажмите «Проверить обновления Atlas».'),style='Muted.TLabel')
+            self.atlas_prepare_button.configure(state='disabled')
+            pending=Path(self.var('atlas_dir','app').get())/'updates/pending.json'
+            last=load_json(pending,{}).get('last_attempt',0)
+            if enabled and not self.process and time.time()-last>21600 and not getattr(self,'atlas_rebuild_retry_started',False):
+                self.atlas_rebuild_retry_started=True
+                self.root.after(0,lambda:self.install_atlas_update(VERSION,manual_check=True))
             return
         if package and package.generated_ready:
             state = _('Enabled') if enabled else _('Disabled; the stock runtime will be used.')
@@ -1294,10 +1428,15 @@ class Launcher:
             style = 'Warning.TLabel'
             self.atlas_prepare_button.configure(state='disabled')
         self.atlas_status.configure(text=message, style=style)
+        if package and not package.generated_ready and enabled and not self.process:
+            attempt=(str(package.root),str(self.var('game_dir','app').get()))
+            if attempt not in self.atlas_auto_attempts:
+                self.atlas_auto_attempts.add(attempt)
+                self.root.after(0,self.prepare_atlas_maps)
 
     def prepare_atlas_maps(self):
         """Run the package's hash-verified local generator without blocking Tk."""
-        if self.atlas_generating:
+        if self.atlas_generating or self.downloading or self.process:
             return
         atlas_folder = Path(self.var('atlas_dir', 'app').get()).expanduser()
         game_folder = Path(self.var('game_dir', 'app').get()).expanduser()
@@ -1385,6 +1524,7 @@ class Launcher:
 
     def finish_atlas_generation(self, error, return_code):
         self.atlas_generating = False
+        self.refresh_status()
         self.atlas_progress.stop()
         self.atlas_progress.configure(mode='indeterminate', value=0)
         self.atlas_progress.grid_remove()
@@ -1394,7 +1534,7 @@ class Launcher:
             log_hint = f'\n\nLog: {self.atlas_log_path}' if self.atlas_log_path else ''
             self.atlas_generation_log.configure(text=_('Preparation stopped. See the log for details.'))
             self.atlas_prepare_button.configure(state='normal')
-            self.messagebox.showerror('Hunter\'s Atlas', text + log_hint)
+            self.atlas_generation_log.configure(text=text + log_hint)
         else:
             self.atlas_status.configure(text=_('Local Atlas maps are ready. Verifying package…'),
                                         style='Muted.TLabel')
@@ -1882,7 +2022,7 @@ class Launcher:
             else:
                 label.grid_remove()
         if not self.process:
-            self.play_button.configure(state='normal' if info else 'disabled')
+            self.play_button.configure(state='normal' if info and not self.downloading and not getattr(self,'atlas_generating',False) else 'disabled')
             self.status.configure(text=self.summary() if info else _('Choose the game folder first.',
                                                                      'Сначала выберите папку игры.'), fg=MUTED)
 
@@ -1896,6 +2036,8 @@ class Launcher:
         online = _('Online') if self.var('online', 'app').get() else _('Offline')
         if self.var('online', 'app').get() and self.var('online_pool', 'app').get() == 'huntersdream':
             online = _("Online (The Hunter's Dream)")
+        elif self.var('online', 'app').get() and self.var('online_pool', 'app').get() == 'supermedo':
+            online = _('Online (SuperMedo Server)')
         return f'{_(*fps)}   ·   {upscaler}   ·   {output}   ·   {online}'
 
     def detect_gpu(self):
@@ -2053,6 +2195,9 @@ class Launcher:
 
     # ---- game process ------------------------------------------------------------------------
     def play(self):
+        if self.downloading or self.atlas_generating:
+            self.atlas_notice(_('Atlas is preparing maps or updating. Play will be available when it finishes.'))
+            return
         if self.process:
             return
         online, npid = self.var('online', 'app'), self.var('online_npid', 'app')
@@ -2063,13 +2208,21 @@ class Launcher:
             if choice is None:
                 return
             online.set(bool(choice))
-        hunters_dream = self.var('online_pool', 'app').get() == 'huntersdream'
-        if online.get() and hunters_dream and not bridge_accounts(self.var('user_dir', 'app').get()):
+        pool_name = self.var('online_pool', 'app').get()
+        hunters_dream = pool_name == 'huntersdream'
+        if online.get() and hunters_dream and VERSION != '1.7.2' and not self.var('thd_token', 'app').get():
             self.messagebox.showwarning(
                 'Bloodborne', _("To play online with The Hunter's Dream, sign in with Discord first."))
             self.show('online')
             return
-        if online.get() and not hunters_dream and '@' in npid.get():
+        if online.get() and pool_name == 'supermedo' and not (
+                self.var('supermedo_user', 'app').get().strip() and self.var('supermedo_password', 'app').get()):
+            self.messagebox.showwarning(
+                'Bloodborne', _('To play on SuperMedo Server, enter your supermedo.com username and password '
+                                'on the Online co-op page (Sign up there if you have no account).'))
+            self.show('online')
+            return
+        if online.get() and pool_name == 'shadnet' and '@' in npid.get():
             self.messagebox.showwarning(
                 'Bloodborne', _('The Online ID is the account name (NPID) you registered on the server, '
                                 'not your email address.'))
@@ -2115,9 +2268,17 @@ class Launcher:
             log = open(log_dir / 'last_run.log', 'w', encoding='utf-8', buffering=1)
         except OSError:
             pass
+        warned = False
         for raw in iter(process.stdout.readline, b''):
             text = raw.decode('utf-8', errors='replace')
             self.output.put(text)
+            if not warned and 'eboot.bin is not the 01.09 build' in text:
+                warned = True
+                self.ui_calls.put(lambda: self.messagebox.showwarning('Bloodborne', _(
+                    "Your eboot.bin is not the clean 1.09 one (modified, or from another dump). The port "
+                    "cannot patch it: the game runs at 30 FPS, the Game & effects options do nothing, and "
+                    "some scenes (like the cutscene after Rom) can freeze.\n\nReplace eboot.bin with the one "
+                    "from an unmodified 1.09 update.")))
             if log:
                 log.write(text.replace('\r\n', '\n'))
         if log:
@@ -2201,16 +2362,14 @@ class Launcher:
             version, url, page = latest_release()
         except (OSError, ValueError, KeyError) as failure:
             if manual:
-                self.ui_calls.put(lambda error=failure: self.messagebox.showerror(
-                    'Bloodborne', _('Could not check for updates: {}', 'Не удалось проверить обновления: {}').format(error)))
+                self.ui_calls.put(lambda error=failure:self.atlas_notice(_('Could not check for updates: {}').format(error),True))
             return
 
         def show():
             if version_tuple(version) > version_tuple(VERSION):
                 self.offer_update(version, url, page)
             elif manual:
-                self.messagebox.showinfo('Bloodborne', _('You have the latest version ({}).',
-                                                         'У вас последняя версия ({}).').format(VERSION))
+                self.atlas_notice(_('You have the latest version ({}).').format(VERSION))
         self.ui_calls.put(show)
 
     def offer_update(self, version, url, page):
@@ -2235,15 +2394,10 @@ class Launcher:
             self.status.configure(text=text, fg=GOLD)
 
     def install_update(self, version, url, page):
+        if (PORT_DIR / 'atlas-lite-install.json').is_file():
+            return self.install_atlas_update(version)
         if self.process:
             self.messagebox.showinfo('Bloodborne', _('Close the game before updating.', 'Закройте игру перед обновлением.'))
-            return
-        if (PORT_DIR / 'atlas-lite-install.json').is_file():
-            self.messagebox.showwarning('Bloodborne', _(
-                "Uninstall Hunter's Atlas before updating the launcher. "
-                "Atlas requires its verified supported launcher version.",
-                "Перед обновлением лаунчера удалите Hunter's Atlas через Uninstall.cmd. "
-                "Atlas требует проверенную поддерживаемую версию лаунчера."))
             return
         if not FROZEN or not url:  # a source tree updates with git
             webbrowser.open(page)
@@ -2297,6 +2451,62 @@ class Launcher:
                     self.messagebox.showerror('Bloodborne', _('Update failed: {}', 'Не удалось обновить: {}').format(error))
                 self.ui_calls.put(failed)
         threading.Thread(target=work, daemon=True).start()
+
+    def atlas_notice(self,text,error=False):
+        self.status.configure(text=text,fg=GOLD)
+        self.atlas_status.configure(text=text,style='Warning.TLabel' if error else 'Muted.TLabel')
+        if self.update_box:
+            self.update_label.configure(text=text)
+
+    def install_atlas_update(self,version,manual_check=False):
+        # The Update button is the user's request. All progress and failures stay inline.
+        if self.process or self.downloading or self.atlas_generating:
+            self.atlas_notice(_('Close the game and wait for map preparation before updating.'),True)
+            return
+        try:
+            folder=atlas_addon.installed_folder(PORT_DIR)
+            if not folder:raise ValueError('Choose an installed Atlas package before checking combined updates.')
+            package=Path(folder)
+            spec=__import__('importlib.util',fromlist=['util']).spec_from_file_location('atlas_update_coordinator',package/'updates/coordinator.py')
+            updater=__import__('importlib.util',fromlist=['util']).module_from_spec(spec);spec.loader.exec_module(updater)
+            self.collect()
+        except Exception as error:
+            self.atlas_notice(_('Atlas update unavailable: {}').format(error),True)
+            return
+        self.downloading=True
+        self.play_button.configure(state='disabled')
+        self.atlas_status_revision+=1
+        if self.update_box:self.update_button.configure(state='disabled')
+        self.atlas_notice(_('Checking the launcher and Atlas update…'))
+        def progress(text):
+            translations={
+                'Preparing Atlas build tools (first rebuild only)…':'Подготовка инструментов Atlas (только при первой пересборке)…',
+                'Applying Atlas integration to the official source…':'Подготовка Atlas к новой версии лаунчера…',
+                'Rebuilding Atlas runtime—please wait…':'Пересборка Atlas — пожалуйста, подождите…',
+                'Atlas rebuilt and verified. Checking existing maps…':'Atlas пересобран и проверен. Проверка готовых карт…',
+                'Installing the matching Atlas update…':'Установка обновления Atlas…',
+                'Completing launcher update; Atlas rebuild is pending.':'Завершение обновления лаунчера; Atlas ожидает пересборки.'}
+            if LANG=='ru':
+                text=translations.get(text,text.replace('Downloading and verifying launcher ','Загрузка и проверка лаунчера ').replace('Preparing Atlas for launcher ','Подготовка Atlas для лаунчера '))
+            self.ui_calls.put(lambda:self.atlas_notice(text))
+        def finished(text,error=False):
+            self.downloading=False
+            if self.update_box:self.update_button.configure(state='normal')
+            self.refresh_status()
+            self.atlas_notice(text,error)
+        def work():
+            try:
+                builder=updater.load_module('atlas_automatic_rebuild',package/'updates/rebuild.py')
+                journal=builder.prepare_update(package,PORT_DIR,version,CONFIG_FILE,progress)
+                if journal is None:
+                    self.ui_calls.put(lambda:finished(_('Atlas is ready for launcher {}.').format(version)))
+                    return
+                updater.dispatch_helper(journal,after=os.getpid(),relaunch=True)
+                self.ui_calls.put(self.root.destroy)
+            except Exception as error:
+                self.ui_calls.put(lambda detail=str(error):finished(_('Update could not complete: {}. See the update log.',
+                    'Не удалось завершить обновление: {}. Подробности в журнале.').format(detail),True))
+        threading.Thread(target=work,daemon=True).start()
 
     def clear_cache(self):
         """Shader and pipeline caches; they are rebuilt while playing."""
@@ -2370,6 +2580,9 @@ class Launcher:
                                                  'saved in this launcher.'))
 
     def close(self):
+        if self.downloading or self.atlas_generating:
+            self.atlas_notice(_('Atlas is preparing maps or updating. Wait for it to finish before closing.'))
+            return
         try:
             self.collect()
         except Exception:  # never keep the window open over a settings problem
@@ -2457,12 +2670,12 @@ def install_update(target, wait_pid):
     # This is a separate headless process. Check the persisted profile here as a final guard
     # so the stock release cannot silently replace the Atlas-enabled launcher while Atlas is on.
     installed_settings = {**APP_DEFAULTS, **load_json(CONFIG_FILE, {})}
-    if installed_settings.get('atlas_enabled'):
+    target_path=Path(target)
+    maintenance=target_path.parent/('.'+target_path.name+'.atlas-maintenance.lock')
+    if (target_path/'atlas-lite-install.json').exists() or maintenance.exists() or installed_settings.get('atlas_enabled'):
         ctypes.windll.user32.MessageBoxW(None, _(
-            "Hunter's Atlas is enabled. Turn it off in the launcher before installing this stock update. "
-            "The update replaces the Atlas launcher integration; Atlas settings and package files will be kept.",
-            "Hunter's Atlas включён. Отключите его в лаунчере перед установкой этого обновления. "
-            "Обновление заменит лаунчер с поддержкой Atlas; настройки Atlas и файлы пакета сохранятся."),
+            "Hunter's Atlas is installed or maintenance is pending. Use the combined Atlas update or its recovery command. The stock updater cannot replace this installation.",
+            "Hunter's Atlas установлен или выполняется обслуживание. Используйте совместное обновление Atlas или команду восстановления. Обычное обновление не заменит эту установку."),
             'Bloodborne', 0x30)
         return 1
     target = Path(target)

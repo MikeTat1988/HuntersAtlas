@@ -324,6 +324,8 @@ static ABI __attribute__((noreturn)) void thread_exit(void *value) {
     /* No host unwinder: guest frames have no registered FDEs. */
     exit_longjmp(t);
 }
+/* pthread_exit for the network libraries' threads (gpu/bbnet/bbnet_glue.cpp). */
+__attribute__((noreturn)) void runtime_thread_exit(void *value) { thread_exit(value); }
 static ABI int32_t thread_yield(void) { sched_yield(); return 0; }
 static ABI int32_t thread_get_prio(GuestThread *t,int *prio) {
     if (!find_thread(t)) return ERR(3);

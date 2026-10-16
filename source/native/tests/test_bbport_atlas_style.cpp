@@ -25,6 +25,16 @@ static void Synthetic(){
     Layout hd(1920,1080);assert(hd.scale==1.5f);assert(hd.At(1163,524).x==1744.5f);
     Layout wide(3440,1440);assert(wide.scale==2);assert(wide.x==440);assert(wide.At(640,360).x==1720);
     Layout small(640,360);assert(small.scale==.5f);
+    for(auto size:{Point{1280,720},Point{1920,1080},Point{2560,1440},Point{3840,2160},Point{3440,1440}}){
+        Layout l(size.x,size.z);const auto d=l.TravelDialog();
+        assert(std::abs(d.w/l.scale-350)<.01f&&std::abs(d.h/l.scale-168)<.01f);
+        assert(std::abs(d.x+d.w*.5f-size.x*.5f)<.01f&&std::abs(d.y+d.h*.5f-size.z*.5f)<.01f);
+        for(int count:{4,6,7})for(int i=0;i<count;++i){const auto slot=l.FooterSlot(i,count);
+            assert(slot.y>l.At(0,Layout::footer_rule).z&&slot.x+slot.w<=l.At(Layout::footer_x+Layout::footer_w+.01f,0).x);
+            if(i){const auto previous=l.FooterSlot(i-1,count);assert(std::abs(previous.x+previous.w-slot.x)<.01f);}}
+    }
+    // A lit Tomb of Oedon remains visible twelve metres below Central Yharnam.
+    assert(Layout::LampOnMap(true,true));assert(!Layout::LampOnMap(true,false));assert(!Layout::LampOnMap(false,true));
     CutCache cache;cache.Build({tri({0,0},{8,0},{0,8}),tri({8,0},{8,8},{0,8})},1);
     // Adjacent floor supports two wall segments with a real 2m opening.
     const std::vector<Line> walls={{{0,0},{3,0}},{{5,0},{8,0}},{{30,30},{35,30}}};

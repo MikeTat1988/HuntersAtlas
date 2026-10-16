@@ -59,7 +59,7 @@ static void test_binding_evaluation(void) {
     assert(cfg.warnings==0);
 
     bool keys[SDL_SCANCODE_COUNT]={0};
-    HostState host={keys,NULL,0,0};
+    HostState host={keys,NULL,0,0,0,0};
 
     /* MIX-002: cross has two bindings (j, a); holding either fires it, holding neither doesn't. */
     assert(!button_output_held(&host,&cfg,OUT_CROSS));
@@ -284,7 +284,7 @@ static void test_mouse_buttons_and_wheel(void) {
         "pad_up = mousewheelup\n");
     assert(cfg.warnings==0);
 
-    HostState host={NULL,NULL,0,0};
+    HostState host={NULL,NULL,0,0,0,0};
     assert(!button_output_held(&host,&cfg,OUT_R1));
 
     /* IN_MOUSE_BUTTON stores the SDL_BUTTON_* index (1=left); host.mouse_buttons must be

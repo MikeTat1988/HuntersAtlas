@@ -204,7 +204,15 @@ static ABI int32_t save_umount(const MountPoint *point) {
     int slot=slot_of(point);
     if (slot>=0) { runtime_file_unmount(point->data); slots[slot].used=0; }
     pthread_mutex_unlock(&lock);
+    if (slot>=0) runtime_quit_on_save_done();
     return slot>=0 ? 0 : ERR_NOT_FOUND;
+}
+int runtime_savedata_mounted(void) {
+    pthread_mutex_lock(&lock);
+    int used=0;
+    for (int i=0;i<SLOTS;++i) used+=slots[i].used;
+    pthread_mutex_unlock(&lock);
+    return used;
 }
 static ABI int32_t save_set_param(const MountPoint *point, uint32_t type, const void *buffer, uint64_t size) {
     if (!initialized) return ERR_NOT_INITIALIZED;

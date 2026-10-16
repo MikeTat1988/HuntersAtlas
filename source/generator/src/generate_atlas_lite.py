@@ -66,6 +66,7 @@ def _self_test_imports() -> int:
         import extract_subarea_names
         import generate_map_v13
         import extract_native_map_font
+        import extract_atlas_features
         import numpy
         from PIL import Image, ImageDraw
         import scipy

@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 import threading
 from pathlib import Path
 from types import ModuleType
@@ -267,6 +268,23 @@ def _prepare(game_dir: Path, output_dir: Path, *, cancel_file: Path | None = Non
     emit({"stage": "preflight", "progress": 0, "game_dir": str(game)})
     with lock:
         log_path.write_text("", encoding="utf-8")
+        asset_key=None
+        if contract.get('manifest',{}).get('asset_key_schema')==1:
+            identity_path=root/'tools/asset_identity.py'
+            if contract['own_files'].get('tools/asset_identity.py')!=identity_path.resolve(strict=True):
+                raise ValueError('Asset identity helper must be pinned by the manifest')
+            identity=module_loader('atlas_asset_identity',identity_path)
+            _log(log_path,{'stage':'Checking map input identity','progress':0})
+            asset_key=identity.key(game,contract['manifest'])
+            with zipfile.ZipFile(pack_path) as archive:
+                if 'maps/generated-assets.json' in archive.namelist():
+                    metadata=json.loads(archive.read('maps/generated-assets.json'))
+                    if metadata.get('asset_key')==asset_key:
+                        with tempfile.TemporaryDirectory(prefix='verify-reused-assets-',dir=state) as reused:
+                            verified=assets.unpack(pack_path,Path(reused))
+                            if not verified.get('prepared'):raise ValueError('Reused assets are incomplete')
+                        _log(log_path,{'stage':'complete','progress':100,'prepared':True,'reused':True,'generator_invocations':0,'asset_pack_sha256':_sha256(pack_path)})
+                        return {'reused':True,'generator_invocations':0,'asset_pack_sha256':_sha256(pack_path),'log':str(log_path)}
         with tempfile.TemporaryDirectory(prefix="preparation-work-", dir=state) as temporary:
             work = Path(temporary)
             generated = work / "generated"
@@ -310,6 +328,17 @@ def _prepare(game_dir: Path, output_dir: Path, *, cancel_file: Path | None = Non
             generated_manifest = generated_maps / "generated-assets.json"
             if not generated_manifest.is_file():
                 raise ValueError("The frozen generator did not produce maps/generated-assets.json.")
+            feature_path = root / 'tools' / 'extract_atlas_features.py'
+            feature_relative = feature_path.resolve(strict=True).relative_to(root.resolve()).as_posix().casefold()
+            if contract['own_files'].get(feature_relative) != feature_path.resolve(strict=True):
+                raise ValueError('Feature extractor must be pinned by the Atlas manifest.')
+            _log(log_path, {"stage": "features", "progress": 97})
+            feature_reader = _load_module('atlas_feature_extractor', feature_path)
+            feature_reader.extract(game, generated_maps)
+            if asset_key is not None:
+                metadata=json.loads(generated_manifest.read_text(encoding='utf-8'))
+                metadata['asset_key']=asset_key
+                generated_manifest.write_text(json.dumps(metadata,separators=(',',':'))+'\n',encoding='utf-8')
             for source in sorted(generated_maps.rglob("*")):
                 if source.is_file():
                     target = final_root / "maps" / source.relative_to(generated_maps)

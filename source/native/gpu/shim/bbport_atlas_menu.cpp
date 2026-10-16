@@ -17,6 +17,7 @@ namespace BbAtlasMenu {
 namespace {
 BbAtlasMenuState state;
 std::atomic<bool> visible{false},focused{false},controller{false},suppressed{false};
+std::atomic<SDL_JoystickID> last_controller{0};
 bool mouse_held=false,mouse_up_owned=false,hovered=false;
 uint32_t map_previous=0;
 ImVec2 tile_min{},tile_max{};
@@ -34,6 +35,7 @@ bool Hit(float x,float y){return x>=tile_min.x&&y>=tile_min.y&&x<tile_max.x&&y<t
 bool Visible(){return visible;}
 bool Interacting(){return visible || BbMap::IsOpen() || runtime_map_menu_open();}
 bool UsesControllerGlyphs(){const char* qa=std::getenv("BB_ATLAS_QA_DEVICE");return std::getenv("BB_ATLAS_QA")&&qa?std::strcmp(qa,"controller")==0:bool(controller);}
+bool UsesPlayStationGlyphs(){const auto type=SDL_GetGamepadTypeForID(last_controller.load());return type==SDL_GAMEPAD_TYPE_PS3||type==SDL_GAMEPAD_TYPE_PS4||type==SDL_GAMEPAD_TYPE_PS5;}
 bool Focused(){return focused;}
 void Suppress(bool value){suppressed=value;if(value){visible=false;state.Reset();}}
 void Reset(){state.Reset();focused=false;visible=false;hovered=false;mouse_held=false;map_previous=0;}
@@ -47,8 +49,8 @@ uint32_t RoutePad(uint32_t buttons,uint8_t lx,uint8_t ly,uint8_t rx,uint8_t ry) 
     if(result.open){runtime_audio_menu_event(1);BbMap::OpenFromMenu();}
     if(!was_open&&in_menu&&BbMap::ShortcutMode()==1&&(rising&0x4u)){runtime_audio_menu_event(1);BbMap::OpenFromMenu();state.blocked|=buttons;result.buttons=0;}
     if(was_open) {
-        if(result.close)BbMap::Close();
-        else BbMap::MappedPad(rising,lx,ly);
+        if(result.close)BbMap::Back();
+        else BbMap::MappedPad(rising,lx,ly,rx,ry,buttons);
         result.buttons=0;
     }
     map_previous=buttons;
@@ -57,7 +59,7 @@ uint32_t RoutePad(uint32_t buttons,uint8_t lx,uint8_t ly,uint8_t rx,uint8_t ry) 
 }
 bool HandleMouse(const SDL_Event& e) {
     if(e.type==SDL_EVENT_WINDOW_FOCUS_LOST || e.type==SDL_EVENT_GAMEPAD_REMOVED){if(e.type==SDL_EVENT_GAMEPAD_REMOVED)BbMap::Close();Reset();return false;}
-    if(e.type==SDL_EVENT_GAMEPAD_BUTTON_DOWN || (e.type==SDL_EVENT_GAMEPAD_AXIS_MOTION&&std::abs(int(e.gaxis.value))>6000))controller=true;
+    if(e.type==SDL_EVENT_GAMEPAD_BUTTON_DOWN || (e.type==SDL_EVENT_GAMEPAD_AXIS_MOTION&&std::abs(int(e.gaxis.value))>6000)){controller=true;last_controller=e.type==SDL_EVENT_GAMEPAD_BUTTON_DOWN?e.gbutton.which:e.gaxis.which;}
     if(e.type==SDL_EVENT_KEY_DOWN || e.type==SDL_EVENT_MOUSE_MOTION || e.type==SDL_EVENT_MOUSE_BUTTON_DOWN)controller=false;
     if(e.type==SDL_EVENT_MOUSE_BUTTON_UP&&e.button.button==SDL_BUTTON_LEFT&&mouse_up_owned){
         mouse_up_owned=false;const bool pressed=mouse_held;mouse_held=false;

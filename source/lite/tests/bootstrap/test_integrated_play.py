@@ -10,6 +10,20 @@ SPEC.loader.exec_module(integrated)
 
 
 class IntegratedEnvironmentTests(unittest.TestCase):
+    def test_features_survive_bootstrap_filter_and_restart(self):
+        import json
+        root = Path('Atlas')
+        contract = {'root': root, 'base_root': Path('port'), 'state_root': root / 'state', 'paths': {'config': root / 'settings.ini'}}
+        paths = {key: root / key for key in ('probe', 'maps', 'art', 'catalog', 'font')}
+        inherited = {'BB_MAP_TRAVEL_ENABLED': '0', 'BB_MAP_NPC_MODE': 'hidden',
+                     'BB_ATLAS_FEATURES': json.dumps({'atlas_travel_enabled': True, 'atlas_fog_enabled': True, 'atlas_npc_mode': 'new_dialogue'})}
+        first = integrated.environment(None, contract, paths, inherited)
+        second = integrated.environment(None, contract, paths, first)
+        for env in (first, second):
+            self.assertEqual(env['BB_MAP_TRAVEL_ENABLED'], '1')
+            self.assertEqual(env['BB_MAP_FOG_ENABLED'], '1')
+            self.assertEqual(env['BB_MAP_NPC_MODE'], 'new_dialogue')
+
     def test_serial_preparation_preserves_selected_user_data_and_graphics(self):
         root = Path('Atlas')
         contract = {'root': root, 'base_root': Path('port'),

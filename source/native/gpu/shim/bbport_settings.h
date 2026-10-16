@@ -47,13 +47,19 @@ inline constexpr Effect Effects[] = {
     {"tweak_easy_run", "Run with less stick tilt", false},
     {"tweak_ragdoll", "Dark Souls-style ragdoll physics", false},
     {"tweak_circle_confirm", "Japanese/Asian buttons (Circle confirms)", false},
+    {"quit_to_desktop", "Quit to Desktop in the title and System menus", true},
 };
 inline constexpr int EffectCount = int(sizeof(Effects) / sizeof(Effects[0]));
-/// Live output resolutions: the upscaler's output and the UI host targets.
-inline constexpr int OutputWidths[] = {1280, 1920, 2560, 3840};
-inline constexpr int OutputHeights[] = {720, 1080, 1440, 2160};
-inline constexpr int OutputCount = 4;
+/// Output resolutions: the upscaler's output and the UI host targets. The 16:9 ones change
+/// live; the ultrawide ones need the startup patch (patches.py ultrawide_writes, run.py).
+inline constexpr int OutputWidths[] = {1280, 1920, 2560, 3840, 2560, 3440, 3840, 5120, 3840, 5120};
+inline constexpr int OutputHeights[] = {720, 1080, 1440, 2160, 1080, 1440, 1600, 2160, 1080, 1440};
+inline constexpr int OutputCount = 10;
 inline constexpr int OutputDefault = 1; ///< 1920x1080, the game's own size
+/// Wider than 16:9: camera and HUD patched at startup.
+inline bool Ultrawide(int output) {
+    return OutputWidths[output] * 9 > OutputHeights[output] * 16;
+}
 
 struct Values {
     std::atomic<int> upscaler{UpscalerFsr3};
@@ -76,6 +82,9 @@ struct Values {
     std::atomic<bool> effects[EffectCount]{};
     std::atomic<int> model_lod{0}; ///< -2 highest .. 2 lowest, 0 the game's
     std::atomic<int> output_res{OutputDefault}; ///< index into OutputWidths
+    /// Ultrawide outputs: the HUD's corner groups, 0 centred in 16:9 .. 100 at the screen edges
+    /// (hud_layout.py at start).
+    std::atomic<int> hud_position{100};
     /// Live resolution and preset changes (run.sh): 0 off by default (startup patch, fastest
     /// on the Steam Deck and older GPUs), -1 auto (strong discrete GPUs), 1 on. On restart.
     std::atomic<int> live_resolution{0};
@@ -93,6 +102,7 @@ struct Values {
     bool startup_effects[EffectCount]{};
     int startup_model_lod = 0;
     int startup_output_res = OutputDefault;
+    int startup_hud_position = 100;
     int startup_live_resolution = 0;
 };
 

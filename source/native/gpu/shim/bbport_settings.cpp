@@ -60,6 +60,8 @@ void Set(Values& v, const std::string& key, const std::string& value) {
         v.model_lod = std::clamp(i, -2, 2);
     } else if (key == "live_resolution") {
         v.live_resolution = value == "auto" ? -1 : std::clamp(i, 0, 1);
+    } else if (key == "hud_position") {
+        v.hud_position = std::clamp(i, 0, 100);
     } else if (key == "output_res") {
         for (int r = 0; r < OutputCount; ++r) {
             if (value == std::to_string(OutputWidths[r]) + "x" + std::to_string(OutputHeights[r])) {
@@ -127,6 +129,7 @@ void Load() {
     }
     v.startup_model_lod = v.model_lod;
     v.startup_output_res = v.output_res;
+    v.startup_hud_position = v.hud_position;
     v.startup_live_resolution = v.live_resolution;
 }
 
@@ -170,7 +173,10 @@ int RenderPreset() {
 
 bool ResolutionNeedsRestart() {
     const auto& v = Get();
-    // TAA needs the live path (native guest targets): run.sh selects it on restart.
+    // TAA needs the live path (native guest targets): run.sh selects it on restart. Ultrawide
+    // outputs patch the camera and HUD at startup.
+    if (Ultrawide(v.output_res) != Ultrawide(v.startup_output_res)) return true;
+    if (Ultrawide(v.output_res) && v.hud_position != v.startup_hud_position) return true;
     return FixedRenderSession() &&
         (v.preset != v.startup_preset || v.output_res != v.startup_output_res ||
          (v.upscaler == UpscalerOff) != (v.startup_upscaler == UpscalerOff) ||
@@ -201,6 +207,8 @@ void Save() {
     }
     std::fprintf(file, "model_lod=%d\noutput_res=%dx%d\n", v.model_lod.load(),
                  OutputWidths[v.output_res], OutputHeights[v.output_res]);
+    // Read by run.py at start (hud_layout.py).
+    std::fprintf(file, "hud_position=%d\n", v.hud_position.load());
     // Read by run.sh at start.
     std::fprintf(file, "live_resolution=%s\n", v.live_resolution < 0 ? "auto"
                                                   : v.live_resolution ? "1" : "0");

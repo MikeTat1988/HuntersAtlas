@@ -117,6 +117,7 @@ def main():
     import probe_location_names,extract_subarea_names as names
     import generate_map_v13 as continuous
     import extract_native_map_font as native_font
+    import extract_atlas_features as features
     mids=[p.name.split('.')[0] for p in sorted((game/'dvdroot_ps4/map/mapstudio').glob('*.msb.dcx')) if p.name[:6] in base.NAMES and p.name[7:9]=='00' and p.name[10:12]=='00']
     if len(mids)!=16:raise ValueError(f'Game source contains {len(mids)} supported maps, expected 16. Check the complete game+DLC extraction.')
     result=[];start=time.monotonic()
@@ -154,6 +155,7 @@ def main():
     for path in generated.glob('*.json'):jsonwrite(path,portable(json.loads(path.read_text(encoding='utf-8'))))
     emit('native-font');font=stage/'native-font.ttf';native_font.extract(game/'dvdroot_ps4/menu/enggb/font.gfx',font)
     emit_progress('font',1,1,95,97,'Preparing map labels')
+    features.extract(game,generated)
     catalog=json.loads((generated/'catalog.json').read_text(encoding='utf-8'));counts=invariants(generated,catalog)
     # Protected fingerprints are rechecked after all extraction, before success.
     for relative,digest in protected.items():assert sha(game/relative)==digest,'Protected game input changed during generation'

@@ -121,7 +121,51 @@ typedef struct {
     SDL_Gamepad *gamepad;   /* current_gamepad() result, or NULL if none connected */
     uint32_t mouse_buttons; /* bbgpu_mouse_take's buttons: SDL_BUTTON_MASK() bits (T5) */
     uint32_t mouse_wheel;   /* bbgpu_mouse_take's wheel: bit 0 up, 1 down, 2 left, 3 right */
+    int back_combo;         /* Back drives the touchpad halves (touchpad_combo) */
+    int back_down;          /* ... and is held now */
 } HostState;
+
+/* A gamepad button as the bindings see it. With the touchpad combo, Back and (while Back is
+ * held) d-pad left/right belong to the combo and read as released. */
+static int cbutton_held(const HostState *host, int32_t button) {
+    if (!host->gamepad) return 0;
+    if (host->back_combo && (button==SDL_GAMEPAD_BUTTON_BACK ||
+                             (host->back_down && (button==SDL_GAMEPAD_BUTTON_DPAD_LEFT ||
+                                                  button==SDL_GAMEPAD_BUTTON_DPAD_RIGHT))))
+        return 0;
+    return SDL_GetGamepadButton(host->gamepad,(SDL_GamepadButton)button);
+}
+
+/* Pads without a touch surface (Xbox and other XInput pads) have only Back for the touchpad,
+ * and the game needs both halves (left: gestures, right: key items and the right choice of some
+ * prompts). While Back is bound to nothing but touchpad_left (the default), Back + d-pad left or
+ * right clicks that half as long as the d-pad is held, and Back alone clicks the left half for
+ * 150 ms when it is released, so Back + right does not open the gestures first. */
+static int back_combo_wanted(SDL_Gamepad *g, const InputConfig *cfg) {
+    if (!g || SDL_GetNumGamepadTouchpads(g)>0) return 0;
+    for (int o=0;o<OUT_COUNT;++o)
+        for (int i=0;i<cfg->table.binding_count[o];++i) {
+            const InputBinding *b=&cfg->table.bindings[o][i];
+            if (b->kind==IN_CBUTTON && b->value==SDL_GAMEPAD_BUTTON_BACK && o!=OUT_TOUCHPAD_LEFT) return 0;
+        }
+    return 1;
+}
+static void touchpad_combo(const HostState *host, PadData *d) {
+    static int was_down, combo;
+    static uint64_t click_until;
+    int side=-1;
+    if (host->back_down) {
+        if (!was_down) combo=0;
+        const int left=SDL_GetGamepadButton(host->gamepad,SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+        const int right=SDL_GetGamepadButton(host->gamepad,SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+        if (left || right) { side=right ? 1 : 0; combo=1; }
+    } else if (was_down && !combo) {
+        click_until=d->timestamp+150000;
+    }
+    was_down=host->back_down;
+    if (side<0 && d->timestamp<click_until) side=0;
+    if (side>=0 && !d->touch_count) touch_click(d,side);
+}
 
 /* Evaluates one binding against the current host state (MIX-002/003/004): for a button-like
  * binding, 1 if held, 0 otherwise; for an axis-like binding, the signed contribution in axis
@@ -132,7 +176,7 @@ typedef struct {
 static int binding_held(const HostState *host, const InputBinding *b) {
     switch (b->kind) {
     case IN_KEY: return host->keys && host->keys[b->value];
-    case IN_CBUTTON: return host->gamepad && SDL_GetGamepadButton(host->gamepad,(SDL_GamepadButton)b->value);
+    case IN_CBUTTON: return cbutton_held(host,b->value);
     case IN_AXIS: {
         /* OUT-004: a trigger (l2/r2) bound to a button-like output uses the 0..255 trigger
          * threshold. A full stick axis (axis_left_x etc.) bound to a button-like output is not
@@ -164,7 +208,7 @@ static int binding_held(const HostState *host, const InputBinding *b) {
 static int binding_axis_value(const HostState *host, const InputBinding *b, int half_sign) {
     switch (b->kind) {
     case IN_KEY: return (host->keys && host->keys[b->value]) ? 127*half_sign : 0;
-    case IN_CBUTTON: return (host->gamepad && SDL_GetGamepadButton(host->gamepad,(SDL_GamepadButton)b->value)) ? 127*half_sign : 0;
+    case IN_CBUTTON: return cbutton_held(host,b->value) ? 127*half_sign : 0;
     case IN_AXIS_HALF: {
         if (!host->gamepad) return 0;
         int16_t raw=SDL_GetGamepadAxis(host->gamepad,(SDL_GamepadAxis)b->value);
@@ -407,7 +451,9 @@ static void sample_host(PadData *d) {
     const InputConfig *cfg=active_config();
     BbMouseInput mouse; bbgpu_mouse_take(&mouse); /* MOU-008: drains dx/dy; buttons/wheel persist */
     HostState host={SDL_WasInit(SDL_INIT_VIDEO) ? SDL_GetKeyboardState(NULL) : NULL, g,
-        mouse.captured ? mouse.buttons : 0, mouse.captured ? mouse.wheel : 0};
+        mouse.captured ? mouse.buttons : 0, mouse.captured ? mouse.wheel : 0, 0, 0};
+    host.back_combo=back_combo_wanted(g,cfg);
+    host.back_down=host.back_combo && SDL_GetGamepadButton(g,SDL_GAMEPAD_BUTTON_BACK);
 
     /* MIX-001/002: keyboard, controller (and, from T5, mouse) are read together, buttons ORed.
      * OUT_L2/OUT_R2 are skipped here (button_bit returns 0 for them anyway) and handled below,
@@ -492,7 +538,8 @@ static void sample_host(PadData *d) {
 
     /* OUT-002: the physical touchpad (real finger position/click) is unaffected by remap. */
     if (g) {
-        if (SDL_GetGamepadButton(g,SDL_GAMEPAD_BUTTON_BACK) || SDL_GetGamepadButton(g,SDL_GAMEPAD_BUTTON_TOUCHPAD))
+        if ((!host.back_combo && SDL_GetGamepadButton(g,SDL_GAMEPAD_BUTTON_BACK)) ||
+            SDL_GetGamepadButton(g,SDL_GAMEPAD_BUTTON_TOUCHPAD))
             d->buttons|=BTN_TOUCHPAD;
         if (SDL_GetNumGamepadTouchpads(g)>0) {
             const int fingers=SDL_GetNumGamepadTouchpadFingers(g,0);
@@ -507,6 +554,7 @@ static void sample_host(PadData *d) {
         }
         // Back/Select on pads without a touch surface is a left-side click.
         if ((d->buttons & BTN_TOUCHPAD) && !d->touch_count) touch_click(d,0);
+        if (host.back_combo) touchpad_combo(&host,d);
     }
     /* OUT-001: touchpad_left/center/right outputs, remappable, independent of the physical pad. */
     if (button_output_held(&host,cfg,OUT_TOUCHPAD_LEFT)) touch_click(d,0);

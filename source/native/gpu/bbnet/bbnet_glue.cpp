@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// bbport co-op: what the network and NP libraries from shadp2p need from the rest of
+// bbport co-op: what shadPS4 0.20.0's network and NP libraries need from the rest of
 // shadPS4, implemented on top of the bbport runtime, and their registration.
 
 #include <chrono>
@@ -28,7 +28,6 @@
 #include "common/elf_info.h"
 #include "common/types.h"
 #include "core/emulator_settings.h"
-#include "core/bloodborne_re.h"
 #include "core/debugger.h"
 #include "core/libraries/kernel/kernel.h"
 #include "core/libraries/kernel/memory.h"
@@ -43,9 +42,8 @@
 
 #include "core/libraries/network/http.h"
 #include "core/libraries/network/http2.h"
-#include "core/libraries/network/net.h"
+#include "core/libraries/net/net.h"
 #include "core/libraries/network/netctl.h"
-#include "core/libraries/network/ssl.h"
 #include "core/libraries/network/ssl2.h"
 #include "core/libraries/np/np_auth.h"
 #include "core/libraries/np/np_common.h"
@@ -55,15 +53,31 @@
 #include "core/libraries/np/np_party.h"
 #include "core/libraries/np/np_score/np_score.h"
 #include "core/libraries/np/np_signaling/np_signaling.h"
-#include "core/libraries/np/np_tus.h"
+#include "core/libraries/np/np_tus/np_tus.h"
+#include "core/libraries/np/np_utility/np_utility.h"
 #include "core/libraries/np/np_web_api/np_web_api.h"
 #include "core/libraries/np/np_web_api2/np_web_api2.h"
+#include "thd/thd.h"
 
 extern "C" {
 int32_t runtime_thread_spawn(void** out, void* PS4_SYSV_ABI (*entry)(void*), void* argument,
                              uint64_t stack, const char* name);
 int32_t runtime_thread_join_spawned(void* thread, void** result);
+[[noreturn]] void runtime_thread_exit(void* value);
+int runtime_memory_is_mapped(uintptr_t address, uint64_t size);
 }
+
+// The Hunter's Dream backend reads game structures (the player's position for the live map):
+// only from mapped guest memory (bbport).
+namespace BbEngine {
+bool host_read_safe(const void* p, void* out, std::size_t n) {
+    if (!runtime_memory_is_mapped(reinterpret_cast<uintptr_t>(p), n)) {
+        return false;
+    }
+    std::memcpy(out, p, n);
+    return true;
+}
+} // namespace BbEngine
 
 // ---- Kernel ---------------------------------------------------------------------------------
 
@@ -283,10 +297,13 @@ int posix_pthread_create_name_np(PthreadT* thread, const PthreadAttrT* attr,
 int posix_pthread_join(PthreadT thread, void** ret) {
     return runtime_thread_join_spawned(thread, ret);
 }
+void posix_pthread_exit(void* status) {
+    runtime_thread_exit(status);
+}
 
 } // namespace Libraries::Kernel
 
-// ---- User and system service, debugger, Bloodborne helpers -------------------------------------
+// ---- User and system service, debugger ----------------------------------------------------------
 
 namespace Libraries::UserService {
 s32 PS4_SYSV_ABI sceUserServiceGetInitialUser(int* user_id) {
@@ -315,30 +332,6 @@ s32 GetCurrentPid() {
 }
 } // namespace Core::Debugger
 
-namespace Core::Bloodborne {
-namespace {
-std::mutex placement_mutex;
-std::optional<std::string> placement;
-} // namespace
-std::optional<std::string> GetSeamlessHostPlacementHeader() {
-    std::scoped_lock lock{placement_mutex};
-    return placement;
-}
-bool SetSeamlessHostPlacementHeader(std::string_view value) {
-    if (value.empty() || value.size() > 4096) {
-        return false;
-    }
-    std::scoped_lock lock{placement_mutex};
-    placement = std::string{value};
-    return true;
-}
-void ClearSeamlessHostPlacementHeader() {
-    std::scoped_lock lock{placement_mutex};
-    placement.reset();
-}
-void TraceMatching2LeaveRoom(std::uintptr_t, std::uint64_t) {}
-} // namespace Core::Bloodborne
-
 // ---- Notifications (log only for now) ------------------------------------------------------------
 
 namespace ImGui::ShadNetNotify {
@@ -357,6 +350,8 @@ KindDisplay DisplayOf(Kind kind) {
         return {"Friend", {0.9f, 0.4f, 0.4f, 1.0f}};
     case Kind::Online:
         return {"Online", {0.4f, 0.8f, 0.9f, 1.0f}};
+    case Kind::Warning:
+        return {"Warning", {0.95f, 0.6f, 0.2f, 1.0f}};
     default:
         return {"Info", {0.8f, 0.8f, 0.8f, 1.0f}};
     }
@@ -398,10 +393,10 @@ void Register() {}
 void Unregister() {}
 } // namespace ImGui::InvitationPrompt
 
-// ---- Game identity -------------------------------------------------------------------------------
+// ---- Game identity -----------------------------------------------------------------------------
 
-// ElfInfo lets shadPS4's Core::Emulator fill it in; this port has no emulator class, so the
-// same name is used here for that one job.
+// ElfInfo is filled in by shadPS4's Core::Emulator; this port has no emulator class, so the
+// same name is used here for that one job (bbport).
 namespace Core {
 class Emulator {
 public:
@@ -448,19 +443,40 @@ extern "C" void bbnet_configure(const char* app0, const char* serial, const char
     const auto& ids = Common::ElfInfo::Instance().GetNpCommIds();
     std::printf("Co-op: %s, NP communication id %s%s\n", serial ? serial : "?",
                 ids.empty() ? "missing" : ids.front().c_str(),
-                EmulatorSettings.IsShadNetEnabled() ? "; online play on" : "");
+                EmulatorSettings.IsConnectedToNetwork() ? "; online play on" : "");
 }
 
 // ---- Registration ------------------------------------------------------------------------------
 
+namespace Libraries::Np::NpManager { void InitializeRuntime(); }
+extern "C" void bbnet_initialize(void) {
+    if (BbThd::Enabled()) {
+        BbThd::Initialize();
+        return;
+    }
+    Libraries::Np::NpManager::InitializeRuntime();
+}
+
+extern "C" void bbnet_set_image(unsigned char* image, uint64_t size) {
+    BbThd::SetImage(image, size);
+}
+
 extern "C" void bbnet_register(void) {
     Core::Loader::SymbolsResolver resolver;
     Core::Loader::SymbolsResolver* sym = &resolver;
+    if (BbThd::Enabled()) {
+        // The Hunter's Dream: its NP and sceNet imports; the game's HTTP stays sceHttp's.
+        BbThd::Register(sym);
+        Libraries::Http::RegisterLib(sym);
+        Libraries::Http2::RegisterLib(sym);
+        Libraries::Ssl2::RegisterLib(sym);
+        return;
+    }
     Libraries::Net::RegisterLib(sym);
     Libraries::NetCtl::RegisterLib(sym);
     Libraries::Http::RegisterLib(sym);
     Libraries::Http2::RegisterLib(sym);
-    Libraries::Ssl::RegisterLib(sym);
+    // libSceSsl: not registered, as in shadPS4 (its loading is behind a title workaround).
     Libraries::Ssl2::RegisterLib(sym);
     Libraries::Np::NpAuth::RegisterLib(sym);
     Libraries::Np::NpCommon::RegisterLib(sym);
@@ -471,6 +487,7 @@ extern "C" void bbnet_register(void) {
     Libraries::Np::NpScore::RegisterLib(sym);
     Libraries::Np::NpSignaling::RegisterLib(sym);
     Libraries::Np::NpTus::RegisterLib(sym);
+    Libraries::Np::NpUtility::RegisterLib(sym);
     Libraries::Np::NpWebApi::RegisterLib(sym);
     Libraries::Np::NpWebApi2::RegisterLib(sym);
 }

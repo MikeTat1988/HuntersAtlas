@@ -297,7 +297,9 @@ bool TemporalUpscaler::OnFrameStart() {
     const bool jitter_on = active && settings.jitter && !BbToggle::Disabled(1u << 25);
     const int upscaler = settings.upscaler.load();
     const int output = settings.output_res.load();
-    const bool output_changed = !scaled_session && applied_output != output;
+    // Ultrawide outputs apply after a restart (startup patch), not live.
+    const bool output_changed = !scaled_session && applied_output != output &&
+                                !BbSettings::Ultrawide(output);
     if (output_changed) {
         target_width = BbSettings::OutputWidths[output];
         target_height = BbSettings::OutputHeights[output];
@@ -1143,7 +1145,7 @@ void TemporalUpscaler::Run() {
         info.enableSharpening = BbSettings::Get().sharpen ? VK_TRUE : VK_FALSE;
         info.reset = reset ? VK_TRUE : VK_FALSE;
         info.frameId = frame_id++;
-    
+
         FfxVkPortableUpscaleCreateInfo create_info{};
         create_info.structSize = sizeof(create_info);
         create_info.flags = FFX_VK_PORTABLE_CONTEXT_HDR_COLOR_INPUT | FFX_VK_PORTABLE_CONTEXT_AUTO_EXPOSURE;
@@ -1304,6 +1306,23 @@ void TemporalUpscaler::OnColorTarget(VideoCore::ImageId color) {
 void TemporalUpscaler::OnDraw(u64 vs_hash, VideoCore::ImageId color,
                               VideoCore::ImageId depth, bool native_viewport) {
     if (!Scaled() && vs_hash == ui_trigger_vs) done_this_frame = true;
+    // bbport: a UI draw without a color target (a Scaleform mask: color writes off) writes the
+    // stencil the next UI draws test, so it belongs in the UI's output-size depth like them. In
+    // the guest depth its mask was lost when the next UI draw switched depths (PrepareUiDepth
+    // clears the stencil): masked pictures, like the loading screen's item, vanished at outputs
+    // other than 1080p. Patch by bmy (deadinside28/bloodborne_pc issue #67), via parsifal295
+    // (PR #62).
+    if (ui_phase && !color && depth && depth != ui_depth && ui_color) {
+        const auto& depth_image = texture_cache.GetImage(depth);
+        const auto& ui_target = texture_cache.GetImage(ui_color);
+        if (depth_image.info.size.width == ui_target.info.size.width &&
+            depth_image.info.size.height == ui_target.info.size.height) {
+            EnsureUiResources(ui_width, ui_height, ui_format, depth_image.info.pixel_format);
+            PrepareUiDepth(depth);
+            ui_depth = depth;
+        }
+        return;
+    }
     if (!Scaled() || !color) {
         return;
     }
@@ -1500,13 +1519,31 @@ void TemporalUpscaler::RunUiOnly(VideoCore::ImageId color_id, VideoCore::ImageId
         .subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1},
     };
     cmd.pipelineBarrier2({.imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier});
+    // Ultrawide: menus without a scene draw their backdrop over the 1920-wide stage only and
+    // leave the game's grey clear color beside it. Those columns are black instead. A frame
+    // with a scene (G-buffer depth this frame) fills the whole width: upscaler off, or a menu
+    // over the world.
+    const bool scene = !camera_motion.Enabled() || camera_motion.Depth();
+    const float side = scene ? 0.0f : 0.5f * (1.0f - 1920.0f / float(UiComposition::Canvas()[0]));
+    const s32 src_side = s32(std::lround(source_width * side));
+    const s32 dst_side = s32(std::lround(ui_width * side));
+    if (dst_side > 0) {
+        cmd.clearColorImage(vk::Image(ui_image), vk::ImageLayout::eTransferDstOptimal,
+                            vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 1.0f}},
+                            vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
+        const vk::MemoryBarrier2 cleared{.srcStageMask = vk::PipelineStageFlagBits2::eTransfer,
+                                         .srcAccessMask = vk::AccessFlagBits2::eTransferWrite,
+                                         .dstStageMask = vk::PipelineStageFlagBits2::eTransfer,
+                                         .dstAccessMask = vk::AccessFlagBits2::eTransferWrite};
+        cmd.pipelineBarrier2({.memoryBarrierCount = 1, .pMemoryBarriers = &cleared});
+    }
     const vk::ImageBlit region{
         .srcSubresource = {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-        .srcOffsets = std::array{vk::Offset3D{0, 0, 0},
-            vk::Offset3D{s32(source_width), s32(source_height), 1}},
+        .srcOffsets = std::array{vk::Offset3D{src_side, 0, 0},
+            vk::Offset3D{s32(source_width) - src_side, s32(source_height), 1}},
         .dstSubresource = {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-        .dstOffsets = std::array{vk::Offset3D{0, 0, 0},
-            vk::Offset3D{s32(ui_width), s32(ui_height), 1}},
+        .dstOffsets = std::array{vk::Offset3D{dst_side, 0, 0},
+            vk::Offset3D{s32(ui_width) - dst_side, s32(ui_height), 1}},
     };
     cmd.blitImage(source, source_layout,
                   vk::Image(ui_image), vk::ImageLayout::eTransferDstOptimal, region,

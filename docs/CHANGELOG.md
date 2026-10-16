@@ -1,10 +1,19 @@
-# Hunter’s Atlas 1.0
+# Changelog
 
-- Hotfix: use serial draw preparation for Atlas sessions following a GPU FMask conversion assertion; the owner's repeat test completed without that crash. This is a stability workaround, not proof that every renderer crash is resolved.
-- Simplifies the map footer to Zoom, Recenter and Back; removes the Pan and Elevation controls from the main map screen.
-- Adds an isolated Atlas launcher integration for the verified official Windows launcher.
-- Generates the 16 supported maps and required font locally from the user’s compatible game files; neither maps nor game files are included in the player package.
-- Uses the verified stock launcher’s private runtime and selected launcher dependencies without requiring a separately installed Python runtime or compiler for players.
-- Checks the launcher and CUSA00207 1.09 game fingerprints before installation or launch.
-- Keeps Atlas configuration, generated assets, and runtime state within its package and profile, and provides an installer/uninstaller that backs up and restores the original launcher.
-- Includes corresponding source, native GPL source and vendored inputs, source-build instructions, and third-party notices in the source release.
+## 1.1
+
+- Discovered-lamp travel with controller selection and confirmation.
+- Four optional categories of fixed world pickup dots.
+- Optional boss-based map reveal and verified NPC dialogue filtering.
+- Compact confirmation, right-side color key and aligned optional controls.
+- Automatic launcher compatibility rebuilds, map reuse and recoverable updates.
+- Clear installation instructions with an explicit enable step.
+
+See [1.1 release notes](releases/v1.1.md).
+
+## 1.0
+
+Initial public release: 16 locally generated maps, live position and facing,
+controller navigation, verified installation and stock launcher restoration.
+
+[Download 1.0](https://github.com/MikeTat1988/HuntersAtlas/releases/tag/v1.0).

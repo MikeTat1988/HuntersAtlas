@@ -9,3 +9,4 @@
 /source/generator/dist/
 /source/native/out/
 **/.pytest_cache/
+/user/

@@ -59,6 +59,8 @@ class PrepareTests(unittest.TestCase):
         (self.tools / "prepare.py").write_bytes((SOURCE / "prepare.py").read_bytes())
         (self.tools / "atlas_lite_bundle.py").write_text("# pinned test helper\n", encoding="utf-8")
         (self.tools / "generator.atlaslite").write_bytes(b"frozen generator bundle")
+        (self.tools / "extract_atlas_features.py").write_text(
+            'def extract(game, maps):\n    return {}\n', encoding='utf-8')
         (self.bootstrap_dir / "assets.py").write_bytes(ASSETS_SOURCE.read_bytes())
         (self.bootstrap_dir / "entry.py").write_text("# entry is injected in unit tests\n", encoding="utf-8")
         self.assets = load_assets()
@@ -106,7 +108,7 @@ class PrepareTests(unittest.TestCase):
         own_files = {
             path.relative_to(self.root).as_posix().casefold(): path.resolve()
             for path in (self.tools / "prepare.py", self.tools / "atlas_lite_bundle.py",
-                         self.tools / "generator.atlaslite", self.bootstrap_dir / "assets.py")
+                         self.tools / "generator.atlaslite", self.tools / "extract_atlas_features.py", self.bootstrap_dir / "assets.py")
         }
         return {
             "root": self.root.resolve(),

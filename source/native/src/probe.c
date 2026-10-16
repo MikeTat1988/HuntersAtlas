@@ -8,6 +8,8 @@
 #include <cpuid.h>
 #include "runtime.h"
 #include "runtime_map.h"
+#include "runtime_atlas_state.h"
+#include "runtime_atlas_build.h"
 #include "gpu/bbgpu.h"
 #if !defined(__x86_64__) || !defined(__GNUC__)
 #error This prototype requires x86-64 GCC or Clang (including MinGW).
@@ -432,6 +434,8 @@ void runtime_restart(void) {
 }
 
 int main(int argc, char **argv) {
+    if(argc==2 && !strcmp(argv[1],"--atlas-build-info")){puts(BB_ATLAS_BUILD_JSON);return 0;}
+    puts("Atlas runtime " BB_ATLAS_BUILD_JSON);
     setvbuf(stdout, NULL, _IONBF, 0);
 #ifndef _WIN32
     /* Keep host heap objects handed to the guest (thread handles, TLS) in the
@@ -658,6 +662,8 @@ int main(int argc, char **argv) {
         }
         memcpy(image + relocs[i].target, &value, 8);
     }
+    /* The Hunter's Dream backend reads the game's code before the patches change it. */
+    bbnet_set_image(image, size);
     if (patch_file) apply_patches(patch_file, segments, ns, relocs, nr);
 #ifdef _WIN32
     printf("Guest TCB loads redirected to the TEB TLS slot: %" PRIu64 "\n", patch_tcb_loads(segments, ns));
@@ -672,6 +678,7 @@ int main(int argc, char **argv) {
     }
     if (!executable_entry) fail("entry is not executable");
     runtime_map_bind(image,size);
+    runtime_atlas_state_bind(image,size);
     printf("Mapped %" PRIu64 " bytes, %" PRIu64 " segments; applied %" PRIu64 " relocations\n", size, ns, nr);
     if (native_libc) {
         for (uint64_t m=0;m<module_count;++m) {
@@ -694,6 +701,7 @@ int main(int argc, char **argv) {
             if (result) fail("module initializer failed");
         }
     }
+    bbnet_initialize(); /* the online session starts with the game */
     printf("Entering original x86-64 code at guest offset 0x%" PRIx64 "\n", entry);
     entered_game=1;
     struct { uint64_t argc; const char *argv[2]; } params = {1, {"/app0/eboot.bin", NULL}};

@@ -404,6 +404,7 @@ bool Instance::CreateDevice() {
     vk12_features = feature_chain.get<vk::PhysicalDeviceVulkan12Features>();
     vk13_features = feature_chain.get<vk::PhysicalDeviceVulkan13Features>();
     // bbport: DLSS (optional bridge DLL) needs its own device extensions on NVIDIA GPUs.
+    const size_t renderer_extension_count = enabled_extensions.size();
     std::vector<const char*> dlss_extensions;
     if (Dlss* dlss = Dlss::Get()) {
         dlss->AppendDeviceExtensions(*instance, physical_device, dlss_extensions);
@@ -627,6 +628,23 @@ bool Instance::CreateDevice() {
     }
 
     auto [device_result, dev] = physical_device.createDeviceUnique(device_chain.get());
+    if (device_result != vk::Result::eSuccess && enabled_extensions.size() > renderer_extension_count) {
+        // bbport: NGX can list its extensions while a driver part they need is missing or out
+        // of date. DLSS is optional: retry without its extensions, with DLSS off for this run.
+        // From parsifal295 (PR #58).
+        LOG_WARNING(Render_Vulkan, "Device creation with the DLSS extensions failed: {}; retrying "
+                                   "without DLSS", vk::to_string(device_result));
+        if (Dlss* dlss = Dlss::Get()) {
+            dlss->Disable(fmt::format("the Vulkan device failed with its extensions: {} (update "
+                                      "or reinstall the NVIDIA driver)",
+                                      vk::to_string(device_result)));
+        }
+        enabled_extensions.resize(renderer_extension_count);
+        device_chain.get().enabledExtensionCount = static_cast<u32>(enabled_extensions.size());
+        auto retry = physical_device.createDeviceUnique(device_chain.get());
+        device_result = retry.result;
+        dev = std::move(retry.value);
+    }
     if (device_result != vk::Result::eSuccess) {
         LOG_CRITICAL(Render_Vulkan, "Failed to create device: {}", vk::to_string(device_result));
         return false;
@@ -714,6 +732,20 @@ void Instance::CollectDeviceParameters() {
     const std::string api_version = GetReadableVersion(properties.apiVersion);
     const std::string extensions = fmt::format("{}", fmt::join(available_extensions, ", "));
 
+    // bbport: the GPU, its VRAM and the driver in every log (LOG_INFO is filtered out by
+    // default), flushed so it is there even if the device is lost right after. Idea from
+    // parsifal295 (PR #61).
+    u64 vram = 0;
+    const auto heaps = physical_device.getMemoryProperties();
+    for (u32 i = 0; i < heaps.memoryHeapCount; ++i) {
+        if (heaps.memoryHeaps[i].flags & vk::MemoryHeapFlagBits::eDeviceLocal) {
+            vram = std::max<u64>(vram, heaps.memoryHeaps[i].size);
+        }
+    }
+    std::printf("GPU: %s%s, %llu MiB VRAM, driver %s (%s), Vulkan %s\n", model_name.c_str(),
+                IsIntegrated() ? " (integrated)" : "", static_cast<unsigned long long>(vram >> 20),
+                driver_name.c_str(), driver.driverInfo.data(), api_version.c_str());
+    std::fflush(stdout);
     LOG_INFO(Render_Vulkan, "GPU_Vendor: {}", vendor_name);
     LOG_INFO(Render_Vulkan, "GPU_Model: {}", model_name);
     LOG_INFO(Render_Vulkan, "GPU_Integrated: {}", IsIntegrated() ? "Yes" : "No");

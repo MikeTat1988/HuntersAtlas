@@ -8,8 +8,7 @@
       "bin/avformat-63.dll": "f6ed92b1934e411be015b3e3f143d424b1e00e1dc42120438e8bbd128f26d1e0",
       "bin/avutil-61.dll": "efbf7ddc9b6d5fa8afb61c06ed55b0c9a7da89383f31c7155a848406559f8c4e",
       "bin/bb-gpu-capabilities.exe": "2d6cf2752c845419a376f00cff687d088a87ef5e40f047c6dafd06f200cd268d",
-      "bin/bb-probe.exe": "1706010fa1addfe0c5132296d91f2838a0a339ebdc6de7aa9a293fdac125904b",
-      "bin/bbbridge-cli.exe": "a09675a7f917c2001cf828ca12347e950f48fc6d9060c217a4fb4063b829b059",
+      "bin/bb-probe.exe": "09e1e524a773ecb2684ab64193e4ac74f0e0712b285a8bb210d0c85beb3dfb77",
       "bin/bbport_dlss.dll": "077c8cd70caa1aa0fbcf628daa376926c303a8002953eac851a52a6e20a2d2ee",
       "bin/libabsl_base-2605.0.0.dll": "0143414e4d1746f35cec4d2cd6f659958e392579de0a3beffc676bca84e4583f",
       "bin/libabsl_city-2605.0.0.dll": "ff6aeda291a4c5a2b4ed43ed039a8210f2eb5981c7b54f05af380ca7dda9eb7a",
@@ -154,21 +153,23 @@
       "bin/swscale-10.dll": "03e4aa39d4957856fa2435b66e720a20e876b7892677238e081540de4bc3f2b9",
       "bin/xvidcore.dll": "59bb9102953bd1d765c3a944da6628b6e92b2203a455a99d75a54ca92120613c",
       "bin/zlib1.dll": "94dd0a72d4da79e25294a91d1edf902d76eade7512d9218609a5fe43e3a7397a",
-      "run.py": "2f69776954c3ba10fd9a3aedfbaf383950d6c63a7c11f35337f0d5d0e1ed38c4",
+      "run.py": "566ebd958f51c346c6b71909164ffec0ba02ecb0afc0f674f69869769cd49c3e",
       "scripts/content_profile.py": "47821450d6474762ee35aef2520e685bd0131613582c447159d7fc774d63693c",
-      "scripts/cpu_compat.py": "570a2d1d3f1ac3434be780207253c11d39f2b868ddba73207c61dc3e717cb470",
+      "scripts/cpu_compat.py": "3407df35fa893d2a86e0a8066d8c21b1cb00cc007c1ee46cc167534f618e0f14",
+      "scripts/hud_layout.py": "6b4573a5b09acc04c3d1ccd3561e4c1af4382353d9ae8c07f1d828bcf162b183",
       "scripts/link_libc.py": "6f5b1c472c088c9e7820c77930dd07f6c38cda42f6b60b1927728279393f7a8a",
       "scripts/link_modules.py": "e60af9d8fb4352c6cd6b7235ae236139f81fbf118ef70b1c604f2b02fd6b26a4",
-      "scripts/mods.py": "8fefdcb7810dc4ad940742e7424c0d735570638d3d268747bfebde6e51a22dd8",
-      "scripts/patches.py": "0a52697e1f6d5626a7854112883fa3ed7c7e659403aab879160f3550fcb64300",
-      "scripts/prepare.py": "a84a7b34a877870f316650787e7f37849eee25594ba40c5de629b1a0592c182d"
+      "scripts/mods.py": "913e5f959cf21772ffc0913597350542a0d12d5650b9ad87ce48499bfec143b4",
+      "scripts/patches.py": "c831fb850b8a4a609b2a9d8990c3ce9bfa4a66e653e2c6b7d97c8cb5e7196e47",
+      "scripts/prepare.py": "a84a7b34a877870f316650787e7f37849eee25594ba40c5de629b1a0592c182d",
+      "scripts/quit_menu.py": "2ee9b4fac2c78b4ece127e0ebc6f269912958e12025212eb1e99bf376bdf2cfb"
     },
     "roles": {
       "run_script": "run.py"
     },
     "launcher_path": "Bloodborne.exe",
     "launcher_variants": {
-      "4a8e67ce5c2a5e4d8f8add8b0e606caecd5a3389756aef683f3ded793d4f6a59": {
+      "4d1df0129c5144b78a444f547ca615b4a4888247419a16c4688e5eaf0d46c598": {
         "path": "Bloodborne.exe",
         "runtime_dir": "_internal",
         "files": {
@@ -183,7 +184,7 @@
           "_internal/_ssl.pyd": "4cfb154c7cc525d57020c0e64f2dd876a78b46cd38419446392478de6b7b13b8",
           "_internal/_tkinter.pyd": "ee3eb2cdac591821cf71cda8035a6bc9b148d92996dd45b24e3ae3715613315d",
           "_internal/_zstd.pyd": "33c6eca99470c3eb9d776b617c550ad41b002a668336f062a9ab7be677a7409a",
-          "_internal/base_library.zip": "19842d61b8d1848149eeb7eb4ee34e56013b2239a0fc904e5980fe0f90056f74",
+          "_internal/base_library.zip": "70fbe7b1add11d40bb4c629425ec6a88a9dd6bec633d7b416e967245e742adbd",
           "_internal/libcrypto-3.dll": "53c529145339fb042a3dcd3a09c2d7753204f8b4fc79d99e0d31e69a33985958",
           "_internal/libffi-8.dll": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
           "_internal/libssl-3.dll": "b17a87979862d19241edc4318f967e24c3ec356ed6c2368f561179fab2311001",
@@ -208,10 +209,10 @@
   },
   "provenance": {
     "project": "Supermedo/bloodborne_pc",
-    "release_page_url": "https://github.com/Supermedo/bloodborne_pc/releases/tag/windows-v1.7.2",
-    "asset_url": "https://github.com/Supermedo/bloodborne_pc/releases/download/windows-v1.7.2/Bloodborne-Windows.zip",
-    "asset_filename": "Bloodborne-Windows.zip",
-    "asset_sha256": "0e47412530079e41c4b3d0b7ac07081a58f68e6b05f82732196abdb3ad7840fe",
+    "release_page_url": "https://github.com/Supermedo/bloodborne_pc/releases/tag/windows-v1.8.1",
+    "asset_url": "https://github.com/Supermedo/bloodborne_pc/releases/download/windows-v1.8.1/Bloodborne-Windows.zip",
+    "asset_filename": "launcher-windows-v1.8.1.zip",
+    "asset_sha256": "caf7a433ba2ab7c37b3aecba4ec20815d2871a53705bb7513adcc519c607e850",
     "archive_root": "bbport-windows",
     "archive_launcher_path": "bbport-windows/Bloodborne.exe",
     "template_launcher_path": "Bloodborne.exe",
@@ -220,7 +221,7 @@
   },
   "working_port_comparison": {
     "working_root": ".",
-    "selected_launcher_name": "Bloodborne.stock.exe",
+    "selected_launcher_name": "Bloodborne.exe",
     "same": [
       "_internal/_bz2.pyd",
       "_internal/_ctypes.pyd",
@@ -257,7 +258,6 @@
       "bin/avutil-61.dll",
       "bin/bb-gpu-capabilities.exe",
       "bin/bb-probe.exe",
-      "bin/bbbridge-cli.exe",
       "bin/bbport_dlss.dll",
       "bin/libabsl_base-2605.0.0.dll",
       "bin/libabsl_city-2605.0.0.dll",
@@ -406,16 +406,18 @@
       "run.py",
       "scripts/content_profile.py",
       "scripts/cpu_compat.py",
+      "scripts/hud_layout.py",
       "scripts/link_libc.py",
       "scripts/link_modules.py",
       "scripts/mods.py",
       "scripts/patches.py",
-      "scripts/prepare.py"
+      "scripts/prepare.py",
+      "scripts/quit_menu.py"
     ],
     "different": [],
     "missing": [],
     "counts": {
-      "same": 189,
+      "same": 190,
       "different": 0,
       "missing": 0
     },
@@ -437,5 +439,16 @@
       "bin non-DLL/EXE files"
     ],
     "excluded_bin_files_found": []
+  },
+  "compatibility": {
+    "schema": 1,
+    "adapter_protocol": 1,
+    "upstream_release": "windows-v1.8.1",
+    "upstream_commit": "bee7ec16213022f15bf34084b5587f1ff09e0e65",
+    "upstream_asset_sha256": "caf7a433ba2ab7c37b3aecba4ec20815d2871a53705bb7513adcc519c607e850",
+    "minimum_coordinator": 1,
+    "map_schema": 1,
+    "feature_schema": 1,
+    "validation_status": "local-candidate"
   }
 }

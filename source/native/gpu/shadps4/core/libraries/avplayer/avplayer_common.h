@@ -70,10 +70,12 @@ public:
     }
 
     std::optional<T> Pop() {
-        if (Size() == 0) {
+        // bbport: checked under the lock: a Clear() from another thread (the player stopping,
+        // the game closing) between the check and front() read an empty queue.
+        std::lock_guard guard(m_mutex);
+        if (m_queue.empty()) {
             return std::nullopt;
         }
-        std::lock_guard guard(m_mutex);
         auto result = std::move(m_queue.front());
         m_queue.pop();
         return result;

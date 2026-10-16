@@ -10,10 +10,11 @@ bool Enabled();
 int ShortcutMode();
 bool UsesControllerGlyphs();
 void OpenFromMenu();
-void MappedPad(unsigned rising,unsigned char lx,unsigned char ly);
+void MappedPad(unsigned rising,unsigned char lx,unsigned char ly,unsigned char rx=128,unsigned char ry=128,unsigned held=0);
 void Tick();
 bool HandleEvent(const SDL_Event& event);
 void Close();
+void Back();
 void Settings();
 // Set to the game's existing serif body font before drawing the map.
 void SetTitleFont(ImFont* font);

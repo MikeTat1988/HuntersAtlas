@@ -1,9 +1,9 @@
 """Build the portable player ZIP and complete corresponding-source ZIP."""
 from __future__ import annotations
-import argparse,hashlib,importlib.util,json,shutil,struct,subprocess,tempfile,zipfile
+import argparse,hashlib,importlib.util,json,shutil,struct,subprocess,tempfile,zipfile,datetime
 from pathlib import Path
 
-VERSION='1.0'
+VERSION='1.1'
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[1]
 
@@ -48,6 +48,8 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('runtime-dir','generator-bundle','launcher-root','wrapper','dependency-source','output'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--player-only',action='store_true',help='Build a validation player package; final releases also require the source ZIP')
+    p.add_argument('--candidate-label',default='',help='Label a private test build without changing the public release number')
+    p.add_argument('--catalog-signing-key',type=Path,help='Private maintainer key used only while building the authenticated update catalog')
     args=p.parse_args();out=args.output.resolve()
     if out.exists():raise ValueError('Output must be a new directory; preserve existing releases')
     out.mkdir(parents=True);package=out/'HuntersAtlas';package.mkdir()
@@ -72,20 +74,36 @@ def main():
         shared=args.launcher_root/'bin'/dll.name
         if not shared.is_file() or sha(dll)!=sha(shared):copy(dll,package/'bin'/dll.name)
     for n in ('entry.py','assets.py','run_lite.py','run_lite-source.json','integrated_play.py','config.json'):copy(HERE/'bootstrap'/n,package/'bootstrap'/n)
-    for n in ('prepare.py','atlas_lite_bundle.py'):copy(HERE/'generator'/n,package/'tools'/n)
+    copy(HERE/'integration/ui/atlas_feature_config.py',package/'bootstrap/atlas_feature_config.py')
+    copy(HERE/'integration/ui/atlas_adapter.py',package/'bootstrap/atlas_adapter.py')
+    for n in ('prepare.py','atlas_lite_bundle.py','asset_identity.py'):copy(HERE/'generator'/n,package/'tools'/n)
+    copy(REPO/'source/generator/src/extract_atlas_features.py',package/'tools/extract_atlas_features.py')
     copy(args.generator_bundle,package/'tools/generator.atlaslite')
     copy(args.wrapper,package/'integration/AtlasLauncher.exe')
     for ui in (HERE/'integration/ui').glob('*.py'):copy(ui,package/'integration/ui'/ui.name)
     copy(REPO/'installer/Manage-Atlas.ps1',package/'installer/Manage-Atlas.ps1')
-    for name in ('Install.cmd','Uninstall.cmd','LICENSE'):copy(REPO/name,package/name)
+    copy(REPO/'installer/Update-Atlas.ps1',package/'installer/Update-Atlas.ps1')
+    for source in (HERE/'updates').iterdir():
+        if source.is_file() and source.suffix in ('.py','.json'):copy(source,package/'updates'/source.name)
+    for name in ('Install.cmd','Uninstall.cmd','Update.cmd','LICENSE'):copy(REPO/name,package/name)
     readme=(REPO/'README.md').read_text(encoding='utf-8')
+    if args.candidate_label:
+        for name in ('MAP-FEATURES.md','LAUNCHER-UPDATES.md','COMPATIBILITY.md','QA.md'):
+            copy(REPO/'docs'/name,package/'docs'/name)
+        copy(REPO/'source/SOURCE-BUILD.md',package/'SOURCE-BUILD.md')
+        readme='LOCAL TEST CANDIDATE: '+args.candidate_label+'\n\nRead docs/MAP-FEATURES.md for controls and docs/LAUNCHER-UPDATES.md for recovery.\n\n'+readme
+        readme=readme.replace('(source/SOURCE-BUILD.md)','(SOURCE-BUILD.md)')
     readme=readme.replace('(examples/','(https://raw.githubusercontent.com/MikeTat1988/HuntersAtlas/main/examples/')
     for prefix in ('docs/','source/'):
+        if args.candidate_label and prefix=='docs/':continue
         readme=readme.replace('('+prefix,'(https://github.com/MikeTat1988/HuntersAtlas/blob/v'+VERSION+'/'+prefix)
     (package/'README.md').write_text(readme,encoding='utf-8')
     # Notices are data; GPL dependency source is in the simultaneous source download.
     for f in (REPO/'source/licenses/notices').rglob('*'):
         if f.is_file():copy(f,package/'licenses/runtime'/f.relative_to(REPO/'source/licenses/notices'))
+    for f in (REPO/'source/native/packaging/windows/licenses').iterdir():
+        if f.is_file():copy(f,package/'licenses/upstream'/f.name)
+    copy(REPO/'source/native/gpu/bbnet/SHADNET-PORT.md',package/'licenses/upstream/online-source-provenance.md')
     for f in (REPO/'source/generator/licenses').rglob('*'):
         if f.is_file() and 'soulstruct-source' not in f.parts:copy(f,package/'licenses/generator'/f.relative_to(REPO/'source/generator/licenses'))
     copy(REPO/'source/art/LICENSE-DejaVu.txt',package/'licenses/LICENSE-DejaVu.txt')
@@ -99,16 +117,42 @@ def main():
         copy(REPO/'source/art/fallback.ttf',art/'fallback.ttf')
         art_receipt=assets.build({'art/'+f.name:f for f in art.iterdir()},package/'assets.atlaslite')
     if art_receipt['prepared']:raise ValueError('Public package must not contain generated game maps/font')
-    manifest={'schema':1,'id':'hunters-atlas-lite','version':VERSION,
+    manifest={'schema':1,'id':'hunters-atlas-lite','version':VERSION,'feature_schema':1,
         'game_executables':['d65f0b4f01d59166aed16f8604196d8b7dd805abbf0758b356e8f1354c9429f9'],
         'paths':{'probe':'bin/bb-probe.exe','maps':'state/runtime-assets/maps','config':'settings/settings.ini','art':'state/runtime-assets/art','catalog':'state/runtime-assets/maps/catalog.json','font':'state/runtime-assets/art/native-font.ttf'},
         'generator':'tools/prepare.py','asset_pack':{'path':'assets.atlaslite','sha256':art_receipt['sha256']}}
+    if args.candidate_label:manifest['candidate']=args.candidate_label
+    compatibility=template.get('compatibility')
+    if compatibility:
+        proof=json.loads((args.runtime_dir/'native-build.json').read_text(encoding='utf-8'))
+        for key in ('upstream_release','upstream_commit','adapter_protocol'):
+            if proof[key]!=compatibility[key]:raise ValueError('Runtime and launcher identity mismatch: '+key)
+        if proof['runtime_sha256']!=sha(package/'bin/bb-probe.exe'):raise ValueError('Native build proof digest mismatch')
+        copy(args.runtime_dir/'native-build.json',package/'native-build.json')
+        manifest['compatibility']=compatibility
+        manifest['asset_key_schema']=1
     # Atlas shortcut configuration is owned by this package, not the launcher profile.
     copy(HERE/'packaging/settings.ini',package/'settings/settings.ini')
     manifest['files']={f.relative_to(package).as_posix():sha(f) for f in package.rglob('*') if f.is_file() and f.relative_to(package).as_posix()!='settings/settings.ini'}
-    manifest['mutable_files']=['settings/settings.ini']
+    manifest['mutable_files']=['settings/settings.ini','updates/catalog.json']
     write_json(package/'manifest.json',manifest)
-    player=out/f'Hunters-Atlas-{VERSION}.zip'
+    if compatibility:
+        if not args.catalog_signing_key:raise ValueError('An authenticated compatibility catalog requires --catalog-signing-key')
+        catalog=load('atlas_build_catalog',HERE/'updates/catalog.py')
+        private=json.loads(args.catalog_signing_key.read_text(encoding='utf-8'))
+        public=json.loads((package/'updates/trusted-key.json').read_text(encoding='utf-8'))
+        if private['n']!=public['n']:raise ValueError('Catalog signing key does not match the embedded trust key')
+        expires=datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(days=90)
+        target={k:compatibility[k] for k in ('upstream_release','upstream_commit','adapter_protocol','minimum_coordinator','map_schema','feature_schema')}
+        target.update(platform='windows-x86_64',asset_key_schema=1,validation_status='candidate',
+            upstream_url=template['provenance']['asset_url'],upstream_sha256=template['provenance']['asset_sha256'],
+            stock_launcher_sha256=next(iter(stock['launcher_variants'])),runtime_sha256=sha(package/'bin/bb-probe.exe'),
+            atlas_manifest_sha256=sha(package/'manifest.json'),atlas_artifact_url=None,
+            atlas_digest_scope='manifest SHA-256 and exact manifest-pinned file set',
+            dependency_profile_sha256=sha(package/'dependencies.json'),migration={'receipt_schemas':[1,2],'rollback':'retain previous pair'})
+        data={'schema':1,'minimum_coordinator':1,'expires':expires.isoformat(),'targets':[target]}
+        write_json(package/'updates/catalog.json',{'catalog':data,'signature':catalog.sign(data,private)})
+    player=out/(f'Hunters-Atlas-{VERSION}-local-test.zip' if args.candidate_label else f'Hunters-Atlas-{VERSION}.zip')
     with zipfile.ZipFile(player,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
         for f in sorted(package.rglob('*')):
             if f.is_file():z.write(f,'HuntersAtlas/'+f.relative_to(package).as_posix())
@@ -117,7 +161,7 @@ def main():
             if z.testzip():raise ValueError('Archive CRC verification failed')
         print(json.dumps({'validation_only':True,'player':str(player),'bytes':player.stat().st_size,'sha256':sha(player)},indent=2))
         return
-    sources=out/f'Hunters-Atlas-Source-{VERSION}.zip'
+    sources=out/(f'Hunters-Atlas-Source-{VERSION}-local-test.zip' if args.candidate_label else f'Hunters-Atlas-Source-{VERSION}.zip')
     source_zip(sources,args.dependency_source)
     for archive in (player,sources):
         with zipfile.ZipFile(archive) as z:

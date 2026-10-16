@@ -6,6 +6,7 @@ namespace BbAtlasMenu {
 bool Visible();
 bool Interacting();
 bool UsesControllerGlyphs();
+bool UsesPlayStationGlyphs();
 bool Focused();
 void Suppress(bool value);
 void Tick();

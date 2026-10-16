@@ -14,6 +14,12 @@ def core_module():
 
 def environment(core, contract, paths, inherited):
     env=dict(inherited)
+    import importlib.util
+    feature_path=Path(__file__).with_name('atlas_feature_config.py')
+    if not feature_path.exists():feature_path=Path(__file__).parents[1]/'integration/ui/atlas_feature_config.py'
+    spec=importlib.util.spec_from_file_location('atlas_feature_config',feature_path)
+    feature_config=importlib.util.module_from_spec(spec);spec.loader.exec_module(feature_config)
+    features=feature_config.decode(env.get('BB_ATLAS_FEATURES',''))
     # All ordinary launcher choices, including its live saves, DLC and patch definitions,
     # remain as selected. Only preparation/cache and Atlas resources belong to Atlas.
     for key in list(env):
@@ -28,6 +34,7 @@ def environment(core, contract, paths, inherited):
         BB_DATA_DIR=str(state),BB_LITE_PORT_DIR=str(base),
         BB_LITE_ENTRY=str(Path(__file__).resolve()),BB_LITE_BOOTSTRAP_PID=str(os.getpid()),
         BB_LITE_MINIMUM_DISK='1')
+    env.update(feature_config.environment(features))
     # Preserve ordinary locations even though compilation intermediates use Atlas state.
     for key,default in {'BB_USER_DIR':base/'user','BB_CONFIG':base/'bbport.ini',
                         'BB_INPUT_CONFIG':base/'input.ini','BB_PATCHES_DIR':base/'patches',

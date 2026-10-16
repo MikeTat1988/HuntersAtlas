@@ -387,6 +387,9 @@ bool AvPlayerSource::GetVideoData(AvPlayerFrameInfoEx& video_info) {
     }
 
     auto frame = m_video_frames.Pop();
+    if (!frame.has_value()) {
+        return false; // bbport: cleared since the size check (the player stopped)
+    }
     video_info = frame->info;
 
     m_current_video_frame = std::move(frame);
@@ -409,6 +412,9 @@ bool AvPlayerSource::GetAudioData(AvPlayerFrameInfo& audio_info) {
     }
 
     auto frame = m_audio_frames.Pop();
+    if (!frame.has_value()) {
+        return false; // bbport: cleared since the size check (the player stopped)
+    }
     m_last_audio_ts = frame->info.timestamp;
     m_last_data_time = std::chrono::high_resolution_clock::now();
     m_pause_duration = std::chrono::high_resolution_clock::duration(0);

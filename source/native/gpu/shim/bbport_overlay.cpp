@@ -299,7 +299,11 @@ void Menu() {
     ImGui::EndDisabled(); // upscaler off
 
     ImGui::SeparatorText("Output resolution");
-    static const char* outputs[] = {"1280 x 720", "1920 x 1080", "2560 x 1440", "3840 x 2160"};
+    static const char* outputs[] = {"1280 x 720", "1920 x 1080", "2560 x 1440", "3840 x 2160",
+                                    "2560 x 1080 (21:9)", "3440 x 1440 (21:9)",
+                                    "3840 x 1600 (21:9)", "5120 x 2160 (21:9)",
+                                    "3840 x 1080 (32:9)", "5120 x 1440 (32:9)"};
+    static_assert(sizeof(outputs) / sizeof(*outputs) == BbSettings::OutputCount);
     int output = s.output_res;
     if (ImGui::BeginCombo("Output resolution", outputs[output])) {
         for (int i = 0; i < BbSettings::OutputCount; ++i) {
@@ -308,6 +312,13 @@ void Menu() {
             }
         }
         ImGui::EndCombo();
+    }
+    if (BbSettings::Ultrawide(s.output_res)) {
+        int hud = s.hud_position;
+        Store(s.hud_position, hud,
+              ImGui::SliderInt("HUD position", &hud, 0, 100, hud == 0 ? "Centred (16:9)" :
+                                                         hud == 100 ? "Screen edges" : "%d%%"));
+        Hint("Ultrawide (21:9, 32:9): moves the health, items and Blood Echoes from the centred 16:9 area toward the screen edges. Changes require a restart.");
     }
     if (BbSettings::FixedRenderSession()) {
         Hint("Final image and HUD resolution. The preset controls scene resolution relative to the output. 4K Performance is approximately 1920x1080. Changes require a restart.");

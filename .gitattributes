@@ -1,0 +1,18 @@
+* text=auto whitespace=cr-at-eol
+*.md text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.c text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.png binary
+*.jpg binary
+*.zip binary
+*.exe binary
+*.dll binary
+*.ttf binary
+*.atlaslite binary

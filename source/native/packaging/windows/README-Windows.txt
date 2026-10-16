@@ -35,7 +35,9 @@ Starting
   keeps the original voice selection. A missing translated file falls back to the original.
 - In the game, Insert (or L3+R3 on a gamepad) opens the port's menu (upscaler, resolution,
   effects). Keyboard: WASD move, arrows camera, Space Cross, Left Shift Circle, E Square,
-  Q Triangle, 1/3 L1/R1, R/F L2/R2, Z/C L3/R3, I/K/J/L d-pad, Enter Options, Tab touchpad.
+  Q Triangle, 1/3 L1/R1, R/F L2/R2, Z/C L3/R3, I/K/J/L d-pad, Enter Options, Tab touchpad
+  (left half), Backspace touchpad (right half). Xbox controllers: Back + d-pad left/right clicks
+  the left/right touchpad half (gestures / key items), Back alone the left half.
 
 Data
 - Saves and shader caches: user\ next to Bloodborne.exe (the launcher can pick another folder).
@@ -49,6 +51,9 @@ Online play (beta)
 - Messages, bloodstains and ghosts come from The Hunter's Dream (https://thehuntersdream.com);
   bells and summons go through the shadNet server. Everyone needs game version 1.09 and the
   same co-op server. Summoning between players is not confirmed yet.
+- Playing with bbhost players on The Hunter's Dream's co-op pool is off in this port until it
+  works properly with their server. Please don't ask The Hunter's Dream for help with bbport:
+  use our Discord server (https://discord.gg/yTMG8c4Bqm) instead.
 
 Cheats
 - The "Cheats" page has cheats (never die, enemies do not see or hear you, Rally never fades,
@@ -77,8 +82,10 @@ Mods and patches
 - Third-party patches: shadPS4/GoldHEN XML files for 1.09 in patches\.
 
 Credits
-- Online play: shadp2p by Wozzardman (https://github.com/Wozzardman/shadp2p), shadNet by the
-  shadPS4 team, The Hunter's Dream by droogie.
+- Online play: shadPS4 0.20's network code and shadNet by the shadPS4 team, put together by
+  Awaken (https://github.com/Awakenchan/BloodBorneButPc) with the backend for The Hunter's Dream
+  from bbhost by droogie (GPL-3.0-or-later); thanks to Metr1k and The Hunter's Dream team.
+  The first online version was built on shadp2p by Wozzardman.
 - bbport (the Linux port this is built on): https://github.com/deadinside28/bloodborne_pc
 - Windows port: https://github.com/Supermedo/bloodborne_pc
 - The full list of projects and patch authors is in README.md (Credits and licenses).

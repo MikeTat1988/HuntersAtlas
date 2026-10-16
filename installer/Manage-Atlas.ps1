@@ -2,10 +2,14 @@ param(
     [ValidateSet('Install','Uninstall')][string]$Mode = 'Install',
     [string]$LauncherRoot,
     [string]$PackageRoot = (Split-Path -Parent $PSScriptRoot),
+    [string]$CancellationFile,
     [switch]$NoDialog
 )
 $ErrorActionPreference = 'Stop'
-$stockHash = '4a8e67ce5c2a5e4d8f8add8b0e606caecd5a3389756aef683f3ded793d4f6a59'
+$stockHash = $null
+$maintenanceHandle = $null
+$maintenancePath = $null
+$priorMaintenanceToken = $env:BB_ATLAS_MAINTENANCE_TOKEN
 function Hash([string]$p) { (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() }
 function Read-Json([string]$p) { Get-Content -LiteralPath $p -Raw -Encoding UTF8 | ConvertFrom-Json }
 function Write-Json([string]$p, $value) {
@@ -88,7 +92,7 @@ function Stop-PreparationProcessTree([System.Diagnostics.Process]$process,[strin
 }
 function Prepare-Maps([string]$launcher,[string]$package,[string]$game,[string]$state) {
     $tool=Join-Path $package 'tools\prepare.py'
-    $cancel=Join-Path $state 'cancel-preparation.request'
+    $cancel=if ($CancellationFile) { [IO.Path]::GetFullPath($CancellationFile) } else { Join-Path $state 'cancel-preparation.request' }
     $stdout=Join-Path $state 'prepare.stdout.log'
     $stderr=Join-Path $state 'prepare.stderr.log'
     $arguments='--script "'+$tool+'" --game-dir "'+$game+'" --output-dir "'+$package+'" --headless --cancel-file "'+$cancel+'"'
@@ -159,6 +163,10 @@ try {
     if ($Mode -eq 'Uninstall') {
         if (-not (Test-Path -LiteralPath $packageReceipt -PathType Leaf)) { throw 'This extracted package has no installed Atlas receipt.' }
         $receipt = Read-Json $packageReceipt
+        if ($receipt.schema -notin @(1,2)) { throw 'Unsupported Atlas installation receipt schema.' }
+        $restoreDependencies = Read-Json (Join-Path $state 'dependencies.json')
+        $stockHash = [string]$receipt.stock_sha256
+        if ($stockHash -notmatch '^[0-9a-f]{64}$' -or -not $restoreDependencies.ordinary_port.launcher_variants.PSObject.Properties[$stockHash]) { throw 'The stock restore identity does not match the original dependency profile.' }
         if (-not (Same-Path $receipt.atlas_folder $PackageRoot)) { throw 'Extracted package moved after installation. Restore its original folder first.' }
         if (-not $LauncherRoot) { $LauncherRoot = $receipt.launcher_root }
     }
@@ -166,12 +174,23 @@ try {
         if ($NoDialog) { throw 'LauncherRoot is required in noninteractive mode.' }
         Add-Type -AssemblyName System.Windows.Forms
         $picker = New-Object Windows.Forms.FolderBrowserDialog
-        $picker.Description = 'Select the launcher folder containing Bloodborne.exe (launcher-v1.7).'
+        $picker.Description = 'Select the supported official launcher folder containing Bloodborne.exe.'
         if ($picker.ShowDialog() -ne [Windows.Forms.DialogResult]::OK) { exit 130 }
         $LauncherRoot = $picker.SelectedPath
     }
     $LauncherRoot = (Resolve-Path -LiteralPath $LauncherRoot).Path
     No-Running-Game $LauncherRoot $PackageRoot
+    $maintenancePath = Join-Path (Split-Path -Parent $LauncherRoot) ('.'+[IO.Path]::GetFileName($LauncherRoot)+'.atlas-maintenance.lock')
+    if (Test-Path -LiteralPath $maintenancePath) {
+        $priorLock = Read-Json $maintenancePath
+        if (Get-Process -Id $priorLock.pid -ErrorAction SilentlyContinue) { throw 'Another Atlas install or update is active.' }
+        Remove-Item -LiteralPath $maintenancePath -Force
+    }
+    $maintenanceHandle = [IO.File]::Open($maintenancePath,[IO.FileMode]::CreateNew,[IO.FileAccess]::ReadWrite,[IO.FileShare]::Read)
+    $env:BB_ATLAS_MAINTENANCE_TOKEN = [guid]::NewGuid().ToString('N')
+    $lockBytes = [Text.Encoding]::UTF8.GetBytes(('{"pid":'+$PID+',"token":"'+$env:BB_ATLAS_MAINTENANCE_TOKEN+'"}'))
+    $maintenanceHandle.Write($lockBytes,0,$lockBytes.Length)
+    $maintenanceHandle.Flush()
     if ($PackageRoot.StartsWith($LauncherRoot+'\',[StringComparison]::OrdinalIgnoreCase) -or (Same-Path $PackageRoot $LauncherRoot)) { throw 'Extract Atlas to a separate folder outside the launcher directory.' }
     $exe = Owned-Path $LauncherRoot 'Bloodborne.exe'
     $stock = Owned-Path $LauncherRoot 'Bloodborne.stock.exe'
@@ -179,19 +198,50 @@ try {
     $launcherReceipt = Owned-Path $LauncherRoot 'atlas-lite-install.json'
     $profilePath = Profile-Path
     if ($Mode -eq 'Install') {
-        if ((Test-Path -LiteralPath $launcherReceipt) -or (Test-Path -LiteralPath $stock) -or (Test-Path -LiteralPath $bridge)) { throw 'Atlas is already installed or has unfinished files. Uninstall that package first.' }
+        if ((Test-Path -LiteralPath $launcherReceipt) -or (Test-Path -LiteralPath $stock) -or (Test-Path -LiteralPath $bridge)) { throw 'Atlas is installed or has unfinished files. Use Update.cmd from a fresh compatible Atlas package for a combined update, or finish recovery.' }
         $legacyReceipt = Join-Path $LauncherRoot 'atlas-install-receipt.json'
         $legacyActive = (Test-Path -LiteralPath $legacyReceipt)
         if ($legacyActive) { $legacyActive = (Read-Json $legacyReceipt).state -ne 'uninstalled' }
-        if ($legacyActive -or (Hash $exe) -ne $stockHash) { throw 'This installer requires the original supported Bloodborne v1.7 launcher. Uninstall the previous Atlas adapter first.' }
+        if ($legacyActive) { throw 'An earlier Atlas adapter is active. Use its recorded uninstall or a combined Atlas update.' }
+        $stockHash = Hash $exe
         if (Test-Path -LiteralPath $state) { throw 'This extracted package already contains installation state. Use a fresh extraction or uninstall it first.' }
+        $initialManifest = Read-Json (Join-Path $PackageRoot 'manifest.json')
+        foreach ($f in $initialManifest.files.PSObject.Properties) {
+            if ((Hash (Owned-Path $PackageRoot $f.Name)) -ne $f.Value) { throw "Package hash mismatch: $($f.Name)" }
+        }
+        $initialDeps = Read-Json (Join-Path $PackageRoot 'dependencies.json')
+        if (-not $initialDeps.ordinary_port.launcher_variants.PSObject.Properties[$stockHash] -and (Test-Path -LiteralPath (Join-Path $PackageRoot '.distribution'))) {
+            Write-Host 'Selecting the authenticated Atlas adapter for this launcher...'
+            $selectStart = New-Object System.Diagnostics.ProcessStartInfo
+            $selectStart.FileName = $exe
+            $selectStart.Arguments = '--script "'+(Join-Path $PackageRoot 'updates\coordinator.py')+'" --select-initial --package "'+$PackageRoot+'" --launcher "'+$LauncherRoot+'"'
+            $selectStart.UseShellExecute = $false
+            $selectStart.CreateNoWindow = $true
+            $selectStart.RedirectStandardOutput = $true
+            $selectStart.RedirectStandardError = $true
+            $selectProcess = New-Object System.Diagnostics.Process
+            $selectProcess.StartInfo = $selectStart
+            $null = $selectProcess.Start()
+            $null = $selectProcess.Handle
+            $selectOut = $selectProcess.StandardOutput.ReadToEndAsync()
+            $selectError = $selectProcess.StandardError.ReadToEndAsync()
+            $selectProcess.WaitForExit()
+            $selectText = $selectOut.GetAwaiter().GetResult()+$selectError.GetAwaiter().GetResult()
+            if ($selectProcess.ExitCode -ne 0) { throw "Atlas adapter selection failed: $selectText" }
+        }
         Write-Host 'Verifying Atlas package and existing launcher dependencies...'
+        $packageManifestHash = Hash (Join-Path $PackageRoot 'manifest.json')
         $manifest = Read-Json (Join-Path $PackageRoot 'manifest.json')
         if ($manifest.id -ne 'hunters-atlas-lite') { throw 'Wrong package identity.' }
         foreach ($f in $manifest.files.PSObject.Properties) {
             if ((Hash (Owned-Path $PackageRoot $f.Name)) -ne $f.Value) { throw "Package hash mismatch: $($f.Name)" }
         }
         $deps = Read-Json (Join-Path $PackageRoot 'dependencies.json')
+        $variantProperty = $deps.ordinary_port.launcher_variants.PSObject.Properties[$stockHash]
+        if (-not $variantProperty) {
+            $supported = if ($deps.compatibility.upstream_release) { $deps.compatibility.upstream_release } else { 'the package dependency profile' }
+            throw "Unsupported launcher SHA-256 $stockHash. This Atlas package supports $supported. Keep the working installation or choose a matching Atlas adapter."
+        }
         foreach ($f in $deps.ordinary_port.files.PSObject.Properties) {
             if ((Hash (Owned-Path $LauncherRoot $f.Name)) -ne $f.Value) { throw "Unsupported launcher dependency: $($f.Name)" }
         }
@@ -236,7 +286,7 @@ try {
             Set-Field $profile 'atlas_enabled' $false
             Write-Json $profilePath $profile
             $owned=@{ 'Bloodborne.exe'=(Hash $exe); 'Bloodborne.stock.exe'=(Hash $stock); 'atlas-lite-launcher.py'=(Hash $bridge) }
-            $receipt=[pscustomobject]@{schema=1;state='installed';atlas_folder=$PackageRoot;launcher_root=$LauncherRoot;stock_sha256=$stockHash;owned_files=$owned;profile_path=$profilePath;previous_atlas_fields=$originalFields}
+            $receipt=[pscustomobject]@{schema=2;state='installed';atlas_folder=$PackageRoot;launcher_root=$LauncherRoot;stock_sha256=$stockHash;owned_files=$owned;profile_path=$profilePath;previous_atlas_fields=$originalFields;compatibility=$deps.compatibility;coordinator_protocol=1;artifact_manifest_sha256=$packageManifestHash}
             Write-Json $packageReceipt $receipt
             Write-Json $launcherReceipt $receipt
             $installed=$true
@@ -292,4 +342,10 @@ try {
 } catch {
     Write-Host "Atlas: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
+} finally {
+    if ($maintenanceHandle) {
+        $maintenanceHandle.Dispose()
+        if (Test-Path -LiteralPath $maintenancePath) { Remove-Item -LiteralPath $maintenancePath -Force }
+    }
+    $env:BB_ATLAS_MAINTENANCE_TOKEN = $priorMaintenanceToken
 }

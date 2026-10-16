@@ -24,6 +24,7 @@ public:
         const bool ready=Settled(visible,now);
         Result out{buttons&~blocked};
         if(map_open){
+            blocked|=buttons;
             if(rising&(confirm==Cross?Circle:Cross)){out.close=true;blocked|=buttons;}
             out.buttons=0;return out;
         }

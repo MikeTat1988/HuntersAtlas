@@ -156,19 +156,25 @@ def _asset_readiness(contract: dict, game_sha256: str) -> tuple[bool, str]:
     outputs = metadata.get('files')
     if not isinstance(outputs, dict) or not REQUIRED_MAPS.issubset(outputs):
         return False, 'Atlas map pack is incomplete. Prepare maps for the selected game.'
+    if contract.get('manifest', {}).get('feature_schema') == 1 and (
+            metadata.get('feature_schema') != 1 or 'maps/features.json' not in outputs):
+        return False, 'Prepare Atlas maps to add lamp, pickup, NPC and boss metadata.'
     if packed_game.casefold() != game_sha256.casefold():
         return False, 'Atlas maps were prepared for a different game build. Prepare maps for this game.'
+    if contract.get('manifest',{}).get('asset_key_schema')==1 and not isinstance(metadata.get('asset_key'),dict):
+        return False, 'Prepare Atlas maps to record their reusable input identity.'
     return True, 'Atlas map assets are prepared for the selected game and hash-verified.'
 
 
 def atlas_environment(base_environment: dict[str, str], *, enabled: bool,
-                      package: AtlasPackage | None = None, enter_button: str = '1') -> dict[str, str]:
+                      package: AtlasPackage | None = None, enter_button: str = '1',
+                      features: dict | None = None) -> dict[str, str]:
     """Build the child environment for Atlas while removing inherited map hooks."""
     env = dict(base_environment)
     reserved = {value.upper() for value in ENV_KEYS} | {'BB_LITE_PACKAGE', 'BB_PAD_FILE', 'BB_DUMP_DIR'}
     for key in list(env):
         normalized = key.upper()
-        if normalized in reserved or normalized.startswith('BB_MAP_'):
+        if normalized in reserved or normalized.startswith('BB_MAP_') or normalized == 'BB_ATLAS_FEATURES':
             env.pop(key, None)
     env['BB_ATLAS_ENABLED'] = '1' if enabled else '0'
     if not enabled:
@@ -183,7 +189,18 @@ def atlas_environment(base_environment: dict[str, str], *, enabled: bool,
         raise AtlasManifestError('Choose Cross (A) or Circle (B) as the confirm button.')
     env['BB_LITE_PACKAGE'] = str(package.root)
     env['BB_ENTER_BUTTON'] = enter_button
+    import importlib.util
+    feature_path = Path(__file__).with_name('atlas_feature_config.py')
+    spec = importlib.util.spec_from_file_location('atlas_feature_config', feature_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    env.update(module.environment(features or {}))
     return env
+
+
+def rebuild_pending(folder):
+    try:return bool(json.loads((Path(folder)/'manifest.json').read_text(encoding='utf-8')).get('runtime_pending'))
+    except (OSError,ValueError):return False
 
 
 def package_status(folder: str | os.PathLike[str], *, game_executable: str | os.PathLike[str]) -> tuple[AtlasPackage | None, str]:

@@ -1,0 +1,5 @@
+{
+  "schema": 1,
+  "url": null,
+  "trust": "RSA-3072 SHA-256 signatures with the package-pinned public key. Bundled adapters are authenticated by this catalog. Other official releases use automatic source rebuilding."
+}

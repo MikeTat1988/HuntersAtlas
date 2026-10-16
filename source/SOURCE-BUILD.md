@@ -1,4 +1,4 @@
-# Hunter’s Atlas 1.0 source and build guide
+# Hunter’s Atlas 1.1 source and build guide
 
 This guide describes the source available in this repository. Players use the prepared Atlas ZIP and do not need Python, a compiler, or the developer dependencies below. A rebuild is not guaranteed to produce byte-identical executables.
 
@@ -14,19 +14,24 @@ Keep `native/gpu/third_party/`, `native/third_party/`, and the shader inputs in 
 
 ## Build the Windows release assets
 
-The release assembly entry point is `lite/build_release.py`. It takes explicit build inputs and writes to a new output directory:
+The combined release assembly entry point is `lite/build_auto_update_release.py` with `--release --version 1.1`; it reuses the verified 1.7.2 and 1.8.1 runtimes and the reviewed rebuild seed. See `docs/releases/RELEASE-PROCESS.md` for the publication procedure. `lite/build_release.py` assembles an individual adapter. It takes explicit build inputs and writes to a new output directory:
 
 ```powershell
 python source/lite/build_release.py `
   --runtime-dir <native-build-output-with-required-dlls> `
   --generator-bundle <generator.atlaslite> `
-  --launcher-root <pristine-windows-v1.7.2-tree> `
+  --launcher-root <pristine-windows-v1.8.1-tree> `
   --wrapper <AtlasLauncher.exe> `
   --dependency-source <runtime-dependency-source.zip> `
-  --output <new-output-directory> --player-only
+  --catalog-signing-key <private-maintainer-key.json> `
+  --output <new-output-directory>
 ```
 
-Build the wrapper from `lite/integration/launcher_wrapper.c` with `lite/integration/Build-Wrapper.ps1`. This source build requires Visual Studio C++ Build Tools and the Windows SDK; players do not need them. Build the native runtime and frozen generator from their corresponding source before running the release assembler. `--launcher-root` must be an extracted, pristine copy of the supported official Windows v1.7.2 launcher. The assembler records and checks its declared inputs; use `python source/lite/build_release.py --help` for the exact options supported by the source archive.
+Build the wrapper from `lite/integration/launcher_wrapper.c` with `lite/integration/Build-Wrapper.ps1`. This source build requires Visual Studio C++ Build Tools and the Windows SDK; players do not need them. Build the native runtime and frozen generator from their corresponding source before running the release assembler. `--launcher-root` must be a pristine official Windows v1.8.1 tree. The assembler checks its declared inputs. `--player-only` is available for intermediate validation; delivery requires both player and corresponding-source archives.
+
+The native source is rebased on upstream commit `bee7ec16213022f15bf34084b5587f1ff09e0e65`. `runtime_atlas_build.h` embeds the protocol, feature schema and upstream identity. After stripping debug sections with `lite/strip_runtime.py`, place `native-build.json` beside the executable with those fields and its actual SHA-256. The assembler rejects a mismatch. `bb-probe.exe --atlas-build-info` prints the compiled identity without loading the game.
+
+The compatibility catalog is RSA-3072/SHA-256 authenticated. Its public key is `lite/updates/trusted-key.json`; private signing material is deliberately absent from the source and player archives. Maintainers rebuilding independently must generate their own RSA key, update the public trust key and sign their build. Such a build is a separate trust identity and cannot impersonate the release catalog. The release bundles its signed catalog and adapter. Releases absent from the catalog use the shipped rebuild seed and authenticated official source. Catalog records contain fixed identities and artifact URLs, never executable commands.
 
 The repository includes runtime dependency source under `source/runtime-dependencies/`. To rebuild the release archive, ZIP that directory as `runtime-dependency-source.zip` and pass it to `--dependency-source`. It is not required by the player, and the player package does not install a global Python runtime or compiler. Map generation for a release test requires the user’s own supported game copy; game files, generated maps, and the game font are not source-build inputs or player downloads.
 
