@@ -1,15 +1,22 @@
-# Hunter’s Atlas 1.2
+# Hunter’s Atlas 1.3
 
 A fullscreen navigation map for Bloodborne on Windows, with live position,
 floor context and 16 supported areas.
 
-**[Download the latest release](https://github.com/MikeTat1988/HuntersAtlas/releases/latest)** ·
-[What’s new in 1.2](docs/releases/v1.2.md) ·
-[Previous releases](https://github.com/MikeTat1988/HuntersAtlas/releases)
+[![Release](https://img.shields.io/github/v/release/MikeTat1988/HuntersAtlas)](https://github.com/MikeTat1988/HuntersAtlas/releases/latest)
+[![Windows x64](https://img.shields.io/badge/Windows-10%20%2F%2011%20x64-blue)](docs/COMPATIBILITY.md)
+[![Independent runtime](https://img.shields.io/badge/runtime-independent-green)](docs/LAUNCHER-UPDATES.md)
 
-Choose **Hunters-Atlas-1.2.zip** to play. The separate Source ZIP is for developers.
-[Hunter’s Atlas 1.0](https://github.com/MikeTat1988/HuntersAtlas/releases/tag/v1.0)
-remains available.
+**[Download for Windows — player package, about 177 MB](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.3/Hunters-Atlas-1.3-Windows.zip)**
+
+[What’s new in 1.3](docs/releases/v1.3.md) ·
+[Source ZIP — developers](https://github.com/MikeTat1988/HuntersAtlas/releases/download/v1.3/Hunters-Atlas-1.3-Source.zip)
+
+Atlas now includes its own tested Bloodborne for Windows **1.9 runtime**, Python
+and required DLLs. Updates to a separate ordinary launcher cannot replace Atlas
+or invalidate its maps. Runtime improvements arrive through tested Atlas updates.
+The normal desktop shortcut, launcher interface and native in-game **Map** tile
+remain the way to play.
 
 ## Features
 
@@ -18,7 +25,7 @@ remains available.
 - Optional pickup dots: red Blood Vials, purple Knowledge/Wisdom, blue equipment and gold Coldblood. Monster drops are excluded.
 - Optional map reveal after defeating an area’s boss.
 - NPC markers, including a new-dialogue filter for verified Gilbert and early Eileen conversations.
-- Automatic Atlas preparation when updating the official launcher; valid maps are reused.
+- Prepare maps from your own game files once, then reuse compatible maps across Atlas updates.
 
 Fog, fast travel and pickup categories can be switched off independently in the launcher.
 See [controls and coverage](docs/MAP-FEATURES.md).
@@ -27,43 +34,45 @@ See [controls and coverage](docs/MAP-FEATURES.md).
 
 ## Install and play
 
-1. Set your game folder in the official launcher, then close the game and launcher.
-2. Extract **Hunters-Atlas-1.2.zip** into a permanent folder outside the game and launcher folders.
-3. Run **Install.cmd**, select the launcher folder and wait for map preparation (usually 5–15 minutes).
-4. Reopen the launcher → **Mods & patches** → tick **Enable Hunter’s Atlas**. Wait for **Ready**, then **Play**. In the game’s quick menu, select **Map**.
+1. Close the game and launcher. Extract **Hunters-Atlas-1.3-Windows.zip** completely into its own permanent folder outside the game and launcher folders.
+2. Run **Install.cmd**. It imports your selected game, DLC, save folder and preferences, and updates the Bloodborne desktop shortcut. Select your original launcher folder if prompted.
+3. Open the normal **Bloodborne desktop shortcut**. In **Mods & patches**, ensure **Enable Hunter’s Atlas** is checked, then choose **Play**.
+4. Open the game’s quick menu and select **Map**. If compatible prepared maps were not found, Atlas prepares them from your game files on first use.
 
-**You must enable Hunter’s Atlas after installation.**
+No system Python, compiler or launcher adapter rebuild is needed. Keep the
+extracted Atlas folder in place. Your existing save folder stays selected.
+Use a folder your normal Windows account can read and write.
+Keep the Atlas package in an ordinary local folder outside OneDrive/synced or
+linked folders; the desktop shortcut can still use your redirected Windows Desktop.
 
 ![Enable Hunter’s Atlas and choose its features in Mods & patches](examples/launcher-settings.png)
 
-Already using Atlas? Close the game and launcher, extract 1.2 into a **new folder**,
-and run **Update.cmd from that new extraction**. Select your existing launcher.
-This installs Atlas 1.2 for the launcher version you already have.
-
-Afterward, use the launcher’s normal **Update** button whenever you want a newer
-launcher. Atlas prepares automatically and the launcher restarts. The first
-rebuild may take several minutes and downloads its tools automatically. Versions
-1.7.2, 1.8.1, 1.8.2 and 1.9 have bundled adapters, so they do not need compilation.
-Other official versions use the rebuild fallback with live progress and logs.
+Already using Atlas? Extract 1.3 into a **new folder** and run **Install.cmd** to
+migrate an older launcher-integrated edition. Keep the old folder until setup
+completes so compatible prepared maps can be imported. For updates to this
+independent edition, extract the new package elsewhere and run **Update.cmd
+from that new extraction**; it finds the installed Atlas and preserves maps and settings.
 See [installation](docs/INSTALL.md) and [updates/recovery](docs/LAUNCHER-UPDATES.md).
 
 ## Compatibility
 
-Windows 10/11, 64-bit, and the verified **CUSA00207 1.09** game build.
-Launcher **1.7.2 → 1.8.2** was tested. Other official Windows releases from 1.7
-onward use automatic rebuilding; incompatible upstream changes can require an
-Atlas repair. A failed Atlas rebuild does not block a verified launcher update.
-See [compatibility](docs/COMPATIBILITY.md).
+Windows 10/11, 64-bit, the verified **CUSA00207 1.09** game build, and hardware/drivers
+capable of running the included Windows 1.9 runtime. Other game builds and every
+GPU configuration have not been verified. The ordinary launcher’s version no
+longer selects or rebuilds the Atlas runtime.
 
-Maps and the game font are generated from your own game files. No game files,
-generated maps or saves are distributed. Your usual saves and settings remain
-selected. Travel uses the game’s normal loading/saving and sets the next respawn
-destination. Keep the installed Atlas folder in place; use **Uninstall.cmd** to
-restore the stock launcher for its current version.
+The download is about **177 MB**; the installed package is about **415 MB**, plus
+generated caches. Maps and the game font are prepared from your own game files.
+No game files, generated maps or saves are distributed. See
+[compatibility](docs/COMPATIBILITY.md) and [validation](docs/QA.md).
+
+Travel uses the game’s normal loading/saving and sets the next respawn destination.
+**Uninstall.cmd** restores the previous desktop shortcut and retains Atlas files
+and maps for recovery.
 
 ## Source and credits
 
-[Build guide](source/SOURCE-BUILD.md) · [Licenses and notices](source/licenses/README.md) ·
+[Independent edition build guide](source/owned/SOURCE-BUILD.md) · [Licenses and notices](source/licenses/README.md) ·
 [Validation](docs/QA.md)
 
 Built for [Supermedo’s Bloodborne for Windows](https://github.com/Supermedo/bloodborne_pc).

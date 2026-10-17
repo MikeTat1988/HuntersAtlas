@@ -121,6 +121,15 @@ def load_contract(root: Path) -> dict[str, Any]:
     """Validate Atlas-owned files and separately typed ordinary-port dependencies."""
     root = root.resolve(strict=True)
     config = _json_object(root / "bootstrap" / "config.json", "bootstrap config")
+    if config.get("installation_model") == "owned-runtime-v1":
+        import importlib.util
+        from types import SimpleNamespace
+        spec = importlib.util.spec_from_file_location("atlas_owned_contract", root / "bootstrap" / "owned_contract.py")
+        owned = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(owned)
+        return owned.load_contract(root, config, SimpleNamespace(**globals()))
+    if config.get("installation_model"):
+        raise BootstrapError("Unsupported Atlas installation model.")
     if config.get("schema") != 1 or config.get("edition") != "Atlas":
         raise BootstrapError("bootstrap/config.json must declare schema 1 and edition Atlas.")
     manifest_path = _inside(root, config.get("manifest", "manifest.json"), "manifest", file=True)
@@ -824,6 +833,8 @@ def _generator_command(contract: dict[str, Any]) -> list[str]:
     if generator is None:
         raise BootstrapError("Atlas manifest does not yet define a hash-verified generator.")
     if generator.suffix.casefold() == ".py":
+        if contract.get('owned_runtime'):
+            return [str(contract['python']), '-I', '-B', str(generator)]
         return [str(contract["launcher"]), "--script", str(generator)]
     return [str(generator)]
 
@@ -959,6 +970,9 @@ def show_settings(profile_path: Path, contract: dict[str, Any]) -> int:
 
 def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool = False,
             qa_timeout: int | None = None, qa_control_dir: str | os.PathLike[str] | None = None) -> int:
+    command = ([str(contract['python']), '-I', '-B', str(contract['runner'])]
+               if contract.get('owned_runtime') else
+               [str(contract['launcher']), '--script', str(contract['runner'])])
     if not dry_run:
         validate_game_source(contract, profile)
     state = contract["state_root"]
@@ -969,7 +983,7 @@ def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool 
     if dry_run:
         env = game_environment(contract, profile, qa_timeout=qa_timeout, qa_control_dir=qa_control_dir)
         print(json.dumps({"edition": "Atlas", "launcher": str(contract["launcher"]),
-                          "command": [str(contract["launcher"]), "--script", str(contract["runner"])],
+                          "command": command,
                           "environment": _redacted_env(env)}, ensure_ascii=False, indent=2))
         return 0
     with SessionLock(state / "session.lock"):
@@ -987,7 +1001,7 @@ def _launch(contract: dict[str, Any], profile: dict[str, Any], *, dry_run: bool 
             with log_path.open("a", encoding="utf-8") as log:
                 log.write(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Atlas launch\n")
                 log.flush()
-                process = subprocess.Popen([str(contract["launcher"]), "--script", str(contract["runner"])],
+                process = subprocess.Popen(command,
                                            cwd=str(contract["base_root"]), env=env,
                                            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))

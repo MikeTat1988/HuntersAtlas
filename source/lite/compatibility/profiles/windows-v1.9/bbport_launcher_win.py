@@ -30,8 +30,12 @@ import zipfile
 
 FROZEN = getattr(sys, 'frozen', False)
 PORT_DIR = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parent.parent
+OWNED_ATLAS_ROOT = os.environ.get('BB_OWNED_ATLAS_ROOT', '')
+if OWNED_ATLAS_ROOT:
+    PORT_DIR = Path(os.environ['BB_OWNED_PORT_ROOT']).resolve(strict=True)
 sys.path.insert(0, str(PORT_DIR / 'scripts'))
 DATA_DIR = Path(os.environ.get('BB_DATA_DIR', PORT_DIR))
+FSR4_FOLDER = (DATA_DIR if OWNED_ATLAS_ROOT else PORT_DIR) / 'fsr4_shaders'
 # Co-op test build: its own settings, and no updates (a public release would replace it).
 COOP_TEST = False
 CONFIG_DIR = Path(os.environ.get('APPDATA', Path.home())) / ('bbport-launcher-coop' if COOP_TEST else 'bbport-launcher')
@@ -299,7 +303,7 @@ def fsr4_files():
 
 
 def fsr4_missing():
-    folder = PORT_DIR / 'fsr4_shaders'
+    folder = FSR4_FOLDER
     return [name for name in fsr4_files() if not (folder / name).is_file() or not (folder / name).stat().st_size]
 
 
@@ -1443,7 +1447,8 @@ class Launcher:
             return
         if package and package.generated_ready:
             state = _('Enabled') if enabled else _('Disabled; the stock runtime will be used.')
-            message = f"{_('Ready — Hunter\'s Atlas')} {package.display_version} {_('verified.')}. {state}"
+            ready_label = _("Ready — Hunter's Atlas")
+            message = f"{ready_label} {package.display_version} {_('verified.')}. {state}"
             style = 'Muted.TLabel'
             self.atlas_prepare_button.configure(state='disabled')
         elif package:
@@ -2096,15 +2101,15 @@ class Launcher:
         total, missing = len(fsr4_files()), len(fsr4_missing())
         self.fsr4_progress.configure(value=total - missing)
         self.fsr4_label.configure(
-            text=_('Installed: {} files in {}.', 'Установлены: {} файлов в {}.').format(total, PORT_DIR / 'fsr4_shaders')
+            text=_('Installed: {} files in {}.', 'Установлены: {} файлов в {}.').format(total, FSR4_FOLDER)
             if not missing else _('{} of {} files missing in {}.', 'Нет {} из {} файлов в {}.').format(
-                missing, total, PORT_DIR / 'fsr4_shaders'))
+                missing, total, FSR4_FOLDER))
         self.fsr4_button.configure(state='normal' if missing and not self.downloading else 'disabled')
 
     def download_fsr4(self):
         self.downloading = True
         self.fsr4_button.configure(state='disabled')
-        folder = PORT_DIR / 'fsr4_shaders'
+        folder = FSR4_FOLDER
 
         def work():
             error = None
@@ -2391,6 +2396,10 @@ class Launcher:
     # ---- updates -------------------------------------------------------------------------------
     def check_update(self, manual=False):
         """Helper thread: asks GitHub for the newest release and offers it when it is newer."""
+        if OWNED_ATLAS_ROOT:
+            if manual:
+                self.ui_calls.put(lambda:self.atlas_notice(_('Atlas owns this tested game runtime ({}). Install Atlas updates with Update.cmd; ordinary launcher updates are separate.').format(VERSION)))
+            return
         try:
             version, url, page = latest_release()
         except (OSError, ValueError, KeyError) as failure:
@@ -2427,6 +2436,8 @@ class Launcher:
             self.status.configure(text=text, fg=GOLD)
 
     def install_update(self, version, url, page):
+        if OWNED_ATLAS_ROOT:
+            return self.install_atlas_update(version)
         if (PORT_DIR / 'atlas-lite-install.json').is_file():
             return self.install_atlas_update(version)
         if self.process:
@@ -2492,6 +2503,10 @@ class Launcher:
             self.update_label.configure(text=text)
 
     def install_atlas_update(self,version,manual_check=False):
+        if OWNED_ATLAS_ROOT:
+            self.atlas_notice(_('Install a new Atlas package with its Update.cmd. Your maps and settings will be retained.'))
+            webbrowser.open('https://github.com/MikeTat1988/HuntersAtlas/releases')
+            return
         # The Update button is the user's request. All progress and failures stay inline.
         if self.process or self.downloading or self.atlas_generating:
             self.atlas_notice(_('Close the game and wait for map preparation before updating.'),True)
@@ -2554,6 +2569,17 @@ class Launcher:
 
     def shortcut(self):
         """Bloodborne.lnk on the desktop."""
+        if OWNED_ATLAS_ROOT:
+            import importlib.util
+            path = Path(OWNED_ATLAS_ROOT) / 'owned/installer.py'
+            spec = importlib.util.spec_from_file_location('atlas_shortcut_installer', path)
+            installer = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(installer)
+            root = Path(OWNED_ATLAS_ROOT)
+            desktop = Path(os.environ.get('USERPROFILE', Path.home())) / 'Desktop/Bloodborne.lnk'
+            installer.shortcut(desktop, root, root / 'state/installation/previous-shortcut.lnk')
+            self.messagebox.showinfo('Bloodborne', _('Shortcut created on the desktop.'))
+            return
         if FROZEN:
             target, arguments, icon = sys.executable, '', f'{sys.executable},0'
         else:  # a source tree: the launcher script with the windowless Python
@@ -2579,7 +2605,9 @@ class Launcher:
         if not configs:
             self.messagebox.showerror('Bloodborne', _('Steam was not found on this PC (or nobody has signed in to it yet).'))
             return
-        if FROZEN:
+        if OWNED_ATLAS_ROOT:
+            exe, options = Path(OWNED_ATLAS_ROOT) / 'HuntersAtlas.exe', '--play'
+        elif FROZEN:
             exe, options = PORT_DIR / 'Play Bloodborne.exe', ''
         else:
             pythonw = Path(sys.executable).with_name('pythonw.exe')
@@ -2602,7 +2630,8 @@ class Launcher:
             restart = True
         try:
             for config in configs:
-                bbport_steam.add_shortcut(config / 'shortcuts.vdf', 'Bloodborne', str(exe), str(PORT_DIR),
+                working = Path(OWNED_ATLAS_ROOT) if OWNED_ATLAS_ROOT else PORT_DIR
+                bbport_steam.add_shortcut(config / 'shortcuts.vdf', 'Bloodborne', str(exe), str(working),
                                           str(exe), options)
         except (OSError, ValueError) as error:
             self.messagebox.showerror('Bloodborne', _('Could not add the game to Steam: {}').format(error))
@@ -2752,6 +2781,8 @@ def main():
     settings = load_settings()
     LANG = settings.get('ui_language') or windows_language()
     if args[:1] == ['--install-update'] and len(args) == 3:
+        if OWNED_ATLAS_ROOT:
+            raise ValueError('Use Update.cmd from the new Atlas package.')
         sys.exit(install_update(args[1], args[2]))
     if FROZEN and UPDATE_DIR not in PORT_DIR.parents:
         shutil.rmtree(UPDATE_DIR, ignore_errors=True)  # what a finished update left behind
@@ -2766,6 +2797,8 @@ def main():
     from tkinter import filedialog, messagebox, ttk
     root = tk.Tk()
     Launcher(root, tk, ttk, filedialog, messagebox)
+    if OWNED_ATLAS_ROOT and '--atlas-ui-smoke' in args:
+        root.after(1800, root.destroy)
     root.mainloop()
 
 

@@ -1,40 +1,40 @@
-# Hunter’s Atlas 1.2 — installation
+# Hunter’s Atlas 1.3 — install and update
 
-## Fresh installation
+## Install
 
-1. Choose your compatible game folder in the official launcher, then close the game and launcher.
-2. Extract **Hunters-Atlas-1.2.zip** completely into a permanent folder outside the game and launcher folders, on the launcher’s drive.
-3. Run **Install.cmd** and select the folder containing **Bloodborne.exe**. Wait for map preparation, usually 5–15 minutes.
-4. Reopen the launcher → **Mods & patches** → tick **Enable Hunter’s Atlas**. Wait for **Ready**, then **Play**.
-5. Open the game’s quick menu and select **Map**.
+1. Download **Hunters-Atlas-1.3-Windows.zip** and extract the whole archive to a permanent folder outside the game and launcher folders.
+2. Run **Install.cmd**. It imports your existing game, DLC, save location and launcher preferences, then updates the Bloodborne shortcut on the Windows desktop. If asked, point it to the original launcher folder so it can find your existing profile and saves.
+3. Open Bloodborne from the desktop shortcut. If the imported preference had Atlas off, enable **Hunter’s Atlas** under **Mods & patches** before choosing **Play**. In the game, open the native **Map** tile. Use the usual controller controls; optional lamp travel works from the map.
 
-**Atlas must be enabled after installation.** Fog, travel and pickup options are independent.
-No manual Python or compiler installation is required. On a launcher requiring a
-new runtime, Atlas downloads its tools and rebuilds automatically; allow several
-minutes, internet access and 8 GiB of free space. The bundled adapters for 1.7.2,
-1.8.1, 1.8.2 and 1.9 avoid compilation. Map preparation is still required on first use.
-Rebuilding shows stages, elapsed time and a log location. Press Ctrl+C to cancel
-the installer and wait for its preparation processes to stop.
+Do not uninstall a launcher-integrated Atlas 1.2 or earlier first: its uninstaller resets map data. A compatible existing map pack is reused. If one is unavailable, the first Play prepares maps from your own game files once; later launches reuse them.
 
-## Update an existing Atlas
+The package includes its tested Windows 1.9 runtime, Python, Tk and required DLLs. You do not need system Python, a compiler, or the official launcher’s private interpreter.
 
-Close the game and launcher. Extract 1.2 into a **new folder**, run **Update.cmd
-from that extraction**, and select your existing launcher. Its current version
-is retained. Valid maps are reused; old maps without the required feature data
-are prepared automatically. Keep both folders until the update completes.
+Keep the Atlas package in an ordinary local folder your Windows account can read and write, outside OneDrive/synced or linked folders. The shortcut can still be created on your redirected Windows Desktop.
 
-Use the ordinary launcher **Update** button separately when you want a newer
-launcher. Atlas follows automatically. If an upstream change prevents rebuilding,
-the verified launcher still updates and runs stock while Atlas reports pending.
+## Update
 
-## Remove or recover
+To migrate from launcher-integrated Atlas 1.2 or earlier, extract 1.3 into a new folder and run **Install.cmd**, keeping the old folder available for map import. **Update.cmd** locates an already independent Atlas installation.
 
-Keep the associated Atlas folder in place while installed. To remove Atlas, close
-the game and launcher and run **Uninstall.cmd** from that folder. This restores
-the stock launcher for the installed launcher version. Saves and ordinary settings
-are preserved. See [updates and recovery](LAUNCHER-UPDATES.md).
+Close Atlas and the game. Extract **Hunters-Atlas-1.3-Windows.zip** into a new folder and run **Update.cmd from that new extraction**. It detects the installed Atlas and carries over its profile, settings and maps. Rebuildable caches are recreated as needed. Keep the previous full Atlas folder as a backup if you need its legacy integration.
 
-## Requirements
+An ordinary update to a separate launcher does not replace Atlas or its maps. Atlas runtime updates arrive in Atlas packages; apply them with the steps above.
 
-Windows 10/11 64-bit, official Bloodborne for Windows, and verified CUSA00207 1.09.
-Launcher 1.7.2 and the update to 1.8.2 were tested. See [compatibility](COMPATIBILITY.md).
+## Uninstall or recover
+
+Close Atlas and the game, then run **Uninstall.cmd** from the installed Atlas folder. It restores the previous Bloodborne desktop shortcut and retains Atlas files, maps and settings for recovery. An external legacy hook from an older 1.2 setup is not managed by the 1.3 uninstaller; retain the full old backup if you need that integration.
+
+For an interrupted install, run the new package’s private interpreter and installer with the journal path printed by setup:
+
+```text
+runtime\python\python.exe -I -B owned\installer.py --recover "JOURNAL"
+runtime\python\python.exe -I -B owned\installer.py --rollback "JOURNAL"
+```
+
+Replace `JOURNAL` with the exact path printed by setup. Use `--recover` for an interrupted operation or `--rollback` to restore the previous installation. Close Atlas and the game first.
+
+## Requirements and size
+
+Windows 10 or 11, 64-bit. The verified game build is CUSA00207 version 1.09. The download is about 177 MB and the installed package about 415 MB, plus generated caches. Game files, maps, native font and saves are not included.
+
+See [compatibility](COMPATIBILITY.md), [updates and recovery](LAUNCHER-UPDATES.md), and [QA status](QA.md).

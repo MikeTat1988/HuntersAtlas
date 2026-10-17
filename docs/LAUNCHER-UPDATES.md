@@ -1,64 +1,24 @@
-# Launcher updates and recovery
+# Atlas updates and recovery
 
-Hunter’s Atlas 1.2 includes adapters for official Windows 1.7.2, 1.8.1, 1.8.2 and 1.9,
-plus automatic source rebuilding for other official releases from 1.7 onward.
+Hunter’s Atlas 1.3 owns its tested Windows 1.9 runtime, Python, Tk and required DLLs. An ordinary update to a separate Bloodborne launcher does not replace the Atlas runtime or generated maps. Atlas runtime updates are delivered through Atlas packages.
 
-For a fresh installation, extract the complete package and run Install.cmd.
-For an installed Atlas, extract into a NEW folder and run Update.cmd there.
-It selects the installed launcher version, without silently downgrading it.
-Use the ordinary launcher Update button when you want a newer launcher.
+For an independent Atlas installation, close Atlas and the game, extract the new **Hunters-Atlas-1.3-Windows.zip** to a new folder, and run **Update.cmd from that extraction**. The updater finds the installed Atlas and preserves its profile, settings and maps. Rebuildable caches are recreated as needed.
 
-The updater prefers an authenticated bundled adapter. Otherwise it downloads
-official release metadata and source, merges the reviewed Atlas integration,
-compiles locally, checks binary identity, stages the pair and reopens the launcher.
-No uninstall or second confirmation is requested. Disabled Atlas also follows updates.
-Selecting one adapter retains the other authenticated bundled adapters for later
-launcher updates; a 1.8.2 installation keeps the prebuilt 1.9 fast path.
+To migrate from launcher-integrated Atlas 1.2 or earlier, extract 1.3 into a new folder and run **Install.cmd** instead. Keep the older folder available for map import; do not uninstall it first because its uninstaller resets maps. Keep a full copy if you need to restore its legacy integration.
 
-The signed catalog uses a pinned RSA-3072 public key. Expired or unavailable
-catalogs fall back to official release metadata and its archive SHA-256.
-Local builds record the installed seed hash, immutable upstream commit,
-source archive digest and output hashes separately from signed adapter downloads.
-A version number never bypasses dependency verification.
+The ordinary Bloodborne desktop shortcut continues to open the game. If the imported preference had Atlas disabled, enable **Hunter’s Atlas** under **Mods & patches** before choosing **Play**. Then open the native in-game **Map** tile. The separate ordinary launcher may remain installed for stock play.
 
-The first rebuild installs a hash-pinned portable MSYS2 bootstrap and signed
-compiler packages in local application data. Allow several minutes and 8 GiB.
-Build sources use a temporary free drive letter to keep Windows paths short,
-without requiring a Windows long-path setting change. The drive is released when
-preparation ends; the physical workspace and logs remain available for diagnosis.
-The installer streams preparation output and elapsed time. Build commands stop
-after 20 minutes without log output or two hours total. They terminate their
-owned process tree before returning an error. A source rebuild requires one
-available drive letter; an unavailable letter produces a clear error.
-Source conflicts, changed submodule revisions or failed native checks require
-an Atlas integration repair; arbitrary future compatibility cannot be guaranteed.
-The official launcher still updates: Atlas retains its maps in a pending state,
-and Play uses the stock runtime. Startup retries are spaced by six hours;
-Check Atlas updates retries immediately. Unverified launcher downloads are never activated.
+## Recovery
 
-## Preserved data
+Install and update operations print a recovery journal path. Close Atlas and the game, then run the included private Python interpreter and installer from the new Atlas package:
 
-The coordinator retains launcher `user`, `out`, `mods`, graphics/input configuration, mod/patch selections and logs. External save locations stay selected. It changes only the Atlas association fields in the profile and preserves unknown settings and the current Atlas enable preference. The maintenance lock is shared with installation/uninstallation and launch checks. Activation and rollback require the relevant game and launcher processes to stop.
+```text
+runtime\python\python.exe -I -B owned\installer.py --recover "JOURNAL"
+runtime\python\python.exe -I -B owned\installer.py --rollback "JOURNAL"
+```
 
-Generated maps have a separate identity derived from the generator, feature extractor, schemas, and relevant game inputs. An unchanged key reuses the verified pack with zero generator invocations. A changed extractor, supported map input, event/talk/parameter/text input or schema requires preparation. Older public packs without this key and feature metadata are prepared once. Runtime or launcher changes alone do not invalidate maps. Player ZIPs contain no game maps, game font or saves.
+Replace `JOURNAL` with the exact path printed by the operation. `--recover` reverses or completes an interrupted activation from its journal; `--rollback` restores the retained prior installation. Preserve the full previous Atlas folder when the old integration may be needed. Recovery does not restore old saves over current saves.
 
-## Cancel, recover and roll back
+**Uninstall.cmd** restores the previous desktop shortcut and leaves Atlas files, maps and settings in place. An external legacy hook left by an older 1.2 setup is outside the 1.3 uninstaller’s management.
 
-The coordinator prints a journal path in a sibling `.atlas-update-<id>` directory. That directory contains an immutable helper interpreter and:
-
-- **Cancel.cmd**: request cancellation during preparation. Wait for preparation to stop; the working installation remains in place.
-- **Recover.cmd**: reverse an interrupted activation using its persisted rename journal. A live preparation must finish shutdown first.
-- **Rollback.cmd**: deliberately restore the retained previous launcher/Atlas pair after a successful update. Close both products first. Newer save progress and mutable settings are carried back; rollback does not replace them with an old snapshot.
-
-Do not manually delete transaction files while an update or recovery is running. If both source and destination of an interrupted rename exist, recovery preserves both and reports the ambiguity instead of guessing. Keep the journal, `preparation.log`, and Atlas `state/preparation.log` for diagnosis.
-
-To uninstall after updating, run **Uninstall.cmd from the currently associated Atlas folder**. Its per-install receipt restores the stock executable for the active target (the currently installed version), rather than a globally hardcoded older executable. It retains your ordinary saves and settings. Rollback is a separate operation from uninstall.
-
-## Maintainer requirements
-
-The player package includes the signed 1.7.2/1.8.1 compatibility catalog,
-the matching 1.8.1 adapter and the reviewed rebuild seed. A source ZIP accompanies
-the player ZIP, including exact legacy native source and the rebuild inputs.
-The 1.7.2 binary retains its legacy identity; newer native builds expose their
-compiled identity for preflight. Never label an old binary as a new upstream build.
-See [release procedure](releases/RELEASE-PROCESS.md).
+See [installation](INSTALL.md) for package steps and [compatibility](COMPATIBILITY.md) for the tested scope.

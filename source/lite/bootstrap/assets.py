@@ -112,6 +112,12 @@ def materialize(contract):
                 if source is None:raise ValueError('Missing verified DLSS prerequisite: '+name)
                 shutil.copyfile(source,binary/name)
                 if digest(source)!=digest(binary/name):raise ValueError('Staged DLSS hash mismatch')
+            # Newer tested runtimes load the frame-generation plugin beside
+            # the host executable too. Earlier adapters need no such plugin.
+            source=contract['base_files'].get('bin/nvngx_dlssg.dll')
+            if source is not None:
+                shutil.copyfile(source,binary/source.name)
+                if digest(source)!=digest(binary/source.name):raise ValueError('Staged frame-generation hash mismatch')
             paths['probe']=probe
         (root/'session-receipt.json').write_text(json.dumps({'expanded_bytes':manifest['expanded_bytes'],'sha256':spec['sha256']}))
         try:

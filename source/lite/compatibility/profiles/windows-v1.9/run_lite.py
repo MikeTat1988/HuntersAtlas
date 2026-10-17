@@ -284,7 +284,10 @@ def main():
         if scaled_output:
             live = env.get('BB_LIVE_RES') or ini_value(config, 'live_resolution') or '0'
             if live == 'auto':
-                caps = probe.parent / 'bb-gpu-capabilities.exe'
+                # The integrated probe can be staged with its NGX plugins in a
+                # temporary session directory. Helpers belong to the verified
+                # private port, independently of that executable's location.
+                caps = PORT / 'bin' / 'bb-gpu-capabilities.exe'
                 result = subprocess.run([str(caps), '--live-resolution'], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                         text=True, creationflags=no_console())
                 live = result.stdout.strip() if result.returncode == 0 else '0'
@@ -337,7 +340,7 @@ def main():
             online_overrides(env, user_dir)
         # Restart through the Atlas entrypoint so it waits for this outer session,
         # reacquires the Atlas lock, and retains edition-owned paths.
-        restart = [sys.executable, '--script', env['BB_LITE_ENTRY'],
+        restart = [sys.executable, *(['--script'] if getattr(sys, 'frozen', False) else ['-I', '-B']), env['BB_LITE_ENTRY'],
                    '--after', env['BB_LITE_BOOTSTRAP_PID']]
         if env.get('BB_LITE_QA_TIMEOUT'):
             restart += ['--qa-timeout', env['BB_LITE_QA_TIMEOUT']]
