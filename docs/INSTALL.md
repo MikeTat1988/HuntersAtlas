@@ -1,9 +1,9 @@
-# Hunter’s Atlas 1.1 — installation
+# Hunter’s Atlas 1.2 — installation
 
 ## Fresh installation
 
 1. Choose your compatible game folder in the official launcher, then close the game and launcher.
-2. Extract **Hunters-Atlas-1.1.zip** completely into a permanent folder outside the game and launcher folders, on the launcher’s drive.
+2. Extract **Hunters-Atlas-1.2.zip** completely into a permanent folder outside the game and launcher folders, on the launcher’s drive.
 3. Run **Install.cmd** and select the folder containing **Bloodborne.exe**. Wait for map preparation, usually 5–15 minutes.
 4. Reopen the launcher → **Mods & patches** → tick **Enable Hunter’s Atlas**. Wait for **Ready**, then **Play**.
 5. Open the game’s quick menu and select **Map**.
@@ -11,11 +11,14 @@
 **Atlas must be enabled after installation.** Fog, travel and pickup options are independent.
 No manual Python or compiler installation is required. On a launcher requiring a
 new runtime, Atlas downloads its tools and rebuilds automatically; allow several
-minutes, internet access and 8 GiB of free space.
+minutes, internet access and 8 GiB of free space. The bundled adapters for 1.7.2,
+1.8.1, 1.8.2 and 1.9 avoid compilation. Map preparation is still required on first use.
+Rebuilding shows stages, elapsed time and a log location. Press Ctrl+C to cancel
+the installer and wait for its preparation processes to stop.
 
 ## Update an existing Atlas
 
-Close the game and launcher. Extract 1.1 into a **new folder**, run **Update.cmd
+Close the game and launcher. Extract 1.2 into a **new folder**, run **Update.cmd
 from that extraction**, and select your existing launcher. Its current version
 is retained. Valid maps are reused; old maps without the required feature data
 are prepared automatically. Keep both folders until the update completes.

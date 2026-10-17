@@ -1,4 +1,4 @@
-"""Build a standalone 1.7.2 install with its authenticated 1.8.1 adapter included.
+"""Build a standalone install with authenticated adapters for known launchers.
 
 Inputs are pristine, previously built native releases. This does not relabel or
 recompile a native binary. The simultaneous source ZIP includes the exact legacy
@@ -17,7 +17,7 @@ def write(path,value):
     path.parent.mkdir(parents=True,exist_ok=True)
     coordinator.write_json(path,value)
 
-def patch(package,tag,seed=None,*,version='1.1',release=False):
+def patch(package,tag,seed=None,*,version=build_release.VERSION,release=False):
     # Common Python and installer code is identical in both adapters.
     for source,destination in ((HERE/'bootstrap',package/'bootstrap'),(HERE/'integration/ui',package/'integration/ui'),
                                (HERE/'generator',package/'tools'),(HERE/'updates',package/'updates')):
@@ -28,11 +28,15 @@ def patch(package,tag,seed=None,*,version='1.1',release=False):
                 shutil.copyfile(p,destination/p.name)
     for name in ('atlas_adapter.py','atlas_feature_config.py'):
         shutil.copyfile(HERE/'integration/ui'/name,package/'bootstrap'/name)
+    # Keep reviewed upstream UI/runner changes bound to their exact adapter.
+    profile=HERE/'compatibility/profiles'/tag
+    for name,destination in (('bbport_launcher_win.py','integration/ui/bbport_launcher_win.py'),('run_lite.py','bootstrap/run_lite.py')):
+        if (profile/name).is_file():shutil.copyfile(profile/name,package/destination)
     if seed:
         shutil.copyfile(seed,package/'updates/rebuild-seed.zip')
         shutil.copyfile(HERE/'strip_runtime.py',package/'updates/strip_runtime.py')
         shutil.copyfile(HERE/'packaging/build_dependencies.py',package/'updates/build_dependencies.py')
-    for name in ('Manage-Atlas.ps1','Update-Atlas.ps1'):
+    for name in ('Manage-Atlas.ps1','Update-Atlas.ps1','Preparation-Process.ps1'):
         shutil.copyfile(build_release.REPO/'installer'/name,package/'installer'/name)
     for name in ('Install.cmd','Uninstall.cmd','Update.cmd'):
         shutil.copyfile(build_release.REPO/name,package/name)
@@ -64,7 +68,7 @@ def patch(package,tag,seed=None,*,version='1.1',release=False):
     write(package/'adapter-release.json',identity)
     (package/'updates/catalog.json').unlink(missing_ok=True)
     manifest['files']={p.relative_to(package).as_posix():coordinator.sha(p) for p in package.rglob('*')
-        if p.is_file() and p.relative_to(package).as_posix() not in ('manifest.json','settings/settings.ini')}
+        if p.is_file() and not p.relative_to(package).as_posix().startswith('.distribution/') and p.relative_to(package).as_posix() not in ('manifest.json','settings/settings.ini')}
     manifest['mutable_files']=['settings/settings.ini','updates/catalog.json']
     write(package/'manifest.json',manifest)
     dependencies=coordinator.read(package/'dependencies.json')
@@ -89,6 +93,8 @@ def main():
     parser.add_argument('--legacy-runtime-dir',type=Path)
     parser.add_argument('--target-runtime-dir',type=Path)
     parser.add_argument('--rebuild-seed',type=Path)
+    parser.add_argument('--additional-package',type=Path,action='append',default=[],help='Verified adapter for another official launcher')
+    parser.add_argument('--additional-source',type=Path,action='append',default=[],help='Exact corresponding source archive for an additional native adapter')
     parser.add_argument('--version',default=build_release.VERSION)
     parser.add_argument('--release',action='store_true',help='Prepare versioned publication assets locally; does not publish')
     args=parser.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=False)
@@ -111,14 +117,30 @@ def main():
         shutil.copyfile(target/'tools'/name,legacy/'tools'/name)
     old=patch(legacy,'windows-v1.7.2',args.rebuild_seed,version=args.version,release=args.release)
     new=patch(target,'windows-v1.8.1',args.rebuild_seed,version=args.version,release=args.release)
+    targets=[old,new]
+    extras=[]
+    if len(args.additional_package)!=len(args.additional_source):raise ValueError('Every additional adapter needs its exact corresponding source archive')
+    for index,input_package in enumerate(args.additional_package):
+        coordinator.verify_files(input_package,coordinator.read(input_package/'manifest.json'))
+        tag=coordinator.release_identity(coordinator.read(input_package/'manifest.json'))['upstream_release']
+        if any(t['upstream_release']==tag for t in targets):raise ValueError('Duplicate bundled launcher adapter')
+        extra=out/('adapter-'+str(index))/'HuntersAtlas'
+        shutil.copytree(input_package,extra)
+        entry=patch(extra,tag,args.rebuild_seed,version=args.version,release=args.release)
+        extras.append((extra,entry));targets.append(entry)
     # No catalog in its own archive: the signed catalog authenticates archive and manifest.
-    bundled=legacy/'.distribution/windows-v1.8.1.zip';bundled.parent.mkdir()
+    bundled=legacy/'.distribution/windows-v1.8.1.zip';bundled.parent.mkdir(exist_ok=True)
     archive(target,bundled);new['atlas_sha256']=coordinator.sha(bundled)
+    for extra,entry in extras:
+        path=bundled.parent/(entry['upstream_release']+'.zip')
+        archive(extra,path);entry['atlas_sha256']=coordinator.sha(path)
     private=coordinator.read(args.signing_key);public=coordinator.read(HERE/'updates/trusted-key.json')
     if private['n']!=public['n']:raise ValueError('Wrong catalog signing key')
-    data=dict(schema=1,minimum_coordinator=1,expires=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(days=90)).isoformat(),targets=[old,new])
+    data=dict(schema=1,minimum_coordinator=1,expires=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(days=90)).isoformat(),targets=targets)
     envelope=dict(catalog=data,signature=catalog.sign(data,private))
     write(legacy/'updates/catalog.json',envelope);write(target/'updates/catalog.json',envelope)
+    for extra,entry in extras:
+        write(extra/'updates/catalog.json',envelope);coordinator.fresh_package(extra,entry)
     catalog.load(legacy/'updates/catalog.json')
     coordinator.fresh_package(target,new)
     suffix='' if args.release else '-auto-update-test'
@@ -131,6 +153,11 @@ def main():
         z.writestr('corresponding-source/legacy-1.7.2-identity.json',json.dumps(dict(runtime_sha256=old['runtime_sha256'],
             source_archive_sha256=coordinator.sha(args.legacy_source),source_archive='legacy-1.7.2-source.zip',
             changes='Legacy native corresponding source is in this nested archive. Shared Python adapters and installer use current source/lite and installer. The original legacy runner remains unchanged.'),indent=2))
+        for extra_source,(_,entry) in zip(args.additional_source,extras):
+            z.write(extra_source,'corresponding-source/'+entry['upstream_release']+'-source.zip')
+            z.writestr('corresponding-source/'+entry['upstream_release']+'-identity.json',json.dumps(dict(
+                runtime_sha256=entry['runtime_sha256'],source_archive_sha256=coordinator.sha(extra_source),
+                upstream_commit=entry['upstream_commit']),indent=2))
     report={'player':{'path':str(player),'sha256':coordinator.sha(player),'bytes':player.stat().st_size},
         'source':{'path':str(source),'sha256':coordinator.sha(source),'bytes':source.stat().st_size},'targets':data['targets']}
     for p in (player,source,bundled):

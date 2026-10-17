@@ -18,6 +18,10 @@ ATLAS_FILES=('Bloodborne.stock.exe','atlas-lite-launcher.py','atlas-lite-install
 MAX_EXPANDED=2*1024*1024*1024
 NO_WINDOW=getattr(subprocess,'CREATE_NO_WINDOW',0)
 
+def check_cancelled():
+    request=os.environ.get('BB_ATLAS_CANCEL_FILE')
+    if request and Path(request).exists():raise InterruptedError('Atlas preparation cancelled; the working installation is retained')
+
 def sha(path):
     h=hashlib.sha256()
     with Path(path).open('rb') as stream:
@@ -62,7 +66,9 @@ def materialize(package,entry,directory):
         if not entry.get('atlas_artifact_url'):raise ValueError('No authenticated Atlas adapter is available for this launcher')
         archive=download(entry['atlas_artifact_url'],directory/'atlas.zip',entry['atlas_sha256'])
     fresh=safe_unpack(archive,directory/'package',strip_root=archive_root(archive,'manifest.json'))
-    shutil.copyfile(Path(package)/'updates/catalog.json',fresh/'updates/catalog.json')
+    # Keep the authenticated adapters for the next ordinary launcher update.
+    # Selecting one adapter must not discard the other bundled fast paths.
+    copy_bundled(package,fresh,Path(package)/'updates/catalog.json')
     fresh_package(fresh,entry)
     return fresh
 
@@ -73,6 +79,7 @@ def select_initial(package,launcher):
     directory=package.parent/('.atlas-select-'+os.urandom(16).hex());directory.mkdir()
     import rebuild
     fresh,entry,_=rebuild.matching_package(package,launcher,directory,need_archive=False)
+    check_cancelled()
     if fresh==package:return entry
     # Keep the previous extracted adapter for diagnosis; no player data exists yet.
     old=directory/'previous-package'
@@ -116,11 +123,17 @@ def fresh_package(root,entry):
         raise ValueError('Atlas map schema does not match catalog')
     return manifest
 
-def safe_unpack(archive,destination,*,strip_root=None):
-    destination=regular_path(destination);destination.mkdir(parents=True,exist_ok=True)
+def safe_unpack(archive,destination,*,strip_root=None,preserve_alias=False):
+    # Build workspaces can use an owned DOS drive alias. Validate canonical
+    # paths as usual, but keep the short spelling for Windows file operations.
+    original=Path(destination).absolute()
+    destination=regular_path(destination)
+    if preserve_alias:destination=original
+    destination.mkdir(parents=True,exist_ok=True)
     total=0;seen=set()
     with zipfile.ZipFile(archive) as z:
         for info in z.infolist():
+            check_cancelled()
             name=info.filename.rstrip('/')
             if not name:continue
             # Validate before removing the archive's root prefix.
@@ -135,6 +148,7 @@ def safe_unpack(archive,destination,*,strip_root=None):
             seen.add(name.casefold());total+=info.file_size
             if total>MAX_EXPANDED or info.file_size>512*1024*1024:raise ValueError('Archive size limit')
             out=inside(destination,name)
+            if preserve_alias:out=destination.joinpath(*PurePosixPath(name).parts)
             if not info.is_dir():
                 out.parent.mkdir(parents=True,exist_ok=True)
                 with z.open(info) as source,out.open('wb') as target:shutil.copyfileobj(source,target,1024*1024)
@@ -154,6 +168,7 @@ def download(url,destination,digest):
         size=0;h=hashlib.sha256()
         with urllib.request.urlopen(request,timeout=60) as source,temporary.open('xb') as target:
             while b:=source.read(1024*1024):
+                check_cancelled()
                 size+=len(b)
                 if size>512*1024*1024:raise ValueError('Update download exceeds size limit')
                 h.update(b);target.write(b)
@@ -281,6 +296,7 @@ def reuse_assets(current,staged,game):
     return True
 
 def stage_update(launcher,current_package,new_package,upstream_archive,catalog_path,profile_path,*,allow_candidate=False,local_build=None,seed_package=None):
+    check_cancelled()
     launcher=regular_path(launcher);current_package=regular_path(current_package);new_package=regular_path(new_package)
     profile_path=regular_path(profile_path);profile=read(profile_path)
     if any(a==b or a in b.parents or b in a.parents for a,b in ((launcher,current_package),(launcher,new_package),(current_package,new_package))):

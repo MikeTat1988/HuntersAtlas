@@ -1,6 +1,6 @@
 """Rebuild boundaries: real merges, missing versions, and tampered derivations."""
 from pathlib import Path
-import json,shutil,sys,tempfile,unittest
+import json,os,shutil,subprocess,sys,tempfile,time,unittest,zipfile
 from unittest import mock
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import coordinator as c,rebuild
@@ -61,6 +61,16 @@ class Rebuild(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'bad digest'):rebuild.prepare_update(package,launcher,'1.8.2',self.root/'settings.json',lambda _:None)
             fallback.assert_not_called()
 
+    def test_cancelled_build_does_not_activate_pending_launcher(self):
+        package=self.root/'atlas';launcher=self.root/'launcher';package.mkdir();launcher.mkdir()
+        c.write_json(package/'manifest.json',{'files':{}})
+        official={'archive':str(self.root/'upstream.zip'),'upstream_release':'windows-v1.8.2'}
+        with (mock.patch.object(c,'active_receipt'),mock.patch.object(c,'refresh_catalog',side_effect=ValueError('missing')),
+              mock.patch.object(rebuild,'official',return_value=official),mock.patch.object(rebuild,'build',side_effect=InterruptedError('cancelled')),
+              mock.patch.object(c,'stage_pending') as fallback):
+            with self.assertRaises(InterruptedError):rebuild.prepare_update(package,launcher,'1.8.2',self.root/'settings.json',lambda _:None)
+            fallback.assert_not_called()
+
     def test_fresh_distribution_repairs_matching_launcher_without_downgrade(self):
         package=self.root/'atlas';launcher=self.root/'launcher';package.mkdir();launcher.mkdir()
         self.file('launcher/Bloodborne.stock.exe','stock')
@@ -73,5 +83,47 @@ class Rebuild(unittest.TestCase):
             fresh,target,archive=rebuild.matching_package(package,launcher,self.root,need_archive=False)
         self.assertEqual(fresh,package);self.assertEqual(target['upstream_release'],'windows-v1.8.2')
         self.assertIsNone(archive);materialize.assert_not_called();download.assert_not_called()
+
+    @unittest.skipUnless(os.name=='nt','Windows DOS build workspace')
+    def test_short_workspace_extracts_long_header_and_releases_drive(self):
+        directory=self.root/('nested-folder-'*5)/('another-folder-'*4)
+        directory.mkdir(parents=True)
+        name='native/gpu/third_party/fsr-vulkan/generated/ffx-1.1.4/vk/fsr3framegeneration/'+('x'*130)+'.h'
+        archive=self.root/'seed.zip'
+        with zipfile.ZipFile(archive,'w') as z:z.writestr(name,b'header')
+        self.assertGreater(len(str(directory/'seed'/name)),260)
+        with rebuild.short_workspace(directory) as short:
+            letter=short.drive
+            result=c.safe_unpack(archive,short/'seed',preserve_alias=True)
+            self.assertEqual((result/name).read_bytes(),b'header')
+            self.assertLess(len(str(result/name)),260)
+            self.assertEqual(rebuild.msys_path(short/'build'),'/'+letter[0].lower()+'/build')
+        self.assertFalse(Path(letter+'/').exists())
+
+    def test_build_command_reports_live_output(self):
+        messages=[]
+        rebuild.run([sys.executable,'-u','-c','import time;print("compiling",flush=True);time.sleep(.7)'],
+            self.root/'build.log',progress=messages.append,heartbeat=.1)
+        self.assertTrue(any('compiling' in m for m in messages))
+
+    def test_stalled_command_is_terminated(self):
+        started=time.monotonic()
+        with self.assertRaisesRegex(TimeoutError,'no output'):
+            rebuild.run([sys.executable,'-c','import time;time.sleep(30)'],self.root/'idle.log',idle_timeout=.3)
+        self.assertLess(time.monotonic()-started,10)
+
+    def test_command_cancellation_terminates_process(self):
+        request=self.root/'cancel'
+        script='import pathlib,time;pathlib.Path('+repr(str(request))+').touch();time.sleep(30)'
+        with mock.patch.dict(os.environ,{'BB_ATLAS_CANCEL_FILE':str(request)}):
+            with self.assertRaisesRegex(InterruptedError,'cancelled'):
+                rebuild.run([sys.executable,'-c',script],self.root/'cancel.log')
+
+    def test_short_workspace_is_released_on_failure(self):
+        with self.assertRaisesRegex(RuntimeError,'injected'):
+            with rebuild.short_workspace(self.root) as short:
+                letter=short.drive
+                raise RuntimeError('injected')
+        if os.name=='nt':self.assertFalse(Path(letter+'/').exists())
 
 if __name__=='__main__':unittest.main()

@@ -5,6 +5,7 @@ param(
     [switch]$NoDialog
 )
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'Preparation-Process.ps1')
 try {
     $PackageRoot=(Resolve-Path -LiteralPath $PackageRoot).Path
     if (-not $LauncherRoot) {
@@ -41,6 +42,9 @@ try {
     $start.RedirectStandardError=$true
     $start.EnvironmentVariables['PYTHONIOENCODING']='utf-8'
     $start.EnvironmentVariables['PYTHONUNBUFFERED']='1'
+    $cancel=Join-Path $PackageRoot 'cancel-update-preparation.request'
+    if(Test-Path -LiteralPath $cancel){Remove-Item -LiteralPath $cancel}
+    $start.EnvironmentVariables['BB_ATLAS_CANCEL_FILE']=$cancel
     $start.StandardOutputEncoding=New-Object Text.UTF8Encoding($false)
     $start.StandardErrorEncoding=New-Object Text.UTF8Encoding($false)
     $process=New-Object System.Diagnostics.Process
@@ -49,6 +53,9 @@ try {
     $null=$process.Handle
     $stdoutRead=$process.StandardOutput.ReadLineAsync()
     $stderrRead=$process.StandardError.ReadLineAsync()
+    $started=[DateTime]::UtcNow
+    $reported=$started
+    try {
     while($stdoutRead -or $stderrRead -or -not $process.HasExited) {
         if($stdoutRead -and $stdoutRead.IsCompleted) {
             $line=$stdoutRead.GetAwaiter().GetResult()
@@ -61,9 +68,17 @@ try {
             else { Write-Host $line -ForegroundColor Red; $stderrRead=$process.StandardError.ReadLineAsync() }
         }
         Start-Sleep -Milliseconds 100
+        if(([DateTime]::UtcNow-$reported).TotalSeconds -ge 15) {
+            Write-Host ('Atlas update preparation is active ({0:N0}s). Press Ctrl+C to cancel.' -f ([DateTime]::UtcNow-$started).TotalSeconds)
+            $reported=[DateTime]::UtcNow
+        }
+        if(([DateTime]::UtcNow-$started).TotalHours -ge 3){throw 'Atlas update preparation exceeded three hours.'}
     }
     $process.WaitForExit()
     if ($process.ExitCode -ne 0) { throw 'The update was not activated. Read the message above; your prior installation is retained.' }
+    } finally {
+        if(-not $process.HasExited){Stop-PreparationProcessTree $process $cancel 120000}
+    }
     Write-Host 'The verified update request completed. Check the state above and keep its recovery folder.'
 } catch {
     Write-Host ('Atlas update: '+$_.Exception.Message) -ForegroundColor Red

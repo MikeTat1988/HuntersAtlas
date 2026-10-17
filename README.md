@@ -1,13 +1,13 @@
-# Hunter’s Atlas 1.1
+# Hunter’s Atlas 1.2
 
 A fullscreen navigation map for Bloodborne on Windows, with live position,
 floor context and 16 supported areas.
 
 **[Download the latest release](https://github.com/MikeTat1988/HuntersAtlas/releases/latest)** ·
-[What’s new in 1.1](docs/releases/v1.1.md) ·
+[What’s new in 1.2](docs/releases/v1.2.md) ·
 [Previous releases](https://github.com/MikeTat1988/HuntersAtlas/releases)
 
-Choose **Hunters-Atlas-1.1.zip** to play. The separate Source ZIP is for developers.
+Choose **Hunters-Atlas-1.2.zip** to play. The separate Source ZIP is for developers.
 [Hunter’s Atlas 1.0](https://github.com/MikeTat1988/HuntersAtlas/releases/tag/v1.0)
 remains available.
 
@@ -28,7 +28,7 @@ See [controls and coverage](docs/MAP-FEATURES.md).
 ## Install and play
 
 1. Set your game folder in the official launcher, then close the game and launcher.
-2. Extract **Hunters-Atlas-1.1.zip** into a permanent folder outside the game and launcher folders.
+2. Extract **Hunters-Atlas-1.2.zip** into a permanent folder outside the game and launcher folders.
 3. Run **Install.cmd**, select the launcher folder and wait for map preparation (usually 5–15 minutes).
 4. Reopen the launcher → **Mods & patches** → tick **Enable Hunter’s Atlas**. Wait for **Ready**, then **Play**. In the game’s quick menu, select **Map**.
 
@@ -36,13 +36,15 @@ See [controls and coverage](docs/MAP-FEATURES.md).
 
 ![Enable Hunter’s Atlas and choose its features in Mods & patches](examples/launcher-settings.png)
 
-Already using Atlas? Close the game and launcher, extract 1.1 into a **new folder**,
+Already using Atlas? Close the game and launcher, extract 1.2 into a **new folder**,
 and run **Update.cmd from that new extraction**. Select your existing launcher.
-This installs Atlas 1.1 for the launcher version you already have.
+This installs Atlas 1.2 for the launcher version you already have.
 
 Afterward, use the launcher’s normal **Update** button whenever you want a newer
 launcher. Atlas prepares automatically and the launcher restarts. The first
-rebuild may take several minutes and downloads its tools automatically.
+rebuild may take several minutes and downloads its tools automatically. Versions
+1.7.2, 1.8.1, 1.8.2 and 1.9 have bundled adapters, so they do not need compilation.
+Other official versions use the rebuild fallback with live progress and logs.
 See [installation](docs/INSTALL.md) and [updates/recovery](docs/LAUNCHER-UPDATES.md).
 
 ## Compatibility

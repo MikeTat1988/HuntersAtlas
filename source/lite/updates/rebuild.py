@@ -5,7 +5,7 @@ is hash-pinned by the installed manifest; upstream inputs are resolved through
 the official GitHub API, and conflicts stop the build instead of guessing.
 """
 from __future__ import annotations
-import json,os,re,shutil,subprocess,urllib.request,zipfile
+import contextlib,json,os,re,shutil,subprocess,time,urllib.request,zipfile
 from pathlib import Path
 import coordinator as c
 
@@ -16,6 +16,57 @@ PACKAGES=['git']+['mingw-w64-clang-x86_64-'+n for n in (
     'boost','clang','cmake','ffmpeg','fmt','glslang','miniupnpc','ninja','nlohmann-json',
     'openssl','pkgconf','protobuf','python','robin-map','sdl3','spirv-cross','spirv-headers',
     'spirv-tools','vulkan-headers','vulkan-loader','vulkan-memory-allocator','xxhash','zlib','zydis')]
+
+class ProcessShutdownError(RuntimeError):
+    """Retain the short drive if Windows cannot confirm the build tree stopped."""
+
+def check_cancelled():
+    c.check_cancelled()
+
+def progress_message(message):
+    check_cancelled()
+    print(message,flush=True)
+
+@contextlib.contextmanager
+def short_workspace(directory):
+    """Own a temporary DOS drive alias, independent of LongPathsEnabled.
+
+    The physical workspace and logs survive failures. Never remove an alias
+    unless it still points to the exact directory created for this build.
+    """
+    directory=c.regular_path(directory)
+    if os.name!='nt':
+        yield directory;return
+    import ctypes
+    api=ctypes.WinDLL('kernel32',use_last_error=True)
+    api.QueryDosDeviceW.argtypes=(ctypes.c_wchar_p,ctypes.c_wchar_p,ctypes.c_uint32)
+    def target(letter):
+        buffer=ctypes.create_unicode_buffer(32768)
+        return buffer.value if api.QueryDosDeviceW(letter,buffer,len(buffer)) else None
+    subst=Path(os.environ['SystemRoot'])/'System32/subst.exe'
+    expected='\\??\\'+str(directory)
+    letter=None
+    for candidate in reversed('DEFGHIJKLMNOPQRSTUVWXYZ'):
+        name=candidate+':'
+        if target(name) is not None:continue
+        result=subprocess.run([str(subst),name,str(directory)],capture_output=True,creationflags=c.NO_WINDOW,timeout=10)
+        if result.returncode==0 and target(name)==expected:
+            letter=name;break
+    if letter is None:raise OSError('Atlas needs a free drive letter for a short build workspace; no launcher files were changed')
+    receipt={'pid':os.getpid(),'drive':letter,'directory':str(directory),'released':False}
+    safe_to_release=True
+    try:
+        c.write_json(directory/'workspace-drive.json',receipt)
+        yield Path(letter+'/')
+    except ProcessShutdownError:
+        safe_to_release=False
+        c.write_json(directory/'shutdown-failed.json',receipt)
+        raise
+    finally:
+        if safe_to_release and target(letter)==expected:
+            result=subprocess.run([str(subst),letter,'/D'],capture_output=True,creationflags=c.NO_WINDOW,timeout=10)
+            if result.returncode:raise OSError('Could not release the owned Atlas build drive '+letter+'; logs remain at '+str(directory))
+            receipt['released']=True;c.write_json(directory/'workspace-drive.json',receipt)
 
 def api(url):
     request=urllib.request.Request(url,headers={'User-Agent':'HuntersAtlas-rebuild/1','Accept':'application/vnd.github+json'})
@@ -82,11 +133,13 @@ def source_archive(repository,commit,directory,name):
     with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'HuntersAtlas-rebuild/1'}),timeout=90) as r,archive.open('xb') as out:
         size=0
         while block:=r.read(1024*1024):
+            check_cancelled()
             size+=len(block)
             if size>512*1024*1024:raise ValueError('Source archive exceeds limit')
             out.write(block)
     with zipfile.ZipFile(archive) as z:root=z.infolist()[0].filename.split('/')[0]
-    return c.safe_unpack(archive,directory/name,strip_root=root),c.sha(archive)
+    check_cancelled()
+    return c.safe_unpack(archive,directory/name,strip_root=root,preserve_alias=True),c.sha(archive)
 
 def normalized(data):return data.replace(b'\r\n',b'\n') if b'\0' not in data[:8192] else data
 
@@ -113,10 +166,38 @@ def merge_tree(base,new,ours,scratch,git):
     names={p.relative_to(root).as_posix() for root in (base,new) for p in root.rglob('*') if p.is_file()}
     for name in sorted(names):merge_file(base/name,new/name,ours/name,scratch,git)
 
-def run(command,log,*,env=None,cwd=None):
+def stop_process_tree(process):
+    if process.poll() is not None:return
+    if os.name=='nt':
+        killer=Path(os.environ['SystemRoot'])/'System32/taskkill.exe'
+        try:result=subprocess.run([str(killer),'/PID',str(process.pid),'/T','/F'],capture_output=True,creationflags=c.NO_WINDOW,timeout=30)
+        except (OSError,subprocess.TimeoutExpired) as error:raise ProcessShutdownError('Cannot verify shutdown of Atlas build processes; keep the recovery workspace and its build drive') from error
+        if result.returncode and process.poll() is None:raise ProcessShutdownError('Cannot verify shutdown of Atlas build processes; keep the recovery workspace and its build drive')
+    else:process.kill()
+    try:process.wait(timeout=30)
+    except subprocess.TimeoutExpired as error:raise ProcessShutdownError('Atlas build processes did not exit; keep the recovery workspace and its build drive') from error
+
+def run(command,log,*,env=None,cwd=None,progress=progress_message,timeout=7200,idle_timeout=1200,heartbeat=10):
+    check_cancelled()
+    display_log=str(Path(log).resolve())
+    started=last_change=last_report=time.monotonic();size=Path(log).stat().st_size if Path(log).exists() else 0
     with Path(log).open('ab') as out:
-        result=subprocess.run(list(map(str,command)),env=env,cwd=cwd,stdout=out,stderr=subprocess.STDOUT,creationflags=c.NO_WINDOW)
-    if result.returncode:raise RuntimeError('Atlas rebuild command failed; see '+str(log))
+        process=subprocess.Popen(list(map(str,command)),env=env,cwd=cwd,stdout=out,stderr=subprocess.STDOUT,creationflags=c.NO_WINDOW)
+        try:
+            while process.poll() is None:
+                check_cancelled();now=time.monotonic();current=Path(log).stat().st_size
+                if current!=size:size=current;last_change=now
+                if now-started>timeout:raise TimeoutError('Atlas build exceeded its time limit; see '+display_log)
+                if now-last_change>idle_timeout:raise TimeoutError('Atlas build produced no output for '+str(idle_timeout)+' seconds; see '+display_log)
+                if now-last_report>=heartbeat:
+                    with Path(log).open('rb') as stream:
+                        stream.seek(max(0,size-2048));lines=stream.read().decode('utf-8',errors='replace').splitlines()
+                    tail=next((line.strip() for line in reversed(lines) if line.strip()),'Waiting for build tools')
+                    progress('Atlas build: '+str(int(now-started))+'s elapsed | '+tail[-240:]);last_report=now
+                time.sleep(.2)
+        finally:
+            if process.poll() is None:stop_process_tree(process)
+    if process.returncode:raise RuntimeError('Atlas rebuild command failed; see '+display_log)
 
 def toolchain(cache,log,progress):
     cache=c.regular_path(cache);cache.mkdir(parents=True,exist_ok=True)
@@ -125,19 +206,27 @@ def toolchain(cache,log,progress):
     progress('Preparing Atlas build tools (first rebuild only)…')
     if not bash.is_file():
         archive=c.download(TOOLS_URL,cache/'msys2.exe',TOOLS_SHA)
-        run([archive,'-y','-o'+str(cache)],log)
+        run([archive,'-y','-o'+str(cache)],log,progress=progress)
     env=dict(os.environ,MSYSTEM='CLANG64',CHERE_INVOKING='yes',MSYS2_PATH_TYPE='minimal')
-    run([bash,'-lc','true'],log,env=env,cwd=cache)
+    run([bash,'-lc','true'],log,env=env,cwd=cache,progress=progress)
     # MSYS2 requires core and normal updates in separate processes.
-    for _ in range(2):run([bash,'-lc','pacman --noconfirm -Syuu'],log,env=env,cwd=cache)
-    run([bash,'-lc','pacman --noconfirm --needed -S '+' '.join(PACKAGES)],log,env=env,cwd=cache)
+    for _ in range(2):run([bash,'-lc','pacman --noconfirm -Syuu'],log,env=env,cwd=cache,progress=progress)
+    run([bash,'-lc','pacman --noconfirm --needed -S '+' '.join(PACKAGES)],log,env=env,cwd=cache,progress=progress)
     c.write_json(ready,{'bootstrap_sha256':TOOLS_SHA,'packages':PACKAGES})
     return root
 
 def msys_path(path):
-    path=Path(path).resolve();return '/'+path.drive[0].lower()+path.as_posix()[2:]
+    path=Path(path).absolute();return '/'+path.drive[0].lower()+path.as_posix()[2:]
 
-def build(package,entry,directory,progress=print,*,tools_cache=None):
+def build(package,entry,directory,progress=progress_message,*,tools_cache=None):
+    directory=c.regular_path(directory)
+    work=directory/'rebuild';work.mkdir()
+    progress('Atlas build workspace and logs: '+str(work))
+    with short_workspace(work) as short:
+        fresh,target=_build(package,entry,directory,progress,tools_cache=tools_cache,work=short)
+        return work/fresh.relative_to(short),target
+
+def _build(package,entry,directory,progress,*,tools_cache,work):
     package=c.regular_path(package);directory=c.regular_path(directory)
     manifest=c.read(package/'manifest.json');seed=package/'updates/rebuild-seed.zip'
     if c.sha(seed)!=manifest['files'].get('updates/rebuild-seed.zip'):raise ValueError('Atlas rebuild seed failed verification')
@@ -145,11 +234,12 @@ def build(package,entry,directory,progress=print,*,tools_cache=None):
     if not re.fullmatch('[0-9a-f]{40}',commit):raise ValueError('Invalid upstream commit')
     entry=dict(entry,upstream_commit=commit)
     progress('Preparing Atlas for launcher '+entry['upstream_release'].removeprefix('windows-v')+'…')
-    work=directory/'rebuild';work.mkdir();log=work/'build.log'
+    log=work/'build.log'
     if shutil.disk_usage(work).free<8*1024*1024*1024:raise OSError('Atlas rebuilding needs 8 GiB of free space')
     cache=Path(tools_cache) if tools_cache else Path(os.environ.get('LOCALAPPDATA',package.parent))/'HuntersAtlas/build-tools'
     tools=toolchain(cache,log,progress);git=tools/'usr/bin/git.exe'
-    c.safe_unpack(seed,work/'seed');info=c.read(work/'seed/seed.json')
+    progress('Extracting the verified Atlas build sources…')
+    c.safe_unpack(seed,work/'seed',preserve_alias=True);info=c.read(work/'seed/seed.json')
     new,source_sha=source_archive('Supermedo/bloodborne_pc',commit,work,'upstream-source')
     native=work/'seed/native';base=work/'seed/base'
     progress('Applying Atlas integration to the official source…')
@@ -175,7 +265,7 @@ def build(package,entry,directory,progress=print,*,tools_cache=None):
         'cmake -S '+q(native/'gpu')+' -B '+q(build_dir)+' -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBB_PGO=off -DBB_LTO=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++\n'+
         'cmake --build '+q(build_dir)+' --target bb-probe -j 4\n',encoding='utf-8')
     env=dict(os.environ,MSYSTEM='CLANG64',CHERE_INVOKING='yes')
-    run([bash,msys_path(script)],log,env=env,cwd=work)
+    run([bash,msys_path(script)],log,env=env,cwd=work,progress=progress)
     pristine=c.safe_unpack(entry['archive'],work/'pristine',strip_root=c.archive_root(entry['archive'],'run.py'))
     fresh=work/'package';fresh.mkdir()
     # Copy only pinned program files, never player saves, generated maps or state.
@@ -228,7 +318,7 @@ def build(package,entry,directory,progress=print,*,tools_cache=None):
     actual=json.loads(probe.stdout)
     if any(actual.get(k)!=identity[k] for k in ('upstream_release','upstream_commit','adapter_protocol','feature_schema')):
         raise ValueError('Rebuilt runtime identity check failed')
-    c.write_json(work/'result.json',{'entry':entry,'package':str(fresh),'seed_sha256':c.sha(seed)})
+    c.write_json(work/'result.json',{'entry':entry,'package':str(directory/'rebuild/package'),'seed_sha256':c.sha(seed)})
     progress('Atlas rebuilt and verified. Checking existing maps…')
     return fresh,entry
 
@@ -276,10 +366,13 @@ def prepare_update(package,launcher,version,profile,progress=print,*,tools_cache
             progress('Installing the matching Atlas update…')
             fresh=c.materialize(package,target,directory)
             return c.stage_update(launcher,package,fresh,archive,package/'updates/catalog.json',profile,allow_candidate=bool(manifest.get('candidate')))
+        except (InterruptedError,ProcessShutdownError):raise
         except Exception as error:errors.append(str(error))
     try:
         fresh,entry=build(package,official_entry,directory,progress,tools_cache=tools_cache)
         return c.stage_update(launcher,package,fresh,archive,package/'updates/catalog.json',profile,local_build=entry)
+    except (InterruptedError,ProcessShutdownError):
+        raise
     except Exception as error:
         errors.append(str(error));(directory/'failure.txt').write_text('\n'.join(errors),encoding='utf-8')
         progress('Completing launcher update; Atlas rebuild is pending.')

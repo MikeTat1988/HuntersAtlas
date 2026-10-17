@@ -14,7 +14,7 @@ Keep `native/gpu/third_party/`, `native/third_party/`, and the shader inputs in 
 
 ## Build the Windows release assets
 
-The combined release assembly entry point is `lite/build_auto_update_release.py` with `--release --version 1.1`; it reuses the verified 1.7.2 and 1.8.1 runtimes and the reviewed rebuild seed. See `docs/releases/RELEASE-PROCESS.md` for the publication procedure. `lite/build_release.py` assembles an individual adapter. It takes explicit build inputs and writes to a new output directory:
+The combined release assembly entry point is `lite/build_auto_update_release.py` with `--release --version 1.2`; it reuses the verified 1.7.2, 1.8.1, 1.8.2 and 1.9 runtimes and the reviewed rebuild seed. See `docs/releases/RELEASE-PROCESS.md` for the publication procedure. Pass each additional verified package with `--additional-package` and its exact native source archive with `--additional-source`. The assembler includes these adapters in the authenticated bundled catalog. `lite/build_release.py` assembles an individual adapter. It takes explicit build inputs and writes to a new output directory:
 
 ```powershell
 python source/lite/build_release.py `
@@ -59,3 +59,5 @@ The prepared player uses the frozen generator through the verified launcher’s 
 ## Source and license records
 
 The native host and its Atlas changes retain their GPL notices and complete corresponding source, including required vendors and patches. Third-party binaries and source components retain their own license terms. See [the license and source guide](licenses/README.md), the license files shipped beside each component, and the machine-readable runtime indices. These records describe the indexed components; they do not make a general legal determination or broaden a component’s license coverage.
+
+The 1.9 adapter uses `lite/compatibility/profiles/windows-v1.9/` and its exact expanded native source in `corresponding-source/windows-v1.9-source.zip`. The repository root native tree remains the 1.8.1 source for that retained adapter. The current automatic rebuild seed uses a 1.9 baseline; future source conflicts still require review.

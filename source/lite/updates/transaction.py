@@ -18,7 +18,16 @@ def regular_path(path,container=None):
     for cursor in (raw,*raw.parents):
         if cursor.is_symlink() or getattr(cursor,'is_junction',lambda:False)():raise ValueError('Redirected installation path: '+str(cursor))
     resolved=raw.resolve(strict=False)
-    if container is not None:resolved.relative_to(Path(container).resolve(strict=True))
+    if container is not None:
+        # Windows can add the extended prefix only to a long descendant while
+        # resolving a short DOS drive alias. Compare both canonical paths in
+        # the same spelling; otherwise safe long members look outside the root.
+        def comparable(value):
+            text=str(value)
+            if text.startswith('\\\\?\\UNC\\'):text='\\\\'+text[8:]
+            elif text.startswith('\\\\?\\'):text=text[4:]
+            return Path(text)
+        comparable(resolved).relative_to(comparable(Path(container).resolve(strict=True)))
     return resolved
 
 def alive(pid):

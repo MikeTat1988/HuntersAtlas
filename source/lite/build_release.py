@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse,hashlib,importlib.util,json,shutil,struct,subprocess,tempfile,zipfile,datetime
 from pathlib import Path
 
-VERSION='1.1'
+VERSION='1.2'
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[1]
 
@@ -83,6 +83,7 @@ def main():
     for ui in (HERE/'integration/ui').glob('*.py'):copy(ui,package/'integration/ui'/ui.name)
     copy(REPO/'installer/Manage-Atlas.ps1',package/'installer/Manage-Atlas.ps1')
     copy(REPO/'installer/Update-Atlas.ps1',package/'installer/Update-Atlas.ps1')
+    copy(REPO/'installer/Preparation-Process.ps1',package/'installer/Preparation-Process.ps1')
     for source in (HERE/'updates').iterdir():
         if source.is_file() and source.suffix in ('.py','.json'):copy(source,package/'updates'/source.name)
     for name in ('Install.cmd','Uninstall.cmd','Update.cmd','LICENSE'):copy(REPO/name,package/name)

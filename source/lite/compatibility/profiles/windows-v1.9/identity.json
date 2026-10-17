@@ -1,0 +1,17 @@
+{
+  "upstream_release": "windows-v1.9",
+  "upstream_commit": "652f9a494c47cc8c1ab16f28b456372eaa8103f8",
+  "stock_launcher_sha256": "f9b4e50421d8bc3717cd52bf550d6be58a35e2294143e17eaa68e36fd207ba7d",
+  "upstream_archive_sha256": "d2df6aa37530f0d21f577c5cc05bd3366b1f95e8f402b96cab89bbd8c8a219e5",
+  "seed_sha256": "e232305244ae2c605f5bd7c123c5e9d6245b67adbc92d2b989a04a16015be144",
+  "ui_sha256": "02ead93b7df1c7d4e2bef3334f3b108e5555d54b25a82d55e77145309911cf22",
+  "runner_sha256": "5ab43d1484eb6e8c1f8ff50631f5aa2a53fec8082338e6c708ae12f4904a6515",
+  "submodules": {
+    "gpu/third_party/fsr-vulkan": "c64f093404125e960813f95f1996c14780f0dd69",
+    "gpu/third_party/imgui": "f1cc2ae15e53a861a874c3034aae6798fde194ab",
+    "gpu/third_party/magic_enum": "e046b69a3736d314fad813e159b1c192eaef92cd",
+    "gpu/third_party/miniz": "2948eebafc5b9f1c69bebed80333e403a09bd62d",
+    "gpu/third_party/xbyak": "cd6bad3cad2e07a3e277c23d2b1f065320024717",
+    "third_party/LibAtrac9": "efca2e3af35562a09a9bb6deed90e45b4b824dc4"
+  }
+}

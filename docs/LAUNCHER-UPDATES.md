@@ -1,6 +1,6 @@
 # Launcher updates and recovery
 
-Hunter’s Atlas 1.1 includes adapters for official Windows 1.7.2 and 1.8.1,
+Hunter’s Atlas 1.2 includes adapters for official Windows 1.7.2, 1.8.1, 1.8.2 and 1.9,
 plus automatic source rebuilding for other official releases from 1.7 onward.
 
 For a fresh installation, extract the complete package and run Install.cmd.
@@ -12,6 +12,8 @@ The updater prefers an authenticated bundled adapter. Otherwise it downloads
 official release metadata and source, merges the reviewed Atlas integration,
 compiles locally, checks binary identity, stages the pair and reopens the launcher.
 No uninstall or second confirmation is requested. Disabled Atlas also follows updates.
+Selecting one adapter retains the other authenticated bundled adapters for later
+launcher updates; a 1.8.2 installation keeps the prebuilt 1.9 fast path.
 
 The signed catalog uses a pinned RSA-3072 public key. Expired or unavailable
 catalogs fall back to official release metadata and its archive SHA-256.
@@ -21,6 +23,13 @@ A version number never bypasses dependency verification.
 
 The first rebuild installs a hash-pinned portable MSYS2 bootstrap and signed
 compiler packages in local application data. Allow several minutes and 8 GiB.
+Build sources use a temporary free drive letter to keep Windows paths short,
+without requiring a Windows long-path setting change. The drive is released when
+preparation ends; the physical workspace and logs remain available for diagnosis.
+The installer streams preparation output and elapsed time. Build commands stop
+after 20 minutes without log output or two hours total. They terminate their
+owned process tree before returning an error. A source rebuild requires one
+available drive letter; an unavailable letter produces a clear error.
 Source conflicts, changed submodule revisions or failed native checks require
 an Atlas integration repair; arbitrary future compatibility cannot be guaranteed.
 The official launcher still updates: Atlas retains its maps in a pending state,

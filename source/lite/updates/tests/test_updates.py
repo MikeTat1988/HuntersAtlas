@@ -57,7 +57,8 @@ class Updates(unittest.TestCase):
             archive=self.root/'input.zip'
             with zipfile.ZipFile(archive,'w') as z:
                 for n in names:z.writestr(n,'x')
-            with self.assertRaises(ValueError):coordinator.safe_unpack(archive,self.root/'expanded')
+            for preserve_alias in (False,True):
+                with self.assertRaises(ValueError):coordinator.safe_unpack(archive,self.root/'expanded',preserve_alias=preserve_alias)
     def test_crash_between_rename_and_checkpoint_recovers(self):
         journal,live,stage,backup=self.journal()
         journal.data['actions'].append({'source':str(live),'destination':str(backup),'applied':False});journal.save()
@@ -120,6 +121,20 @@ class Updates(unittest.TestCase):
         archive.write_bytes(b'tampered')
         with self.assertRaises(ValueError):coordinator.bundled_archive(package,entry)
         archive.unlink();self.assertIsNone(coordinator.bundled_archive(package,entry))
+
+    def test_materialized_adapter_retains_authenticated_bundles(self):
+        package=self.root/'distribution';(package/'.distribution').mkdir(parents=True)
+        (package/'updates').mkdir()
+        archive=package/'.distribution/windows-v1.8.1.zip'
+        with zipfile.ZipFile(archive,'w') as z:
+            z.writestr('HuntersAtlas/manifest.json','{}')
+            z.writestr('HuntersAtlas/updates/coordinator.py','# fixture')
+        data=self.data();entry=data['targets'][0];entry['atlas_sha256']=coordinator.sha(archive)
+        (package/'updates/catalog.json').write_bytes(self.signed(data).read_bytes())
+        load=catalog.load
+        with mock.patch.object(catalog,'load',side_effect=lambda p,**kw:load(p,self.public,**kw)),mock.patch.object(coordinator,'fresh_package'):
+            fresh=coordinator.materialize(package,entry,self.root/'work')
+        self.assertEqual(coordinator.sha(fresh/'.distribution/windows-v1.8.1.zip'),entry['atlas_sha256'])
     def test_legacy_runtime_identity_does_not_claim_new_native_build_protocol(self):
         legacy={'upstream_release':'windows-v1.7.2','runtime_sha256':'a'*64}
         self.assertEqual(coordinator.release_identity({'legacy_runtime':legacy}),legacy)

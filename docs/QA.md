@@ -1,4 +1,26 @@
-# Release validation — Hunter’s Atlas 1.1
+# Release validation — Hunter’s Atlas 1.2
+
+## Installer fixes in 1.2
+
+- The reported shader header is present in the published 1.1 seed. Its failing
+  installation path reaches the traditional Windows 260-character boundary.
+- A disposable copy of the official launcher was tested with long-path awareness
+  explicitly disabled in its manifest. Direct access to a 346-character physical
+  header path failed, while extraction through the owned short build drive passed
+  at 205 characters. The Windows registry was not changed.
+- A full forced source rebuild for official launcher 1.8.2 passed from a deeply
+  nested workspace, including native identity and output-manifest verification.
+- The 1.8.2 adapter reuses the exact previously tested runtime. The bundled 1.7.2
+  and 1.8.1 runtimes are also unchanged.
+- Update/rebuild tests: 34 passed, including live output, real child-process
+  cancellation, idle timeout, cancellation refusing activation, archive traversal,
+  signature verification and recovery. Bootstrap: 20; UI bridge: 10; dependency
+  packaging: 3 passed.
+
+Final package installation, update and owner gameplay checks are recorded with
+the release preparation artifacts. Publication remains pending those checks.
+
+## Prior gameplay evidence for unchanged native runtimes
 
 The owner confirmed that installation and the launcher update worked on
 October 16, 2026. Automated checks used disposable launchers and copied saves.
@@ -40,3 +62,19 @@ restriction, pickup collection, NPC stage, reveal boundary, controller or GPU.
 NPC filtering is limited to the stages in [controls and coverage](MAP-FEATURES.md).
 Chalice Dungeons and unlisted game builds remain unsupported. Future upstream
 source conflicts can require an Atlas integration repair.
+
+## Launcher 1.9 integration
+
+The overlay conflict with upstream FPS timing was reviewed. The new adapter and
+rebuild seed use official 1.9 commit `652f9a494c47cc8c1ab16f28b456372eaa8103f8`.
+Frame-generation controls, presented-frame timing, settings scrolling, Quit,
+and precise-readback backing access are retained. Atlas polling runs after
+initialization on presented frames. A full forced fallback build and native
+identity verification passed. Exact source and seed hashes are recorded in
+`SOURCE_PROVENANCE.json`.
+
+Version-specific UI and runner files apply only to the 1.9 adapter. Existing
+1.7.2, 1.8.1 and 1.8.2 native binaries are unchanged. Packaged-adapter checks,
+recovery from pending status and gameplay results are recorded with the 1.9
+release preparation artifacts. Owner gameplay verification is required before
+publication of the new native integration.
