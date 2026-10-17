@@ -27,3 +27,5 @@ Installation does not patch the original game executable, game data, saves, or D
 ## Map and input limits
 
 The map provides player-position and facing display, pan, zoom, floor context, and navigation through the supported areas. Gate markers remain static. See [controls and coverage](MAP-FEATURES.md) for the limited supported NPC dialogue stages, verified fixed pickups, and boss reveal rules. Chalice Dungeons are not supported. These compatibility statements do not certify every route, floor transition, graphics device, controller model, or full playthrough; see [QA status](QA.md).
+
+The 1.2 download stores shared adapter files once and reuses byte-identical DLLs from the verified official launcher. Every reconstructed adapter is checked against its full signed manifest. Missing or changed dependencies stop installation; launcher updates can recover those files from the authenticated official archive.

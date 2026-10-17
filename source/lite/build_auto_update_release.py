@@ -5,7 +5,7 @@ recompile a native binary. The simultaneous source ZIP includes the exact legacy
 corresponding-source archive and current source for all shared adapter changes.
 """
 from __future__ import annotations
-import argparse,datetime,importlib.util,json,shutil,sys,zipfile
+import argparse,datetime,hashlib,importlib.util,json,shutil,sys,zipfile
 from pathlib import Path
 sys.dont_write_bytecode=True
 HERE=Path(__file__).resolve().parent
@@ -81,10 +81,59 @@ def patch(package,tag,seed=None,*,version=build_release.VERSION,release=False):
         migration={'receipt_schemas':[1,2],'rollback':'retain previous pair'})
     return target
 
-def archive(root,destination):
+def archive(root,destination,*,exclude=()):
     with zipfile.ZipFile(destination,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for p in sorted(root.rglob('*')):
-            if p.is_file():z.write(p,'HuntersAtlas/'+p.relative_to(root).as_posix())
+            if p.is_file() and p.relative_to(root).as_posix() not in exclude:z.write(p,'HuntersAtlas/'+p.relative_to(root).as_posix())
+
+
+def bundle_adapters(base,adapters):
+    """Store common files once; every reconstructed adapter retains its full manifest."""
+    packages=[base]+[package for package,_ in adapters]
+    manifests=[coordinator.read(p/'manifest.json')['files'] for p in packages]
+    occurrences={}
+    for package,files in zip(packages,manifests):
+        for name,digest in files.items():occurrences.setdefault((name,digest),[]).append(package)
+    bundled=base/'.distribution';bundled.mkdir(exist_ok=True)
+    for package,entry in adapters:
+        files=coordinator.read(package/'manifest.json')['files']
+        ordinary=coordinator.read(package/'dependencies.json')['ordinary_port']['files']
+        launcher_files={name:digest for name,digest in files.items()
+                        if name.startswith('bin/') and name.lower().endswith('.dll') and ordinary.get(name)==digest}
+        entry['launcher_files']=launcher_files
+        shared={name:digest for name,digest in coordinator.read(package/'manifest.json')['files'].items()
+                if len(occurrences[(name,digest)])>1 and name not in launcher_files}
+        entry['shared_files']=shared
+        entry['minimum_coordinator']=2
+        for name,digest in shared.items():
+            # An invariant file remains available at its normal path after any selection.
+            if all(files.get(name)==digest for files in manifests):continue
+            blob=bundled/'shared'/digest
+            if not blob.exists():blob.parent.mkdir(exist_ok=True);shutil.copyfile(package/name,blob)
+        path=bundled/(entry['upstream_release']+'.zip')
+        archive(package,path,exclude=set(shared)|set(launcher_files))
+        entry['atlas_sha256']=coordinator.sha(path)
+    return bundled/'windows-v1.8.1.zip'
+
+
+def source_recipes(destination,inputs):
+    """Keep dependency and vendor sources once, with hash-verified reconstruction maps."""
+    with zipfile.ZipFile(destination,'a',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as output:
+        content={}
+        for info in output.infolist():
+            if not info.is_dir():content.setdefault(hashlib.sha256(output.read(info)).hexdigest(),info.filename)
+        for label,archive in inputs:
+            files={}
+            with zipfile.ZipFile(archive) as source:
+                for info in source.infolist():
+                    if info.is_dir():continue
+                    blob=source.read(info);digest=hashlib.sha256(blob).hexdigest()
+                    if digest not in content:
+                        member='corresponding-source/content/'+digest
+                        output.writestr(member,blob);content[digest]=member
+                    files[info.filename]={'member':content[digest],'sha256':digest}
+            output.writestr('corresponding-source/'+label+'.json',json.dumps(dict(
+                source_archive_sha256=coordinator.sha(archive),files=files),sort_keys=True))
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
@@ -129,14 +178,12 @@ def main():
         entry=patch(extra,tag,args.rebuild_seed,version=args.version,release=args.release)
         extras.append((extra,entry));targets.append(entry)
     # No catalog in its own archive: the signed catalog authenticates archive and manifest.
-    bundled=legacy/'.distribution/windows-v1.8.1.zip';bundled.parent.mkdir(exist_ok=True)
-    archive(target,bundled);new['atlas_sha256']=coordinator.sha(bundled)
-    for extra,entry in extras:
-        path=bundled.parent/(entry['upstream_release']+'.zip')
-        archive(extra,path);entry['atlas_sha256']=coordinator.sha(path)
+    # Remove stale full adapters from a previously combined input.
+    if (legacy/'.distribution').exists():shutil.rmtree(legacy/'.distribution')
+    bundled=bundle_adapters(legacy,[(target,new)]+extras)
     private=coordinator.read(args.signing_key);public=coordinator.read(HERE/'updates/trusted-key.json')
     if private['n']!=public['n']:raise ValueError('Wrong catalog signing key')
-    data=dict(schema=1,minimum_coordinator=1,expires=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(days=90)).isoformat(),targets=targets)
+    data=dict(schema=1,minimum_coordinator=2,expires=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(days=90)).isoformat(),targets=targets)
     envelope=dict(catalog=data,signature=catalog.sign(data,private))
     write(legacy/'updates/catalog.json',envelope);write(target/'updates/catalog.json',envelope)
     for extra,entry in extras:
@@ -147,14 +194,15 @@ def main():
     player=out/f'Hunters-Atlas-{args.version}{suffix}.zip';archive(legacy,player)
     source=out/f'Hunters-Atlas-Source-{args.version}{suffix}.zip'
     build_release.source_zip(source,args.dependency_source)
-    with zipfile.ZipFile(source,'a',compression=zipfile.ZIP_STORED) as z:
-        if args.rebuild_seed:z.write(args.rebuild_seed,'corresponding-source/automatic-rebuild-seed.zip')
-        z.write(args.legacy_source,'corresponding-source/legacy-1.7.2-source.zip')
+    inputs=[('legacy-1.7.2-source',args.legacy_source)]
+    if args.rebuild_seed:inputs.append(('automatic-rebuild-seed',args.rebuild_seed))
+    inputs.extend((entry['upstream_release']+'-source',extra_source) for extra_source,(_,entry) in zip(args.additional_source,extras))
+    source_recipes(source,inputs)
+    with zipfile.ZipFile(source,'a',compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr('corresponding-source/legacy-1.7.2-identity.json',json.dumps(dict(runtime_sha256=old['runtime_sha256'],
-            source_archive_sha256=coordinator.sha(args.legacy_source),source_archive='legacy-1.7.2-source.zip',
-            changes='Legacy native corresponding source is in this nested archive. Shared Python adapters and installer use current source/lite and installer. The original legacy runner remains unchanged.'),indent=2))
+            source_archive_sha256=coordinator.sha(args.legacy_source),source_recipe='legacy-1.7.2-source.json',
+            changes='Reconstruct the exact legacy source with source/lite/extract_corresponding_source.py. Shared Python adapters and installer use current source/lite and installer. The original legacy runner remains unchanged.'),indent=2))
         for extra_source,(_,entry) in zip(args.additional_source,extras):
-            z.write(extra_source,'corresponding-source/'+entry['upstream_release']+'-source.zip')
             z.writestr('corresponding-source/'+entry['upstream_release']+'-identity.json',json.dumps(dict(
                 runtime_sha256=entry['runtime_sha256'],source_archive_sha256=coordinator.sha(extra_source),
                 upstream_commit=entry['upstream_commit']),indent=2))

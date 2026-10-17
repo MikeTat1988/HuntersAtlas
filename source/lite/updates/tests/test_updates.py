@@ -140,6 +140,60 @@ class Updates(unittest.TestCase):
         self.assertEqual(coordinator.release_identity({'legacy_runtime':legacy}),legacy)
         env=adapter.configure_network({'BB_NET_BACKEND':'thd'},dict(online=True,online_pool='huntersdream'),'1.7.2')
         self.assertEqual(env['BB_BRIDGE'],'1');self.assertNotIn('BB_NET_BACKEND',env)
+
+    def test_shared_adapter_files_reconstruct_and_survive_another_selection(self):
+        package=self.root/'distribution';(package/'.distribution/shared').mkdir(parents=True)
+        (package/'updates').mkdir();(package/'tools').mkdir()
+        common=package/'tools/common';common.write_bytes(b'invariant generator')
+        pooled=package/'.distribution/shared'/coordinator.hashlib.sha256(b'version library').hexdigest()
+        pooled.write_bytes(b'version library')
+        data=self.data();entry=data['targets'][0]
+        entry['shared_files']={'tools/common':coordinator.sha(common),'bin/library':pooled.name}
+        archive=package/'.distribution/windows-v1.8.1.zip'
+        with zipfile.ZipFile(archive,'w') as z:
+            z.writestr('HuntersAtlas/manifest.json','{}')
+            z.writestr('HuntersAtlas/updates/coordinator.py','# fixture')
+        entry['atlas_sha256']=coordinator.sha(archive)
+        (package/'updates/catalog.json').write_bytes(self.signed(data).read_bytes())
+        load=catalog.load
+        with mock.patch.object(catalog,'load',side_effect=lambda p,**kw:load(p,self.public,**kw)),mock.patch.object(coordinator,'fresh_package'):
+            fresh=coordinator.materialize(package,entry,self.root/'first')
+            again=coordinator.materialize(fresh,entry,self.root/'second')
+            self.assertEqual((again/'tools/common').read_bytes(),b'invariant generator')
+            self.assertEqual((again/'bin/library').read_bytes(),b'version library')
+            pooled.write_bytes(b'tampered')
+            with self.assertRaises(ValueError):coordinator.materialize(package,entry,self.root/'corrupt')
+            pooled.unlink()
+            with self.assertRaises(ValueError):coordinator.materialize(package,entry,self.root/'missing')
+
+    def test_signed_shared_file_paths_cannot_escape_or_replace_manifest(self):
+        for name in ('../escape','/absolute','C:/file','a\\b','manifest.json','.distribution/unlisted'):
+            data=self.data();data['targets'][0]['shared_files']={name:'a'*64}
+            with self.assertRaises(ValueError):catalog.load(self.signed(data),self.public)
+
+    def test_launcher_dependency_reuse_is_hash_bound_with_verified_archive_fallback(self):
+        package=self.root/'distribution';(package/'.distribution').mkdir(parents=True);(package/'updates').mkdir()
+        launcher=self.root/'launcher';(launcher/'bin').mkdir(parents=True)
+        dll=launcher/'bin/test.dll';dll.write_bytes(b'official library')
+        data=self.data();entry=data['targets'][0];entry['launcher_files']={'bin/test.dll':coordinator.sha(dll)}
+        archive=package/'.distribution/windows-v1.8.1.zip'
+        with zipfile.ZipFile(archive,'w') as z:
+            z.writestr('HuntersAtlas/manifest.json','{}');z.writestr('HuntersAtlas/updates/coordinator.py','# fixture')
+        entry['atlas_sha256']=coordinator.sha(archive)
+        official=self.root/'official.zip'
+        with zipfile.ZipFile(official,'w') as z:
+            z.writestr('release/run.py','# upstream');z.writestr('release/bin/test.dll',dll.read_bytes())
+        entry['upstream_sha256']=coordinator.sha(official)
+        (package/'updates/catalog.json').write_bytes(self.signed(data).read_bytes());load=catalog.load
+        with mock.patch.object(catalog,'load',side_effect=lambda p,**kw:load(p,self.public,**kw)),mock.patch.object(coordinator,'fresh_package'):
+            fresh=coordinator.materialize(package,entry,self.root/'reuse',launcher=launcher)
+            self.assertEqual((fresh/'bin/test.dll').read_bytes(),b'official library')
+            dll.write_bytes(b'tampered')
+            with self.assertRaises(ValueError):coordinator.materialize(package,entry,self.root/'reject',launcher=launcher)
+            fresh=coordinator.materialize(package,entry,self.root/'fallback',launcher=launcher,upstream_archive=official)
+            self.assertEqual((fresh/'bin/test.dll').read_bytes(),b'official library')
+            official.write_bytes(b'corrupt')
+            with self.assertRaises(ValueError):coordinator.materialize(package,entry,self.root/'reject-archive',upstream_archive=official)
     def test_fresh_bundle_supersedes_old_bundle_during_same_launcher_repair(self):
         current=self.root/'current';fresh=self.root/'fresh';staged=self.root/'staged'
         for p in (current,fresh,staged):(p/'.distribution').mkdir(parents=True);(p/'updates').mkdir()

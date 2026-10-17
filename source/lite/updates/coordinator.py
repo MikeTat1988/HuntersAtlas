@@ -58,14 +58,57 @@ def copy_bundled(current,staged,catalog_path,*,fresh=None):
         if archive:
             destination=staged/'.distribution'/archive.name;destination.parent.mkdir(exist_ok=True)
             shutil.copyfile(archive,destination)
+    # Shared blobs are authenticated by the same signed target records.
+    digests={h for entry in data['targets'] for h in entry.get('shared_files',{}).values()}
+    for digest in digests:
+        name='.distribution/shared/'+digest
+        for source in (fresh,current):
+            if source is None:continue
+            blob=inside(source,name)
+            if blob.is_file():
+                if sha(blob)!=digest:raise ValueError('Shared Atlas file failed its integrity check')
+                destination=inside(staged,name);destination.parent.mkdir(parents=True,exist_ok=True)
+                if blob!=destination:shutil.copyfile(blob,destination)
+                break
     shutil.copyfile(catalog_path,staged/'updates/catalog.json')
 
-def materialize(package,entry,directory):
+def materialize(package,entry,directory,*,launcher=None,upstream_archive=None):
     archive=bundled_archive(package,entry)
     if archive is None:
         if not entry.get('atlas_artifact_url'):raise ValueError('No authenticated Atlas adapter is available for this launcher')
         archive=download(entry['atlas_artifact_url'],directory/'atlas.zip',entry['atlas_sha256'])
     fresh=safe_unpack(archive,directory/'package',strip_root=archive_root(archive,'manifest.json'))
+    upstream=None
+    try:
+        for name,digest in entry.get('launcher_files',{}).items():
+            destination=inside(fresh,name)
+            if destination.exists():raise ValueError('Launcher file also occurs in adapter archive')
+            source=inside(launcher,name) if launcher else None
+            if source and source.is_file() and sha(source)==digest:
+                destination.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,destination)
+            else:
+                if upstream is None:
+                    if upstream_archive is None or sha(upstream_archive)!=entry['upstream_sha256']:
+                        raise ValueError('Missing verified launcher dependency: '+name)
+                    prefix=archive_root(upstream_archive,'run.py')
+                    upstream=zipfile.ZipFile(upstream_archive)
+                member=(prefix.rstrip('/')+'/' if prefix else '')+name
+                info=upstream.getinfo(member)
+                if info.file_size>MAX_EXPANDED:raise ValueError('Launcher dependency exceeds size limit')
+                blob=upstream.read(info)
+                if hashlib.sha256(blob).hexdigest()!=digest:raise ValueError('Launcher dependency hash mismatch: '+name)
+                destination.parent.mkdir(parents=True,exist_ok=True);destination.write_bytes(blob)
+    finally:
+        if upstream:upstream.close()
+    for name,digest in entry.get('shared_files',{}).items():
+        destination=inside(fresh,name)
+        if destination.exists():raise ValueError('Shared Atlas file also occurs in adapter archive')
+        source=inside(package,name)
+        if not source.is_file() or sha(source)!=digest:
+            source=inside(package,'.distribution/shared/'+digest)
+        if not source.is_file() or sha(source)!=digest:raise ValueError('Missing or corrupt shared Atlas file: '+name)
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(source,destination)
     # Keep the authenticated adapters for the next ordinary launcher update.
     # Selecting one adapter must not discard the other bundled fast paths.
     copy_bundled(package,fresh,Path(package)/'updates/catalog.json')
@@ -113,6 +156,11 @@ def fresh_package(root,entry):
         for target in data['targets']:
             archive=bundled_archive(root,target)
             if archive:permitted.add(archive.relative_to(root).as_posix())
+            for digest in target.get('shared_files',{}).values():
+                blob=inside(root,'.distribution/shared/'+digest)
+                if blob.is_file():
+                    if sha(blob)!=digest:raise ValueError('Shared Atlas file failed its integrity check')
+                    permitted.add(blob.relative_to(root).as_posix())
     for p in root.rglob('*'):
         regular_path(p,root)
         if p.is_file() and p.relative_to(root).as_posix() not in permitted:raise ValueError('Unlisted file in fresh Atlas artifact: '+str(p))

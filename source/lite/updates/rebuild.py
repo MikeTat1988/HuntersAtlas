@@ -113,10 +113,10 @@ def matching_package(package,launcher,directory,*,tools_cache=None,need_archive=
     matches=[e for e in data['targets'] if e.get('stock_launcher_sha256')==digest]
     if len(matches)==1:
         entry=c.catalog.resolve(data,matches[0]['upstream_release'],allow_candidate=bool(c.read(package/'manifest.json').get('candidate')))
+        archive=c.download(entry['upstream_url'],directory/'upstream.zip',entry['upstream_sha256']) if need_archive else None
         if c.sha(package/'manifest.json')==entry['atlas_manifest_sha256']:
             c.fresh_package(package,entry);fresh=package
-        else:fresh=c.materialize(package,entry,directory)
-        archive=c.download(entry['upstream_url'],directory/'upstream.zip',entry['upstream_sha256']) if need_archive else None
+        else:fresh=c.materialize(package,entry,directory,launcher=launcher,upstream_archive=archive)
         return fresh,entry,archive
     entry=official(installed_version(launcher,directory),directory)
     pristine=c.safe_unpack(entry['archive'],directory/'identity',strip_root=c.archive_root(entry['archive'],'run.py'))
@@ -364,7 +364,7 @@ def prepare_update(package,launcher,version,profile,progress=print,*,tools_cache
     if target:
         try:
             progress('Installing the matching Atlas update…')
-            fresh=c.materialize(package,target,directory)
+            fresh=c.materialize(package,target,directory,upstream_archive=archive)
             return c.stage_update(launcher,package,fresh,archive,package/'updates/catalog.json',profile,allow_candidate=bool(manifest.get('candidate')))
         except (InterruptedError,ProcessShutdownError):raise
         except Exception as error:errors.append(str(error))

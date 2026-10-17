@@ -96,7 +96,7 @@
       "seed_sha256": "d8c72aee9e2b9ced1dc436bfa3a789071017be28e08e4ea04b1799beef186e4e",
       "locally_built": true,
       "corresponding_source_sha256": "afddcac4619ff3e1c7ae8968d62cd0cdc518028d02bc1fa788c26d1584036871",
-      "corresponding_source_archive": "corresponding-source/windows-v1.8.2-source.zip"
+      "corresponding_source_archive": "corresponding-source/windows-v1.8.2-source.json"
     },
     "windows-v1.9": {
       "adapter_protocol": 1,
@@ -108,14 +108,14 @@
       "seed_sha256": "e232305244ae2c605f5bd7c123c5e9d6245b67adbc92d2b989a04a16015be144",
       "locally_built": true,
       "corresponding_source_sha256": "97b69672282a76a0452858a6b335b2f9a932ee91e0f65d9c407af6af2c643ef2",
-      "corresponding_source_archive": "corresponding-source/windows-v1.9-source.zip"
+      "corresponding_source_archive": "corresponding-source/windows-v1.9-source.json"
     }
   },
   "automatic_rebuild": {
     "tested_upstream_release": "windows-v1.9",
     "tested_upstream_commit": "652f9a494c47cc8c1ab16f28b456372eaa8103f8",
     "seed_sha256": "e232305244ae2c605f5bd7c123c5e9d6245b67adbc92d2b989a04a16015be144",
-    "seed_source_archive": "corresponding-source/automatic-rebuild-seed.zip",
+    "seed_source_archive": "corresponding-source/automatic-rebuild-seed.json",
     "contains_generated_maps": false
   }
 }
